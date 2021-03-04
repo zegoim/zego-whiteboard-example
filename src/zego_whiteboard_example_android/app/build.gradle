@@ -1,0 +1,83 @@
+plugins {
+    id 'com.android.application'
+}
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+android {
+    compileSdkVersion 30
+
+    defaultConfig {
+        applicationId "im.zego.whiteboardexample"
+        minSdkVersion 21
+        targetSdkVersion 28
+        versionCode versCode.toInteger()
+        versionName versName
+
+        buildConfigField "String", "appBuildType", "\"$appBuildType\""
+        buildConfigField "String", "abi_Filters", "\"$abi_Filters\""
+
+        ndk {
+            abiFilters "armeabi-v7a"
+        }
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file(keyFile)
+            keyAlias keyName
+            keyPassword keyPwd
+            storePassword storePwd
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs',
+            ]
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+
+dependencies {
+
+    implementation fileTree(dir: 'libs', includes: ['*.jar', '*.aar'])
+
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'androidx.preference:preference-ktx:1.1.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+
+    //glide
+    implementation 'com.github.bumptech.glide:glide:4.12.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
+
+    // PickerView
+    implementation 'com.github.zyyoona7:wheelview:1.0.7'
+
+    implementation 'com.caverock:androidsvg-aar:1.4'
+
+    implementation 'com.google.code.gson:gson:2.8.6'
+
+}

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_drawer_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <androidx.drawerlayout.widget.DrawerLayout
+        android:id="@+id/layout_main_drawer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <include
+            layout="@layout/layout_main_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <RelativeLayout
+            android:id="@+id/layout_drawer_right"
+            android:layout_width="250dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="end"
+            android:background="@android:color/white">
+
+            <im.zego.whiteboardexample.widget.drawerlayout.WhiteboardListView
+                android:id="@+id/drawer_whiteboard_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <im.zego.whiteboardexample.widget.drawerlayout.FileExcelView
+                android:id="@+id/drawer_excel_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </RelativeLayout>
+
+    </androidx.drawerlayout.widget.DrawerLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<dict>
+		<key>title</key>
+		<string>新增白板</string>
+		<key>tag</key>
+		<string></string>
+		<key>type</key>
+		<integer>2</integer>
+		<key>placeholder</key>
+		<string></string>
+		<key>eventNumber</key>
+		<real>20001</real>
+		<key>options</key>
+		<array/>
+	</dict>
+	<dict>
+		<key>title</key>
+		<string>清除缓存</string>
+		<key>tag</key>
+		<string></string>
+		<key>type</key>
+		<integer>2</integer>
+		<key>placeholder</key>
+		<string></string>
+		<key>eventNumber</key>
+		<real>20002</real>
+		<key>options</key>
+		<array/>
+	</dict>
+</array>
+</plist>

@@ -1,0 +1,952 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_drawer_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <!-- 切白板，切页等控制 -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/main_whiteboard_layout"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:background="@color/background"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/main_end_layout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- 以下是顶部栏切白板，切页等控制 -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/main_top_layout"
+            android:layout_width="match_parent"
+            android:layout_height="98dp"
+            android:paddingTop="10dp"
+            android:background="@color/white"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/container">
+
+            <!-- 白板/文件名称 -->
+            <TextView
+                android:id="@+id/main_top_whiteboard_name"
+                android:layout_width="155dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="28dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/drawable_top_button"
+                android:drawableEnd="@drawable/drop_down_arrow"
+                android:ellipsize="middle"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="10dp"
+                android:singleLine="true"
+                android:textColor="@color/text_black"
+                android:textSize="12dp"
+                app:layout_constraintBottom_toTopOf="@+id/main_top_jump_page_layout"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Excel 表格 Sheet 页名称 -->
+            <TextView
+                android:id="@+id/main_top_sheet_name"
+                android:layout_width="110dp"
+                android:layout_height="0dp"
+                android:background="@drawable/drawable_top_button"
+                android:drawableEnd="@drawable/drop_down_arrow"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="4dp"
+                android:ellipsize="middle"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="10dp"
+                android:singleLine="true"
+                android:textColor="@color/text_black"
+                android:textSize="12dp"
+                app:layout_constraintBottom_toBottomOf="@id/main_top_whiteboard_name"
+                app:layout_constraintStart_toEndOf="@+id/main_top_whiteboard_name"
+                app:layout_constraintTop_toTopOf="@+id/main_top_whiteboard_name" />
+
+            <!-- 供除 Excel 文件外的所有文件翻页 -->
+            <LinearLayout
+                android:id="@+id/main_top_page_layout"
+                android:layout_width="110dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="24dp"
+                android:background="@drawable/drawable_top_button"
+                android:gravity="center"
+                android:orientation="horizontal"
+                app:layout_constraintBottom_toBottomOf="@id/main_top_whiteboard_name"
+                app:layout_constraintStart_toEndOf="@+id/main_top_whiteboard_name"
+                app:layout_constraintTop_toTopOf="@+id/main_top_whiteboard_name">
+
+                <ImageView
+                    android:id="@+id/main_page_prev"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@null"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/left_arrow" />
+
+                <TextView
+                    android:id="@+id/main_page_index"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textColor="@color/text_black"
+                    android:textSize="12dp"
+                    tools:text="132/437" />
+
+                <ImageView
+                    android:id="@+id/main_page_next"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@null"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/right_arrow" />
+
+            </LinearLayout>
+
+            <!-- 供动态 ppt 翻页翻步 -->
+            <RelativeLayout
+                android:id="@+id/main_top_step_layout"
+                android:layout_width="70dp"
+                android:layout_height="28dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/drawable_top_button"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@id/main_top_jump_page_layout"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toStartOf="@+id/main_top_page_layout"
+                app:layout_constraintTop_toTopOf="@+id/main_top_jump_page_layout">
+
+                <ImageView
+                    android:id="@+id/main_step_prev"
+                    android:layout_width="34.5dp"
+                    android:layout_height="match_parent"
+                    android:layout_centerVertical="true"
+                    android:background="@null"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="10.5dp"
+                    android:src="@drawable/arrow_left_2" />
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="12dp"
+                    android:layout_centerInParent="true"
+                    android:background="#edeff3" />
+
+                <ImageView
+                    android:id="@+id/main_step_next"
+                    android:layout_width="34.5dp"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:background="@null"
+                    android:paddingStart="10.5dp"
+                    android:paddingEnd="12dp"
+                    android:src="@drawable/arrow_right_2" />
+            </RelativeLayout>
+
+            <!-- 房间名称 -->
+            <TextView
+                android:id="@+id/main_top_room_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:textColor="@color/text_black"
+                android:textSize="12dp"
+                android:text="@string/class_title"
+                android:layout_marginEnd="8dp"
+                app:layout_constraintBottom_toBottomOf="@+id/main_top_page_layout"
+                app:layout_constraintEnd_toEndOf="@+id/main_top_exit_btn"
+                app:layout_constraintTop_toTopOf="@+id/main_top_page_layout" />
+
+            <!-- 跳转页面 -->
+            <LinearLayout
+                android:id="@+id/main_top_jump_page_layout"
+                android:layout_width="140dp"
+                android:layout_height="0dp"
+                android:layout_marginVertical="12dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toStartOf="@+id/main_top_whiteboard_name"
+                app:layout_constraintTop_toBottomOf="@id/main_top_whiteboard_name">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/jump_page_to"
+                    android:textColor="@color/black"
+                    android:textSize="12dp" />
+
+                <EditText
+                    android:id="@+id/main_page_to_index"
+                    android:layout_width="0dp"
+                    android:layout_height="35dp"
+                    android:layout_weight="1"
+                    android:inputType="number"
+                    android:padding="3dp"
+                    android:textColor="@color/text_black"
+                    android:textSize="12dp"
+                    android:layout_marginHorizontal="5dp"
+                    android:background="@drawable/drawable_widget_bg"/>
+
+                <Button
+                    android:id="@+id/jump_btn"
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/drawable_widget_bg"
+                    android:text="@string/jump"
+                    android:textSize="12dp"/>
+
+            </LinearLayout>
+
+            <!-- 退出房间 -->
+            <Button
+                android:id="@+id/main_top_exit_btn"
+                android:layout_width="75dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="16dp"
+                android:text="@string/leave"
+                android:textSize="12dp"
+                android:background="@drawable/drawable_widget_bg"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/main_top_room_name"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+        <!--（以上是）切白板，切页等控制 -->
+
+        <!-- viewHolder层叠在里面 -->
+        <im.zego.whiteboardexample.widget.whiteboard.WhiteboardContainer
+            android:id="@+id/container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/main_top_layout"
+            app:layout_constraintBottom_toTopOf="@+id/view_bottom"/>
+
+        <View
+            android:id="@+id/view_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:background="@color/white"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- 整个选择区在里面 -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/main_end_layout"
+        android:layout_width="200dp"
+        android:layout_height="match_parent"
+        android:background="@color/background"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/main_whiteboard_layout">
+
+        <RadioGroup
+            android:id="@+id/title_layout"
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:orientation="horizontal"
+            android:layout_margin="5dp"
+            android:background="@color/white"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/select_layout">
+
+            <RadioButton
+                android:id="@+id/tv_draw"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="@color/black"
+                android:text="@string/draw"
+                android:button="@null"/>
+
+            <View
+                android:layout_width="0.5dp"
+                android:layout_height="match_parent"
+                android:background="@color/list_item_divider"/>
+
+            <RadioButton
+                android:id="@+id/tv_whiteboard"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="@color/black"
+                android:text="@string/whiteboard"
+                android:button="@null"/>
+
+            <View
+                android:layout_width="0.5dp"
+                android:layout_height="match_parent"
+                android:background="@color/list_item_divider"/>
+
+            <RadioButton
+                android:id="@+id/tv_docs"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="@color/black"
+                android:text="@string/docs"
+                android:button="@null"/>
+
+        </RadioGroup>
+
+        <ScrollView
+            android:id="@+id/select_layout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:padding="5dp"
+            android:background="@color/white"
+            app:layout_constraintVertical_weight="1"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/title_layout"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <RelativeLayout
+                    android:id="@+id/draw_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="visible">
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/whiteboard_switch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/draw_whiteboard_switch"
+                        android:longClickable="false"
+                        android:checked="true"
+                        android:layout_marginVertical="10dp"
+                        android:layout_marginHorizontal="5dp"
+                        android:textSize="12dp"
+                        app:switchPadding="10dp"
+                        app:switchTextAppearance="@style/SwitchCompat.Text"
+                        app:theme="@style/SwitchCompat.Control"/>
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/draw_switch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/draw_switch"
+                        android:longClickable="false"
+                        android:checked="true"
+                        android:layout_marginHorizontal="5dp"
+                        android:layout_below="@+id/whiteboard_switch"
+                        android:textSize="12dp"
+                        app:switchPadding="10dp"
+                        app:switchTextAppearance="@style/SwitchCompat.Text"
+                        app:theme="@style/SwitchCompat.Control"/>
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/text_style_bold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/draw_bold"
+                        android:longClickable="false"
+                        android:layout_marginVertical="10dp"
+                        android:layout_marginHorizontal="5dp"
+                        android:layout_below="@+id/draw_switch"
+                        android:textSize="12dp"
+                        app:switchPadding="10dp"
+                        app:switchTextAppearance="@style/SwitchCompat.Text"
+                        app:theme="@style/SwitchCompat.Control"/>
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/text_style_italic"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/draw_italic"
+                        android:longClickable="false"
+                        android:layout_marginHorizontal="5dp"
+                        android:layout_marginBottom="10dp"
+                        android:layout_below="@+id/text_style_bold"
+                        android:textSize="12dp"
+                        app:switchPadding="10dp"
+                        app:switchTextAppearance="@style/SwitchCompat.Text"
+                        app:theme="@style/SwitchCompat.Control"/>
+
+                    <TextView
+                        android:id="@+id/draw_color_tip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/text_style_italic"
+                        android:layout_margin="5dp"
+                        android:text="@string/draw_color"
+                        android:textColor="@color/text_black"
+                        android:textColorHint="@color/text_hint_color"
+                        android:textSize="12dp"/>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/draw_color_recyclerview"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/draw_color_tip"
+                        tools:listitem="@layout/item_style_color"
+                        tools:itemCount="2" />
+
+                    <TextView
+                        android:id="@+id/draw_graffiti_tools_brush_tip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/draw_color_recyclerview"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/draw_graffiti_tools"
+                        android:textColor="@color/text_black"
+                        android:textColorHint="@color/text_hint_color"
+                        android:textSize="12dp"/>
+
+                    <TextView
+                        android:id="@+id/draw_graffiti_tools_tv"
+                        android:layout_width="match_parent"
+                        android:layout_height="35dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginHorizontal="5dp"
+                        android:text="@string/draw_graffiti_tools_pen"
+                        android:layout_below="@+id/draw_graffiti_tools_brush_tip"
+                        android:drawableRight="@drawable/arrow_down"
+                        android:gravity="center_vertical"
+                        android:padding="8dp"
+                        android:textColor="@color/text_black"
+                        android:textColorHint="@color/text_hint_color"
+                        android:background="@drawable/drawable_widget_bg"
+                        android:textSize="12dp" />
+
+                    <TextView
+                        android:id="@+id/draw_text_size_tip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/draw_graffiti_tools_tv"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginLeft="5dp"
+                        android:text="@string/draw_text_size"
+                        android:textColor="@color/text_black"
+                        android:textColorHint="@color/text_hint_color"
+                        android:textSize="12dp"/>
+
+                    <TextView
+                        android:id="@+id/draw_text_size_tv"
+                        android:layout_width="match_parent"
+                        android:layout_height="35dp"
+                        android:layout_margin="5dp"
+                        android:text="18"
+                        android:layout_below="@+id/draw_text_size_tip"
+                        android:drawableRight="@drawable/arrow_down"
+                        android:gravity="center_vertical"
+                        android:padding="8dp"
+                        android:textColor="@color/text_black"
+                        android:textColorHint="@color/text_hint_color"
+                        android:background="@drawable/drawable_widget_bg"
+                        android:textSize="12dp" />
+
+                    <TextView
+                        android:id="@+id/draw_brush_size_tip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/draw_text_size_tv"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginLeft="5dp"
+                        android:text="@string/draw_brush_size"
+                        android:textColor="@color/text_black"
+                        android:textColorHint="@color/text_hint_color"
+                        android:textSize="12dp"/>
+
+                    <TextView
+                        android:id="@+id/draw_brush_size_tv"
+                        android:layout_width="match_parent"
+                        android:layout_height="35dp"
+                        android:layout_margin="5dp"
+                        android:text="18"
+                        android:layout_below="@+id/draw_brush_size_tip"
+                        android:drawableRight="@drawable/arrow_down"
+                        android:gravity="center_vertical"
+                        android:padding="8dp"
+                        android:textColor="@color/text_black"
+                        android:textColorHint="@color/text_hint_color"
+                        android:background="@drawable/drawable_widget_bg"
+                        android:textSize="12dp" />
+
+                    <TextView
+                        android:id="@+id/draw_custom_image_tip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/draw_brush_size_tv"
+                        android:layout_margin="5dp"
+                        android:text="@string/draw_graffiti_tools_image"
+                        android:textColor="@color/text_black"
+                        android:textColorHint="@color/text_hint_color"
+                        android:textSize="12dp"/>
+
+                    <TextView
+                        android:id="@+id/draw_custom_image_tv"
+                        android:layout_width="match_parent"
+                        android:layout_height="35dp"
+                        android:layout_margin="5dp"
+                        android:text="@string/draw_select_custom_image"
+                        android:layout_below="@+id/draw_custom_image_tip"
+                        android:drawableRight="@drawable/arrow_down"
+                        android:gravity="center_vertical"
+                        android:padding="8dp"
+                        android:ellipsize="middle"
+                        android:singleLine="true"
+                        android:textColor="@color/text_black"
+                        android:textColorHint="@color/text_hint_color"
+                        android:textSize="12dp"
+                        android:background="@drawable/drawable_widget_bg" />
+
+                    <EditText
+                        android:id="@+id/draw_custom_image_url_et"
+                        android:layout_width="88dp"
+                        android:layout_height="35dp"
+                        android:layout_below="@+id/draw_custom_image_tv"
+                        android:layout_margin="5dp"
+                        android:hint="@string/draw_custom_image_url"
+                        android:textSize="12dp"
+                        android:paddingHorizontal="10dp"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                    <Button
+                        android:id="@+id/draw_custom_image_url_confirm_btn"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:layout_alignBaseline="@+id/draw_custom_image_url_et"
+                        android:layout_toRightOf="@+id/draw_custom_image_url_et"
+                        android:gravity="center"
+                        android:text="@string/draw_confirm"
+                        android:textSize="12dp"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                    <TextView
+                        android:id="@+id/draw_upload_image_tip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/draw_custom_image_url_et"
+                        android:layout_marginVertical="10dp"
+                        android:layout_marginLeft="5dp"
+                        android:text="@string/draw_upload_image"
+                        android:textColor="@color/text_black"
+                        android:textColorHint="@color/text_hint_color"
+                        android:textSize="12dp"/>
+
+                    <EditText
+                        android:id="@+id/draw_upload_image_x_et"
+                        android:layout_width="88dp"
+                        android:layout_height="35dp"
+                        android:layout_below="@+id/draw_upload_image_tip"
+                        android:layout_marginHorizontal="5dp"
+                        android:hint="@string/draw_x"
+                        android:inputType="number"
+                        android:textSize="12dp"
+                        android:paddingHorizontal="10dp"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                    <EditText
+                        android:id="@+id/draw_upload_image_y_et"
+                        android:layout_width="88dp"
+                        android:layout_height="35dp"
+                        android:layout_alignBaseline="@+id/draw_upload_image_x_et"
+                        android:layout_toRightOf="@+id/draw_upload_image_x_et"
+                        android:hint="@string/draw_y"
+                        android:inputType="number"
+                        android:textSize="12dp"
+                        android:paddingHorizontal="10dp"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                    <EditText
+                        android:id="@+id/draw_upload_image_url_et"
+                        android:layout_width="88dp"
+                        android:layout_height="35dp"
+                        android:layout_below="@+id/draw_upload_image_x_et"
+                        android:layout_marginVertical="10dp"
+                        android:layout_marginHorizontal="5dp"
+                        android:hint="@string/draw_upload_image_url"
+                        android:textSize="12dp"
+                        android:paddingHorizontal="10dp"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                    <Button
+                        android:id="@+id/draw_upload_image_confirm_btn"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/draw_upload_image_x_et"
+                        android:layout_toRightOf="@+id/draw_upload_image_url_et"
+                        android:layout_alignBaseline="@+id/draw_upload_image_url_et"
+                        android:gravity="center"
+                        android:text="@string/draw_confirm"
+                        android:textSize="12dp"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                    <Button
+                        android:id="@+id/draw_local_upload_image_btn"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/draw_upload_image_url_et"
+                        android:layout_marginLeft="5dp"
+                        android:gravity="center"
+                        android:text="@string/draw_local_upload_image"
+                        android:textSize="12dp"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                    <TextView
+                        android:id="@+id/draw_removal_tool_tip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/draw_local_upload_image_btn"
+                        android:layout_marginVertical="10dp"
+                        android:layout_marginLeft="5dp"
+                        android:text="@string/draw_removal_tool"
+                        android:textColor="@color/text_black"
+                        android:textColorHint="@color/text_hint_color"
+                        android:textSize="12dp"/>
+
+                    <Button
+                        android:id="@+id/draw_empty_current_page_btn"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/draw_removal_tool_tip"
+                        android:layout_marginHorizontal="5dp"
+                        android:gravity="center"
+                        android:text="@string/draw_empty_current_page"
+                        android:textSize="12dp"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                    <Button
+                        android:id="@+id/draw_undo_btn"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:layout_alignBaseline="@+id/draw_empty_current_page_btn"
+                        android:layout_toRightOf="@+id/draw_empty_current_page_btn"
+                        android:gravity="center"
+                        android:text="@string/draw_undo"
+                        android:textSize="12dp"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                    <Button
+                        android:id="@+id/draw_empty_all_page_btn"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:layout_marginVertical="10dp"
+                        android:layout_marginHorizontal="5dp"
+                        android:layout_below="@+id/draw_empty_current_page_btn"
+                        android:gravity="center"
+                        android:text="@string/draw_empty_all_page"
+                        android:textSize="12dp"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                    <Button
+                        android:id="@+id/draw_redo_btn"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:layout_alignBaseline="@+id/draw_empty_all_page_btn"
+                        android:layout_toRightOf="@+id/draw_empty_all_page_btn"
+                        android:gravity="center"
+                        android:text="@string/draw_redo"
+                        android:textSize="12dp"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                    <Button
+                        android:id="@+id/draw_delete_selected_graphics_btn"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/draw_empty_all_page_btn"
+                        android:layout_marginHorizontal="5dp"
+                        android:gravity="center"
+                        android:text="@string/draw_delete_selected_graphics"
+                        android:textSize="12dp"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                    <TextView
+                        android:id="@+id/draw_incoming_text_tip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/draw_delete_selected_graphics_btn"
+                        android:layout_marginVertical="10dp"
+                        android:layout_marginLeft="5dp"
+                        android:text="@string/draw_incoming_text"
+                        android:textColor="@color/text_black"
+                        android:textColorHint="@color/text_hint_color"
+                        android:textSize="12dp"/>
+
+                    <EditText
+                        android:id="@+id/draw_incoming_text_x_et"
+                        android:layout_width="88dp"
+                        android:layout_height="35dp"
+                        android:layout_below="@+id/draw_incoming_text_tip"
+                        android:layout_marginHorizontal="5dp"
+                        android:hint="@string/draw_x"
+                        android:inputType="number"
+                        android:textSize="12dp"
+                        android:paddingHorizontal="10dp"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                    <EditText
+                        android:id="@+id/draw_incoming_text_y_et"
+                        android:layout_width="88dp"
+                        android:layout_height="35dp"
+                        android:layout_alignBaseline="@+id/draw_incoming_text_x_et"
+                        android:layout_toRightOf="@+id/draw_incoming_text_x_et"
+                        android:hint="@string/draw_y"
+                        android:inputType="number"
+                        android:textSize="12dp"
+                        android:paddingHorizontal="10dp"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                    <EditText
+                        android:id="@+id/draw_text_content_et"
+                        android:layout_width="88dp"
+                        android:layout_height="35dp"
+                        android:layout_below="@+id/draw_incoming_text_x_et"
+                        android:layout_marginVertical="10dp"
+                        android:layout_marginHorizontal="5dp"
+                        android:hint="@string/draw_text_content"
+                        android:textSize="12dp"
+                        android:paddingHorizontal="10dp"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                    <Button
+                        android:id="@+id/draw_confirm_btn"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:layout_alignBaseline="@+id/draw_text_content_et"
+                        android:layout_toRightOf="@+id/draw_text_content_et"
+                        android:gravity="center"
+                        android:text="@string/draw_confirm"
+                        android:textSize="12dp"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="15dp"
+                        android:layout_below="@+id/draw_text_content_et">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginVertical="10dp"
+                            android:layout_marginHorizontal="5dp"
+                            android:textColor="@color/black"
+                            android:text="@string/draw_default_text_keyboard"
+                            android:textSize="12dp"/>
+
+                        <EditText
+                            android:id="@+id/draw_default_text_keyboard_et"
+                            android:layout_width="match_parent"
+                            android:layout_height="35dp"
+                            android:layout_marginHorizontal="5dp"
+                            android:layout_marginBottom="10dp"
+                            android:textSize="12dp"
+                            android:paddingHorizontal="10dp"
+                            android:background="@drawable/drawable_widget_bg"/>
+                    </LinearLayout>
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/whiteboard_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone">
+
+                    <Button
+                        android:id="@+id/add_whiteboard"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:layout_marginVertical="10dp"
+                        android:gravity="center"
+                        android:text="@string/whiteboard_add"
+                        android:textSize="12dp"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/docs_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/upload_state_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="10dp"
+                        android:text="上传进度"
+                        android:textSize="12dp"
+                        android:textColor="@color/black"
+                        android:textIsSelectable="true"/>
+
+                    <TextView
+                        android:id="@+id/cancel_upload_state_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/upload_state_tv"
+                        android:text="取消上传状态"
+                        android:textSize="12dp"
+                        android:textColor="@color/black"/>
+
+                    <Button
+                        android:id="@+id/upload_dynamic"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/cancel_upload_state_tv"
+                        android:layout_marginVertical="10dp"
+                        android:gravity="center"
+                        android:text="@string/docs_upload_dynamic"
+                        android:textSize="12dp"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                    <Button
+                        android:id="@+id/upload_cancel"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:gravity="center"
+                        android:text="@string/docs_upload_cancel"
+                        android:layout_alignBaseline="@+id/upload_dynamic"
+                        android:layout_toRightOf="@+id/upload_dynamic"
+                        android:layout_marginLeft="5dp"
+                        android:textSize="12dp"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                    <Button
+                        android:id="@+id/upload_static"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:gravity="center"
+                        android:layout_below="@+id/upload_dynamic"
+                        android:text="@string/docs_upload_static"
+                        android:textSize="12dp"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                    <Button
+                        android:id="@+id/thumbnail"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:gravity="center"
+                        android:text="@string/docs_thumbnail"
+                        android:textSize="12dp"
+                        android:layout_marginLeft="5dp"
+                        android:layout_toRightOf="@+id/upload_static"
+                        android:layout_alignBaseline="@+id/upload_static"
+                        android:background="@drawable/drawable_widget_bg"/>
+
+                    <TextView
+                        android:id="@+id/cache_state_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="10dp"
+                        android:layout_below="@+id/upload_static"
+                        android:text="缓存状态"
+                        android:textSize="12dp"
+                        android:textColor="@color/black"/>
+
+                    <EditText
+                        android:id="@+id/cache_url_et"
+                        android:layout_width="88dp"
+                        android:layout_height="35dp"
+                        android:layout_below="@+id/cache_state_tv"
+                        android:hint="@string/docs_cache_file_id_hint"
+                        android:textSize="12dp"
+                        android:background="@drawable/drawable_widget_bg"
+                        android:paddingHorizontal="10dp"/>
+
+                    <Button
+                        android:id="@+id/cache_btn"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:gravity="center"
+                        android:text="@string/docs_cache"
+                        android:textSize="12dp"
+                        android:layout_marginLeft="5dp"
+                        android:background="@drawable/drawable_widget_bg"
+                        android:layout_below="@+id/cache_state_tv"
+                        android:layout_toRightOf="@+id/cache_url_et"/>
+
+                    <Button
+                        android:id="@+id/cancel_cache"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:gravity="center"
+                        android:text="@string/docs_cancel_cache"
+                        android:textSize="12dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:background="@drawable/drawable_widget_bg"
+                        android:layout_below="@id/cache_url_et"/>
+
+                    <Button
+                        android:id="@+id/query_cache"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:gravity="center"
+                        android:text="@string/docs_query_cache"
+                        android:textSize="12dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginLeft="5dp"
+                        android:background="@drawable/drawable_widget_bg"
+                        android:layout_below="@id/cache_url_et"
+                        android:layout_toRightOf="@+id/cache_url_et"
+                        />
+
+                </RelativeLayout>
+
+            </LinearLayout>
+
+        </ScrollView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <FrameLayout
+        android:id="@+id/docs_preview_list_parent"
+        android:layout_width="175dp"
+        android:layout_height="match_parent"
+        android:visibility="invisible"
+        app:layout_constraintRight_toRightOf="@id/main_end_layout">
+
+        <View
+            android:id="@+id/shadow"
+            android:layout_width="10dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/preview_list_left_shadow" />
+
+        <im.zego.whiteboardexample.widget.ZegoDocsPreview
+            android:id="@+id/docs_preview_list"
+            android:layout_width="165dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp"
+            android:visibility="visible" />
+
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

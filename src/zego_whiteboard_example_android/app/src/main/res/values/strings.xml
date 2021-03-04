@@ -1,0 +1,127 @@
+<resources>
+    <string name="app_name">Zego Whiteboard Example</string>
+
+    <!--登陆页面-->
+    <string name="join_input_id">房间ID</string>
+    <string name="join_input_name">用户名</string>
+    <string name="join_button">登录房间</string>
+    <string name="join_input_null">请正确输入用户名和房间ID</string>
+    <string name="join_init_video_failed">音视频引擎还未初始化成功，请检查appID和appSign是否正确</string>
+    <string name="join_init_docs_failed">文件转码服务还未初始化成功，请检查appID和appSign是否正确</string>
+    <string name="join_init_wb_failed">白板服务还未初始化成功，请检查appID和appSign是否正确</string>
+    <string name="join_max_user_limit">加入课堂失败，当前已达到%d人的最大人数限制</string>
+    <string name="join_other">登陆房间失败，错误码:%d</string>
+
+    <!--设置页面-->
+    <string name="setting">设置</string>
+    <string name="font_sc">思源黑体</string>
+    <string name="font_system">系统字体</string>
+    <string name="font_type">字体类型</string>
+    <string name="live_room_title">开启房间服务测试环境</string>
+    <string name="docs_view_title">开启文件服务测试环境</string>
+    <string name="save">保存</string>
+
+    <!--主页面-->
+    <string name="jump_page_to">跳转至</string>
+    <string name="jump">跳转</string>
+    <string name="leave">退出房间</string>
+    <string name="exit_room_ensure">确定要退出当前房间？</string>
+    <string name="max_wb_tips">已超过最大数量，请关闭部分白板</string>
+    <string name="max_file_tips">已超过最大数量，请先关闭部分文件</string>
+    <string name="class_title">房间 ID:%s</string>
+    <string name="preview">预览</string>
+    <string name="network_temp_broken_reconnect">网络异常，请重新加入...</string>
+    <string name="open_draw">请先开启绘制功能</string>
+
+    <!-- 主页中的右边选择区 -->
+    <string name="draw">绘制</string>
+    <string name="whiteboard">白板</string>
+    <string name="docs">文件</string>
+
+    <string name="whiteboard_add">新增白板</string>
+    <string name="whiteboard_background">白板背景色</string>
+
+    <string name="docs_upload_dynamic">上传动态文件</string>
+    <string name="docs_upload_dynamic_convert">上传完成，正在转码文件…</string>
+    <string name="docs_upload_dynamic_percent">上传进度：%s </string>
+    <string name="docs_upload_convert_success">转码完成，fileID = %s</string>
+    <string name="docs_upload_dynamic_fail">上传文件失败：%s</string>
+    <string name="docs_upload_tip">上传文件：</string>
+    <string name="docs_upload_static">上传静态文件</string>
+    <string name="docs_upload_cancel">取消上传</string>
+    <string name="docs_upload_cancel_fail">取消上传文件失败：%s</string>
+    <string name="docs_upload_cancel_success">取消上传文件成功</string>
+    <string name="docs_cache">缓存</string>
+    <string name="docs_cancel_cache">取消缓存</string>
+    <string name="docs_query_cache">查询缓存</string>
+    <string name="docs_cache_file_id_hint">缓存文件 ID</string>
+    <string name="docs_cache_file_id_null">请输入缓存文件 ID</string>
+    <string name="docs_cache_tip">缓存文件：</string>
+    <string name="docs_cache_fail">缓存文件 %s :失败: %s</string>
+    <string name="docs_cancel_cache_success">取消缓存文件成功</string>
+    <string name="docs_cancel_cache_fail">取消缓存文件失败：%s</string>
+    <string name="docs_query_cache_success">查询缓存文件成功 %s</string>
+    <string name="docs_cache_exist">缓存文件存在</string>
+    <string name="docs_cache_no_exist">缓存文件不存在</string>
+    <string name="docs_query_cache_fail">查询缓存文件失败</string>
+    <string name="docs_cache_success">缓存文件 %s : %s</string>
+    <string name="docs_thumbnail">获取缩略图</string>
+    <string name="docs_background">下一步触发下一页</string>
+
+    <string name="draw_whiteboard_switch">禁用/开启白板</string>
+    <string name="draw_switch">禁用/开启绘制</string>
+    <string name="draw_bold">粗体</string>
+    <string name="draw_italic">斜体</string>
+    <string name="draw_graffiti_tools">涂鸦工具</string>
+    <string name="draw_graffiti_tools_pen">画笔</string>
+    <string name="draw_graffiti_tools_selector">选择</string>
+    <string name="draw_graffiti_tools_click">点击</string>
+    <string name="draw_graffiti_tools_none">拖拽</string>
+    <string name="draw_graffiti_tools_laser">激光笔</string>
+    <string name="draw_graffiti_tools_text">文本</string>
+    <string name="draw_graffiti_tools_rect">矩形</string>
+    <string name="draw_graffiti_tools_ellipse">椭圆</string>
+    <string name="draw_graffiti_tools_line">直线</string>
+    <string name="draw_graffiti_tools_eraser">橡皮擦</string>
+    <string name="draw_graffiti_tools_image">自定义图形</string>
+    <string name="draw_select_custom_image">选择自定义图形</string>
+    <string name="draw_input_url">URL地址错误或无效</string>
+    <string name="draw_custom_chemical">化学仪器</string>
+    <string name="draw_custom_axis">坐标轴</string>
+    <string name="draw_custom_diamond">菱形</string>
+    <string name="draw_custom_star">五角星</string>
+    <string name="draw_upload_image">上传图片</string>
+    <string name="draw_upload_image_url">图片 URL</string>
+    <string name="draw_local_upload_image">本地上传</string>
+    <string name="draw_color">颜色</string>
+    <string name="draw_text_size">字号大小</string>
+    <string name="draw_brush_size">画笔粗细</string>
+    <string name="draw_removal_tool">清除工具</string>
+    <string name="draw_empty_current_page">清空当前页</string>
+    <string name="draw_empty_all_page">清空所有页</string>
+    <string name="draw_undo">撤销</string>
+    <string name="draw_delete_selected_graphics">删除选中图元</string>
+    <string name="draw_redo">重做</string>
+    <string name="draw_incoming_text">传入文本</string>
+    <string name="draw_x">X</string>
+    <string name="draw_y">Y</string>
+    <string name="draw_text_content">文本内容</string>
+    <string name="draw_custom_image_url">图形 URL</string>
+    <string name="draw_confirm">确定</string>
+    <string name="draw_default_text_keyboard">更改文本框的默认值 (修改立即生效，应用关闭后失效):</string>
+
+    <!-- 主页面中的 Drawer Right-->
+    <string name="file_type_tips">静态：无法展示ppt动画；动态：可展示ppt动画</string>
+    <string name="whiteboard_list_title">白板及文件列表</string>
+    <string name="tips_close_whiteboard">确定关闭【%s】吗?</string>
+    <string name="button_confirm">确定</string>
+    <string name="button_cancel">取消</string>
+    <string name="file_dynamic">动态</string>
+    <string name="file_static">静态</string>
+    <string name="file_list_title">选择文件</string>
+    <string name="sheet_list">sheet列表</string>
+
+    <!-- PopWindow -->
+
+
+</resources>

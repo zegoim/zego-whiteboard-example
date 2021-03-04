@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_login"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.LoginActivity">
+
+    <TextView
+        android:id="@+id/join_setting"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_alignParentRight="true"
+        android:layout_margin="11dp"
+        android:gravity="center"
+        android:padding="20dp"
+        android:background="@drawable/setting"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_centerInParent="true">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="登录房间"
+            android:textColor="@color/text_black2"
+            android:textSize="24dp"
+            android:textStyle="bold"/>
+
+        <EditText
+            android:id="@+id/join_room_name"
+            android:layout_width="match_parent"
+            android:layout_height="49dp"
+            android:layout_marginStart="40dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="40dp"
+            android:hint="@string/join_input_name"
+            android:maxLength="30"
+            android:maxLines="1"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:singleLine="true"
+            android:textColor="@color/text_black"
+            android:textColorHint="@color/text_hint_color"
+            android:textSize="14dp" />
+
+        <EditText
+            android:id="@+id/join_room_id"
+            android:layout_width="match_parent"
+            android:layout_height="49dp"
+            android:layout_marginStart="40dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="40dp"
+            android:hint="@string/join_input_id"
+            android:inputType="number"
+            android:maxLength="9"
+            android:maxLines="1"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:singleLine="true"
+            android:textColor="@color/text_black"
+            android:textColorHint="@color/text_hint_color"
+            android:textSize="14dp" />
+
+        <Button
+            android:id="@+id/join_entrance_main"
+            style="?borderlessButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="49dp"
+            android:layout_marginStart="40dp"
+            android:layout_marginTop="28dp"
+            android:layout_marginEnd="40dp"
+            android:text="@string/join_button"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
+
+
+
+</RelativeLayout>

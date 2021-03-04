@@ -1,0 +1,16 @@
+# Uncomment the next line to define a global platform for your project
+platform :ios, '9.0'
+
+target 'ZegoWhiteboardExample' do
+  # Comment the next line if you don't want to use dynamic frameworks use_frameworks!
+
+  pod 'YYModel'
+  pod 'MBProgressHUD'
+  pod 'Masonry'
+  pod 'IQKeyboardManager'
+  pod 'YYWebImage'
+
+  pod 'ZegoDocsView/Basic_zh'
+  pod 'ZegoWhiteboardView/Express'
+end
+

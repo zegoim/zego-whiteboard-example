@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<dict>
+		<key>title</key>
+		<string>房间服务测试环境</string>
+		<key>tag</key>
+		<string>ZegoRoomSeviceTestEnv</string>
+		<key>type</key>
+		<integer>1</integer>
+		<key>placeholder</key>
+		<string></string>
+		<key>eventNumber</key>
+		<real>90001</real>
+		<key>options</key>
+		<array/>
+	</dict>
+	<dict>
+		<key>title</key>
+		<string>文件服务测试环境</string>
+		<key>tag</key>
+		<string>ZegoDocsSeviceTestEnv</string>
+		<key>type</key>
+		<integer>1</integer>
+		<key>placeholder</key>
+		<string></string>
+		<key>eventNumber</key>
+		<real>90003</real>
+		<key>options</key>
+		<array/>
+	</dict>
+	<dict>
+		<key>title</key>
+		<string>自定义字体</string>
+		<key>tag</key>
+		<string>ZegoEnableCustomFont</string>
+		<key>type</key>
+		<integer>3</integer>
+		<key>placeholder</key>
+		<string></string>
+		<key>eventNumber</key>
+		<real>90003</real>
+		<key>options</key>
+		<array>
+			<dict>
+				<key>title</key>
+				<string>系统字体</string>
+				<key>value</key>
+				<integer>0</integer>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>思源字体</string>
+				<key>value</key>
+				<integer>1</integer>
+			</dict>
+		</array>
+	</dict>
+</array>
+</plist>

@@ -1,0 +1,84 @@
+//
+//  Global.pch
+//  ZegoWhiteboardExample
+//
+//  Created by Xuyang Nie on 2020/11/24.
+//
+
+#ifndef Global_pch
+#define Global_pch
+
+//日志地址
+#define kZegoDocsDataPath [[NSHomeDirectory() stringByAppendingPathComponent:@"Documents/ZegoDocs"] stringByAppendingString:@""]
+#define kZegoLogPath [NSHomeDirectory() stringByAppendingPathComponent:@"Documents/ZegoLogFile"]
+#define kZegoAPPTeminalNotification @"kZegoAPPTeminalNotification"
+
+#define kZegoLogPath [NSHomeDirectory() stringByAppendingPathComponent:@"Documents/ZegoLogFile"]
+#define kZegoImagePath [NSHomeDirectory() stringByAppendingPathComponent:@"Documents/ZegoWhiteBoardImageFile"]
+
+//日志打印
+#define DEBUG_MODE 1
+#if DEBUG_MODE
+#define DLog( s, ... ) NSLog( @"<%p %@:(%d)> %@", self, [[NSString stringWithUTF8String:__FILE__] lastPathComponent], __LINE__, [NSString stringWithFormat:(s), ##__VA_ARGS__] )
+#else
+#define DLog( s, ... )
+#endif
+
+//UI
+#define kScreenHeight MIN([UIScreen mainScreen].bounds.size.height, [UIScreen mainScreen].bounds.size.width)
+#define kScreenWidth MAX([UIScreen mainScreen].bounds.size.height, [UIScreen mainScreen].bounds.size.width)
+
+#define kThemeColorGray [UIColor colorWithRGB:@"#f2f2f2"]
+#define kTextColor1 [UIColor colorWithRGB:@"#18191a"]
+#define kThemeColorBlue [UIColor colorWithRGB:@"#6ed2fb"]
+#define kThemeColorPink [UIColor colorWithRGB:@"#DC143C"]
+#define kFontTitle15 [UIFont systemFontOfSize:15 weight:UIFontWeightRegular]
+#define kFontText14 [UIFont systemFontOfSize:14 weight:UIFontWeightRegular]
+#define kFontText13 [UIFont systemFontOfSize:13 weight:UIFontWeightRegular]
+#define kFontText12 [UIFont systemFontOfSize:12 weight:UIFontWeightRegular]
+#define kLineWidth 0.5
+
+#define kWhiteboarPageCount 5
+#define kFunctionPannelViewWidth 200
+
+
+//当前房间服务SDK
+#define ZegoRoomSeviceSDKFlagExpress
+//文件引用
+#ifdef  ZegoRoomSeviceSDKFlagLiveRoom
+#import "ZegoLiveRoomSDKManager.h"
+#define ZegoRoomSeviceCenter [ZegoLiveRoomSDKManager shareManager]
+
+#else
+#import "ZegoExpressSDKManager.h"
+#define ZegoRoomSeviceCenter [ZegoExpressSDKManager shareManager]
+#endif
+
+
+// DocsView SDK 源码调试
+#define ZEGO_DOCS_INTEGRATE_COCOAPODS 1
+
+#if ZEGO_DOCS_INTEGRATE_COCOAPODS
+#import <ZegoDocsView/ZegoDocsView.h>
+#import <ZegoDocsView/ZegoDocsViewManager.h>
+#import <ZegoDocsView/ZegoDocsViewConstants.h>
+#import <ZegoDocsView/ZegoDocsViewConfig.h>
+#import <ZegoDocsView/ZegoDocsViewPage.h>
+#else
+#import "ZegoDocsView.h"
+#import "ZegoDocsViewManager.h"
+#import "ZegoDocsViewConstants.h"
+#import "ZegoDocsViewConfig.h"
+#import "ZegoDocsViewPage.h"
+#endif
+
+
+#import "ZegoBoardOperationManager.h"
+#import "ZegoLocalEnvManager.h"
+#import "ZegoBoardServiceManager.h"
+#import "ZegoLiveRoomSDKManager.h"
+#import "UIColor+ZegoExtension.h"
+#import "ZegoProgessHUD.h"
+#import <Masonry.h>
+
+#endif /* Global_pch */

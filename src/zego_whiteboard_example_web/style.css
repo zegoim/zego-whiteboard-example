@@ -1,0 +1,96 @@
+@font-face {
+  font-family: 'ZgFont';
+  src: url('./lib/SourceHanSansSC-Regular.otf');
+  /*Firefox, Chrome, Safari, Opera*/
+}
+
+#toast-container {
+  transform: translate(-50%, -50%);
+  top: 50%;
+  left: 50%;
+}
+
+.bg-f2 {
+  background-color: #f8f9fa;
+}
+
+#app {
+  font-family: ZgFont, Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  user-select: none;
+}
+
+.top-bar {
+  background-color: #fff;
+  border-bottom: 1px solid #cccccc;
+}
+
+.main-container {
+  height: 100vh;
+  margin-bottom: -20px;
+  border-right: 1px solid #cccccc;
+}
+
+.panel-container {
+  position: relative;
+  z-index: 1;
+}
+
+.panel {
+  display: none;
+}
+.operation-container {
+  /* position: fixed; */
+  /* top: 0; */
+  /* right: 0; */
+  /* bottom: 0; */
+  /* overflow-x: hidden; */
+  /* overflow-y: scroll; */
+}
+#nav-tabContent .tab-pane form{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 60px;
+  bottom: 0;
+  padding: 0 10px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+.whiteboard-area {
+  position: relative;
+  margin: 0 auto;
+  width: 1067px;
+  height: 600px;
+  border: 1px dashed #ddd;
+  background-color: aliceblue;
+}
+
+.thumbnail {
+  display: none;
+  width: 200px;
+  position: absolute;
+  left: -201px;
+  top: 0;
+  bottom: 0;
+  overflow: scroll;
+  height: 100vh;
+  padding: 10px;
+  background-color: #f8f9fa;
+}
+
+.close-thumbnail {
+  cursor: pointer;
+}
+
+#thumbnail-list img {
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+#excel-select {
+  display: none;
+}
