@@ -27,7 +27,7 @@ ZegoWhiteboardExample是集成即构[互动白板SDK](https://doc-zh.zego.im/zh/
 
 # 快速启动
 #### 1. 在开发电脑中找到 Android Studio 软件图标。
-   ![image_20201203142600097](http://doc.oa.zego.im/Pics/Android/ZegoWhiteboardExample/image_20201203142600097.png)
+   ![image_20201203142600097](./docs/images/image_20201203142600097.png)
 
    > 若开发电脑上未安装该软件，可以参照如下方式操作：
    >
@@ -37,30 +37,30 @@ ZegoWhiteboardExample是集成即构[互动白板SDK](https://doc-zh.zego.im/zh/
 
 #### 2. 打开  Android Studio  软件，并单击 “Open an existing project”。
 
-   ![image_20201127105738483](http://doc.oa.zego.im/Pics/Android/ZegoWhiteboardExample/image_20201127105738483.png)
+   ![image_20201127105738483](./docs/images/image_20201127105738483.png)
 
 #### 3. 选择在本文档开头位置已下载好的示例源码并打开。
 
-   ![image_20210302721237535](http://doc.oa.zego.im/Pics/Android/ZegoWhiteboardExample/image_20210302721237535.png)
+   ![image_20210302721237535](./docs/images/image_20210302721237535.png)
 
 #### 4.下载的示例源码中缺少相关 SDK 包，需通过以下链接下载，解压后将相关文件放入项目的 “app/libs” 目录下。
 - [互动白板 SDK](https://doc-zh.zego.im/zh/4405.html)
 - [文件共享 SDK](https://doc-zh.zego.im/zh/4407.html)
 - [Express-Video SDK](https://doc-zh.zego.im/zh/2969.html)**(请下载包含白板功能的版本)**
 
-  ![image_20210302902369594](http://doc.oa.zego.im/Pics/Android/ZegoWhiteboardExample/image_20210302902369594.png)
+  ![image_20210302902369594](./docs/images/image_20210302902369594.png)
 
 #### 5. 下载的示例源码中缺少 SDK 初始化所需的 APP_ID 和 APP_SIGN，需要修改 `AuthConstants.java` 文件。位置如下图：
 
-   ![image_20210302277124150](http://doc.oa.zego.im/Pics/Android/ZegoWhiteboardExample/image_20210302277124150.png)
+   ![image_20210302277124150](./docs/images/image_20210302277124150.png)
 
 请使用本文“前提条件”已获取的 AppID 和 AppSign 正确填写（**注意：需要在 AppID 后加 L**），否则示例源码无法正常运行。
 
-   ![image_20210302269593901](http://doc.oa.zego.im/Pics/Android/ZegoWhiteboardExample/image_20210302269593901.png)
+   ![image_20210302269593901](./docs/images/image_20210302269593901.png)
 
 #### 6. 选择一台已连接到 Internet 的 Android 真机设备（推荐）或模拟器，当该设备成功开启开发者模式和 USB 调试功能后，可以看到 Android Studio 变为下图：
 
-   ![image_20210302564451783](http://doc.oa.zego.im/Pics/Android/ZegoWhiteboardExample/image_20210302564451783.png)
+   ![image_20210302564451783](./docs/images/image_20210302564451783.png)
 
 
    说明 Android Studio 软件已成功连接到 Android 设备，可以将示例源码运行到该设备上了。
@@ -71,7 +71,7 @@ ZegoWhiteboardExample是集成即构[互动白板SDK](https://doc-zh.zego.im/zh/
 
 #### 7. 单击 Android Studio 软件上的 “build and run” 按钮，编译并运行示例源码。
 
-   ![image_20210302173148802](http://doc.oa.zego.im/Pics/Android/ZegoWhiteboardExample/image_20210302173148802.png)
+   ![image_20210302173148802](./docs/images/image_20210302173148802.png)
 
    > 若运行过程中出现问题，请联系 ZEGO 技术支持工程师。
 
@@ -90,7 +90,7 @@ ZEGO 文档中心有关于 [互动白板](https://doc-zh.zego.im/zh/4395.html) �
 
 Q: **Android Studio 运行下载的示例源码时报 “找不到符号” 怎么办？**
 
-   ![image_20210302438724434](http://doc.oa.zego.im/Pics/Android/ZegoWhiteboardExample/image_20210302438724434.png)
+   ![image_20210302438724434](./docs/images/image_20210302438724434.png)
 
 由于下载的示例源码中，AppID 和 AppSign 没有具体的值，请参考本文“运行示例源码”章节中的步骤5进行处理。
 
