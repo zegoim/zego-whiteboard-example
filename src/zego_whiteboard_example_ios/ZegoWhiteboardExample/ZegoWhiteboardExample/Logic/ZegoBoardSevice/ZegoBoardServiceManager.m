@@ -33,6 +33,7 @@
     self.delegate = delegate;
     __weak typeof(self) weakSelf = self;
     self.wbManager = [ZegoWhiteboardManager sharedInstance];
+    self.wbManager.delegate = self;
     [self.wbManager initWithCompleteBlock:^(ZegoWhiteboardViewError errorCode) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         DLog(@"localWhiteboarManagerInitFinish,error:%ld",(long)errorCode);
@@ -48,12 +49,16 @@
             docsConfig.isTestEnv = [ZegoLocalEnvManager shareManager].docsSeviceTestEnv;
             
             strongSelf.docsManager = [ZegoDocsViewManager sharedInstance];
+            
+            [[ZegoBoardOperationManager shareManager] setupSetpAutoPaging:NO];
+            
             [strongSelf.docsManager initWithConfig:docsConfig completionBlock:^(ZegoDocsViewError errorCode) {
                 DLog(@"localDocsViewManagerInitFinish,error:%lu",(unsigned long)errorCode);
                 if ([strongSelf.delegate respondsToSelector:@selector(onLocalInintComplementErrorCode:)]) {
                     [strongSelf.delegate onLocalInintComplementErrorCode:errorCode];
                 }
             }];
+            
             if([ZegoLocalEnvManager shareManager].enableCutomFont){
                 [strongSelf.wbManager setCustomFontWithName:@"SourceHanSansSC-Regular" boldFontName:@"SourceHanSansSC-Bold"];
             } else {
@@ -269,10 +274,28 @@
     }
 }
 
+- (void)onWhiteboardAuthChanged:(NSDictionary *)authInfo {
+    if (self.delegate && [self.delegate respondsToSelector:@selector(onRemoteWhiteboardAuthChange:)]) {
+        [self.delegate onRemoteWhiteboardAuthChange:authInfo];
+    }
+}
+
+- (void)onWhiteboardGraphicAuthChanged:(NSDictionary *)authInfo {
+    if (self.delegate && [self.delegate respondsToSelector:@selector(onRemoteWhiteboardGraphicAuthChange:)]) {
+        [self.delegate onRemoteWhiteboardGraphicAuthChange:authInfo];
+    }
+}
+
 - (void)onPlayAnimation:(NSString *)animationInfo {
     DLog(@"BoardSevice>>> onPlayAnimation");
     if ([self.delegate respondsToSelector:@selector(onRemotePlayAnimation:)]) {
         [self.delegate onRemotePlayAnimation:animationInfo];
+    }
+}
+
+- (void)onError:(ZegoWhiteboardViewError)error whiteboardView:(nonnull ZegoWhiteboardView *)whiboardView {
+    if (self.delegate && [self.delegate respondsToSelector:@selector(onError:whiteboardView:)]) {
+        [self.delegate onError:error whiteboardView:whiboardView];
     }
 }
 

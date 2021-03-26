@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ZegoProgessHUD : NSObject
 
-- (instancetype)initWithTitle:(NSString *)title cancelBlock:(void(^)(void))cancelBlock;
+- (instancetype)initWithTitle:(NSString *)title cancelBlock:(void(^_Nullable)(void))cancelBlock;
 
 
 - (void)updateProgress:(CGFloat)progress;

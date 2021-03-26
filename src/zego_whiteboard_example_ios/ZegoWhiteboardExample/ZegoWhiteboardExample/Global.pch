@@ -41,6 +41,8 @@
 #define kWhiteboarPageCount 5
 #define kFunctionPannelViewWidth 200
 
+#define kUserIDKey @"kUserIDKey"
+
 
 //当前房间服务SDK
 #define ZegoRoomSeviceSDKFlagExpress
@@ -65,11 +67,12 @@
 #import <ZegoDocsView/ZegoDocsViewConfig.h>
 #import <ZegoDocsView/ZegoDocsViewPage.h>
 #else
-#import "ZegoDocsView.h"
-#import "ZegoDocsViewManager.h"
-#import "ZegoDocsViewConstants.h"
-#import "ZegoDocsViewConfig.h"
-#import "ZegoDocsViewPage.h"
+
+#import "ZegoDocsView/Header/ZegoDocsView.h"
+#import "ZegoDocsView/Header/ZegoDocsViewManager.h"
+#import "ZegoDocsView/Header/ZegoDocsViewConstants.h"
+#import "ZegoDocsView/Header/ZegoDocsViewConfig.h"
+#import "ZegoDocsView/Header/ZegoDocsViewPage.h"
 #endif
 
 

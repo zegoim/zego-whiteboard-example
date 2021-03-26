@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readonly) NSString *appSign;
 
 @property (nonatomic, copy, readonly) NSString *userName;
+@property (nonatomic, copy, readonly) NSString *userID;
 @property (nonatomic, copy, readonly) NSString *roomID;
 @property (nonatomic, assign, readonly) BOOL roomSeviceTestEnv;
 @property (nonatomic, assign, readonly) BOOL docsSeviceTestEnv;

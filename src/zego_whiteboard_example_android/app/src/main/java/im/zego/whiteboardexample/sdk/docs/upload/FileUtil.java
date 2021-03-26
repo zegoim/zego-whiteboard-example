@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -19,6 +20,7 @@ import android.view.View;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 public class FileUtil {
@@ -63,6 +65,16 @@ public class FileUtil {
     }
 
     public static String getPath(final Context context, final Uri uri) {
+        String path = getPathForSAF(context,uri);
+        if(TextUtils.isEmpty(path))
+        {
+            Log.i(TAG, "getPathForSAF fail uri:" + uri.toString());
+            path = getPathForCopyFile(context,uri);
+        }
+        return path;
+    }
+
+    public static String getPathForSAF(final Context context, final Uri uri) {
         if (DocumentsContract.isDocumentUri(context, uri)) {
             if (isExternalStorageDocument(uri)) {
                 final String docId = DocumentsContract.getDocumentId(uri);
@@ -117,6 +129,41 @@ public class FileUtil {
             return getDataColumn(context, uri, null, null);
         } else if ("file".equalsIgnoreCase(uri.getScheme())) {
             return uri.getPath();
+        }
+        return null;
+    }
+
+    /**
+     * 通过复制一份文件到缓存目录，返回缓存目录中的文件
+     * @param context
+     * @param uri
+     * @return 缓存目录中文件路径
+     */
+    private static String getPathForCopyFile(Context context, Uri uri) {
+        try {
+            Cursor returnCursor = context.getContentResolver().query(uri, null, null, null, null);
+            int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+            returnCursor.moveToFirst();
+            String name = (returnCursor.getString(nameIndex));
+            File file = new File(context.getCacheDir(), name);
+            InputStream inputStream = context.getContentResolver().openInputStream(uri);
+            FileOutputStream outputStream = new FileOutputStream(file);
+            int read = 0;
+            int maxBufferSize = 1 * 1024 * 1024;
+            int bytesAvailable = inputStream.available();
+
+            int bufferSize = Math.min(bytesAvailable, maxBufferSize);
+
+            final byte[] buffers = new byte[bufferSize];
+            while ((read = inputStream.read(buffers)) != -1) {
+                outputStream.write(buffers, 0, read);
+            }
+            returnCursor.close();
+            inputStream.close();
+            outputStream.close();
+            return file.getPath();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }

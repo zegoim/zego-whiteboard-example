@@ -4,12 +4,6 @@
   /*Firefox, Chrome, Safari, Opera*/
 }
 
-#toast-container {
-  transform: translate(-50%, -50%);
-  top: 50%;
-  left: 50%;
-}
-
 .bg-f2 {
   background-color: #f8f9fa;
 }
@@ -50,7 +44,7 @@
   /* overflow-x: hidden; */
   /* overflow-y: scroll; */
 }
-#nav-tabContent .tab-pane form{
+#nav-tabContent .tab-pane form {
   position: absolute;
   left: 0;
   right: 0;
@@ -93,4 +87,33 @@
 
 #excel-select {
   display: none;
+}
+
+.drawBox {
+  border: 1px dashed #ccc;
+}
+.row.drawBox {
+  margin: 15px 0 !important;
+}
+#idNames {
+  text-align: center;
+  word-break: break-all;
+}
+#flipPage {
+  max-width: 88px;
+}
+.error-toast{
+  z-index: 5;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, 0);
+}
+.toast{
+  background-color: #444;
+}
+.toast-body{
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #fff;
 }

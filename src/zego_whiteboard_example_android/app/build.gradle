@@ -81,3 +81,16 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
 
 }
+
+task aaaUpdateLibrary(type: Exec) {
+    workingDir './../builds/'
+    commandLine "python3","update_libs.py"
+}
+
+task aaaBuildWhiteboard(type: Exec) {
+    commandLine "sh","./generate_android.sh"
+}
+
+task aaaBuildDocsView(type: Exec) {
+    commandLine "sh","./generate_android.sh"
+}

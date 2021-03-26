@@ -7,10 +7,12 @@
 
 #import "ZegoBoardOperationManager.h"
 #import "ZegoFilePreviewManager.h"
+#import "ZegoToast.h"
 
 @interface ZegoBoardOperationManager()
 @property (nonatomic, weak) ZegoWhiteboardView *currentWhiteboardView;
 @property (nonatomic, weak) ZegoDocsView *currentDocsView;
+@property (nonatomic, strong) NSDictionary *authInfo;
 
 @end
 
@@ -38,7 +40,7 @@
 - (void)initDefaultParameter {
     DLog(@"BoardOperation>>> localInitOperationManagerParameter---start");
     _previewArray = nil;
-    [self setupWhiteboardOperationMode:ZegoWhiteboardOperationModeDraw];
+    [self setupWhiteboardOperationMode:ZegoWhiteboardOperationModeDraw|ZegoWhiteboardOperationModeZoom];
     [self setupColor:@"0x000000"];
     [self setupFontSize:18];
     [self setupEnableBoldFont:NO];
@@ -75,11 +77,13 @@
     [[ZegoBoardServiceManager shareManager] setupToolType:type];
     DLog(@"BoardOperation>>> sysSettingToolTypeExcute，type:%lu",(unsigned long)type);
     
-#if (!TARGET_IPHONE_SIMULATOR)
     if (type == ZegoWhiteboardViewToolText) {
-        [self.currentWhiteboardView addTextEdit];
+        [self.currentWhiteboardView addTextEditWithComplete:^(ZegoWhiteboardViewError errorcode) {
+            if (errorcode != 0) {
+                [ZegoToast toastWithError:(int)errorcode];
+            }
+        }];
     }
-#endif
 }
 
 - (void)setupEnableBoldFont:(BOOL)enable {
@@ -113,8 +117,14 @@
     DLog(@"BoardOperation>>> sysSettingCustomTextExcute,text:%@",text);
 }
 
+- (void)setCurrentAuthInfo:(NSDictionary *)authInfo {
+    self.authInfo = authInfo;
+}
+
 - (void)addGraphicWithText:(NSString *)text postion:(CGPoint)point{
-    [self.currentWhiteboardView addText:text positionX:point.x positionY:point.y];
+    [self.currentWhiteboardView addText:text positionX:point.x positionY:point.y complete:^(ZegoWhiteboardViewError errorcode) {
+        [ZegoToast toastWithError:errorcode];
+    }];
     DLog(@"BoardOperation>>> sysSettingTextGraphicExcute,text:%@ ,position{%f,%f}",text,point.x,point.y);
 }
 
@@ -139,13 +149,23 @@
     DLog(@"BoardOperation>>> clearWhiteboardCache");
 }
 
+- (void)cleanBackgroundImage {
+    [self.currentWhiteboardView clearBackgroundImageWithComplete:^(ZegoWhiteboardViewError errorcode) {
+        if (errorcode) {
+            [ZegoToast toastWithError:errorcode];
+        }
+    }];
+}
+
 - (void)removeBoardWithID:(ZegoWhiteboardID)whiteboardID {
     [[ZegoBoardServiceManager shareManager] removeBoardWithID:whiteboardID];
     DLog(@"BoardOperation>>> sysRemoveWhiteboardExcute,id:%llu",whiteboardID);
 }
 
 - (void)clearAllGraphic {
-    [self.currentWhiteboardView clear];
+    [self.currentWhiteboardView clearWithComplete:^(ZegoWhiteboardViewError errorcode) {
+        [ZegoToast toastWithError:errorcode];
+    }];
     DLog(@"BoardOperation>>> sysClearAllGraphicExcute");
 }
 
@@ -154,7 +174,9 @@
     if (self.currentDocsView) {
         DLog(@"BoardOperation>>> clearCurrentPage (has docsView)");
         ZegoDocsViewPage *pageInfo = [self.currentDocsView getCurrentPageInfo];
-        [self.currentWhiteboardView clear:pageInfo.rect];
+        [self.currentWhiteboardView clear:pageInfo.rect complete:^(ZegoWhiteboardViewError errorcode) {
+            [ZegoToast toastWithError:errorcode];
+        }];
     } else {
         DLog(@"BoardOperation>>> clearCurrentPage (has not docsView)");
         //清空纯白板当前页图元
@@ -169,13 +191,19 @@
         CGFloat offsetX = percent * width * self.currentWhiteboardView.whiteboardModel.pageCount;
         CGFloat offsetY = 0;
         CGRect rect = CGRectMake(offsetX, offsetY, width, height);
-        [self.currentWhiteboardView clear:rect];
+        [self.currentWhiteboardView clear:rect complete:^(ZegoWhiteboardViewError errorcode) {
+            [ZegoToast toastWithError:errorcode];
+        }];
     }
 }
 
 - (void)clearCurrentSelected {
     DLog(@"BoardOperation>>> clearCurrentSelected");
-    [self.currentWhiteboardView deleteSelectedGraphics];
+    [self.currentWhiteboardView deleteSelectedGraphicsWithComplete:^(ZegoWhiteboardViewError errorcode) {
+        if (errorcode != ZegoWhiteboardViewSuccess) {
+            [ZegoToast toastWithError:errorcode];
+        }
+    }];
 }
 
 - (void)redoGraphic {
@@ -237,7 +265,12 @@
 - (void)nextPageComplement:(ZegoDocsViewScrollCompleteBlock)complementBlock {
     DLog(@"BoardOperation>>> nextStepComplement");
     CGFloat xPercent = self.currentWhiteboardView.whiteboardModel.horizontalScrollPercent;
+    BOOL enableScroll = [self.authInfo[@"scroll"]boolValue];
     if (self.currentDocsView) {
+        if (!enableScroll) {
+            [ZegoToast toastWithError:ZegoWhiteboardViewErrorNoAuthScroll];
+            return;
+        }
         if (self.currentDocsView.currentPage + 1 <= self.currentDocsView.pageCount) {
             [self scrollToPage:self.currentDocsView.currentPage + 1 pptStep:1 completionBlock:complementBlock];
         }
@@ -250,6 +283,9 @@
         [self.currentWhiteboardView scrollToHorizontalPercent:currentPage verticalPercent:0 pptStep: 0 completionBlock:^(ZegoWhiteboardViewError error_code, float horizontalPercent, float verticalPercent, unsigned int step) {
             if (complementBlock) {
                 complementBlock(error_code == 0);
+                if (error_code == ZegoWhiteboardViewErrorNoAuthScroll) {
+                    [ZegoToast toastWithError:error_code];
+                }
             }
         }];
         DLog(@"BoardOperation>>> nextPageComplement --> scrollToHorizontalPercent,page:%f",currentPage);
@@ -259,7 +295,12 @@
 - (void)previousPageComplement:(ZegoDocsViewScrollCompleteBlock)complementBlock {
     DLog(@"BoardOperation>>> previousPageComplement");
     CGFloat xPercent = self.currentWhiteboardView.whiteboardModel.horizontalScrollPercent;
+    BOOL enableScroll = [self.authInfo[@"scroll"]boolValue];
     if (self.currentDocsView) {
+        if (!enableScroll) {
+            [ZegoToast toastWithError:ZegoWhiteboardViewErrorNoAuthScroll];
+            return;
+        }
         if (self.currentDocsView.currentPage - 1 >= 1) {
             [self scrollToPage:self.currentDocsView.currentPage - 1 pptStep:1 completionBlock:complementBlock];
         }
@@ -269,6 +310,9 @@
         [self.currentWhiteboardView scrollToHorizontalPercent:pageNo verticalPercent:0 pptStep:0  completionBlock:^(ZegoWhiteboardViewError error_code, float horizontalPercent, float verticalPercent, unsigned int pptStep) {
             if (complementBlock) {
                 complementBlock(error_code == 0);
+            }
+            if (error_code == ZegoWhiteboardViewErrorNoAuthScroll) {
+                [ZegoToast toastWithError:error_code];
             }
         }];
         DLog(@"BoardOperation>>> previousPageComplement --> scrollToHorizontalPercent,page:%f",pageNo);
@@ -284,13 +328,16 @@
         if (isScrollSuccess) {
             float pageNum = (float)MAX((weakSelf.currentDocsView.currentPage - 1), 0);
             NSInteger step = weakSelf.currentDocsView.currentStep;
-           
-            [weakSelf.currentWhiteboardView scrollToHorizontalPercent:0 verticalPercent: pageNum/ (float)weakSelf.currentDocsView.pageCount pptStep:step completionBlock:^(ZegoWhiteboardViewError error_code, float horizontalPercent, float verticalPercent, unsigned int pptStep) {
+            
+            [weakSelf.currentWhiteboardView scrollToHorizontalPercent:0 verticalPercent:pageNum/(float)weakSelf.currentDocsView.pageCount pptStep:step completionBlock:^(ZegoWhiteboardViewError errorCode, float horizontalPercent, float verticalPercent, unsigned int pptStep) {
                 if (complementBlock) {
-                    complementBlock(error_code == 0);
+                    complementBlock(errorCode == 0);
                     
                 }
-                DLog(@"BoardOperation>>> sysWhiteboardStep,step:%ld,page:%f,error:%ld",(long)step,pageNum,(long)error_code);
+                if (errorCode == ZegoWhiteboardViewErrorNoAuthScroll) {
+                    [ZegoToast toastWithError:errorCode];
+                }
+                DLog(@"BoardOperation>>> sysWhiteboardStep,step:%ld,page:%f,error:%ld",(long)step,pageNum,(long)errorCode);
             }];
         } else {
             if (complementBlock) {
@@ -313,6 +360,9 @@
             [weakSelf.currentWhiteboardView scrollToHorizontalPercent:0 verticalPercent: pageNum/ (float)weakSelf.currentDocsView.pageCount pptStep:step completionBlock:^(ZegoWhiteboardViewError error_code, float horizontalPercent, float verticalPercent, unsigned int pptStep) {
                 if (complementBlock) {
                     complementBlock(error_code == 0);
+                }
+                if (error_code == ZegoWhiteboardViewErrorNoAuthScroll) {
+                    [ZegoToast toastWithError:error_code];
                 }
                 DLog(@"BoardOperation>>> sysWhiteboardStep,step:%ld,page:%f,error:%ld",(long)step,pageNum,(long)error_code);
             }];
@@ -360,6 +410,9 @@
             [weakSelf.currentWhiteboardView scrollToHorizontalPercent:0 verticalPercent: pageNum/ (float)weakSelf.currentDocsView.pageCount pptStep:weakSelf.currentDocsView.currentStep completionBlock:^(ZegoWhiteboardViewError error_code, float horizontalPercent, float verticalPercent, unsigned int pptStep) {
                 if (completionBlock) {
                     completionBlock(error_code == 0);
+                    if (error_code == ZegoWhiteboardViewErrorNoAuthScroll) {
+                        [ZegoToast toastWithError:error_code];
+                    }
                 }
                 DLog(@"BoardOperation>>> scrollToPage --> flipPage --> scrollToHorizontalPercent,page:%f",pageNum);
             }];
@@ -370,6 +423,9 @@
             [weakSelf.currentWhiteboardView scrollToHorizontalPercent:pagePrecent verticalPercent:0 completionBlock:^(ZegoWhiteboardViewError error_code, float horizontalPercent, float verticalPercent, unsigned int pptStep) {
                 if (completionBlock) {
                     completionBlock(error_code == 0);
+                    if (error_code == ZegoWhiteboardViewErrorNoAuthScroll) {
+                        [ZegoToast toastWithError:error_code];
+                    }
                 }
                 DLog(@"BoardOperation>>> scrollToPage --> scrollToHorizontalPercent:%lf",pagePrecent);
             }];

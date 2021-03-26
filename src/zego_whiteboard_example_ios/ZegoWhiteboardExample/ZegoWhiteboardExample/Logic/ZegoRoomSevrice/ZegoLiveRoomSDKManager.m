@@ -43,7 +43,13 @@
     [ZegoLiveRoomApi setConfig:@"preview_clear_last_frame=true"];
     [ZegoLiveRoomApi setConfig:@"play_clear_last_frame=true"];
     [ZegoLiveRoomApi setLogDir:kZegoLogPath size:10*1024*1024 subFolder:nil];
-    [ZegoLiveRoomApi setUserID:[ZegoLocalEnvManager shareManager].userName userName:[ZegoLocalEnvManager shareManager].userName];
+    
+    NSString *userID = [ZegoLocalEnvManager shareManager].userID;
+    if (!userID) {
+        userID = @([NSDate date].timeIntervalSince1970).stringValue;
+        [[NSUserDefaults standardUserDefaults] setObject:userID forKey:kUserIDKey];
+    }
+    [ZegoLiveRoomApi setUserID:userID userName:[ZegoLocalEnvManager shareManager].userName];
     unsigned int appID = [ZegoLocalEnvManager shareManager].appID;
     NSData *appSign = [ZGAppSignHelper converAppSignStringToData:[ZegoLocalEnvManager shareManager].appSign];
     self.api = [[ZegoLiveRoomApi alloc] initWithAppID:appID appSignature:appSign  completionBlock:^(int errorCode) {

@@ -1,5 +1,6 @@
 package im.zego.whiteboardexample.activity
 
+import android.os.Build
 import android.os.Bundle
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -11,6 +12,7 @@ import im.zego.whiteboardexample.R
 import im.zego.whiteboardexample.sdk.rtc.VideoSDKManager
 import im.zego.whiteboardexample.util.*
 import kotlinx.android.synthetic.main.activity_setting.*
+import java.lang.StringBuilder
 
 class SettingActivity : BaseActivity() {
 
@@ -34,6 +36,13 @@ class SettingActivity : BaseActivity() {
         docs_version.text = "docs: ${ZegoDocsViewManager.getInstance().version}"
         whiteboard_version.text = "whiteboard: ${ZegoWhiteboardManager.getInstance().version}"
         abi.text = BuildConfig.abi_Filters
+
+        val builder = StringBuilder("support_abi:")
+        Build.SUPPORTED_ABIS.forEach {
+            builder.append(" $it ")
+        }
+        support_abi.text = builder.toString()
+
         setting_upload_log.setOnClickListener {
             VideoSDKManager.uploadLog()
         }

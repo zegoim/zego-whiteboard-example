@@ -7,6 +7,7 @@
 
 #import "ZegoBoardContainerView.h"
 #import "NSString+FormatValidator.h"
+#import "ZegoToast.h"
 
 @interface ZegoBoardContainerView()<ZegoWhiteboardViewDelegate,ZegoDocsViewDelegate>
 @property (nonatomic, strong) ZegoWhiteboardView *currentWhiteboardView;
@@ -30,6 +31,7 @@
         self.tipLabel.numberOfLines = 0;
         
         [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(addImage:) name:@"addImage" object:nil];
+        [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(setBackgroundImage:) name:@"setBackgroundImage" object:nil];
         
     }
     return self;
@@ -45,12 +47,41 @@
 //        [ZegoProgessHUD showTipMessage:@"非法 URL"];
 //        return;
 //    }
-    [ZegoProgessHUD showTipMessage:@"正在加载"];
+    [ZegoToast toastWithMessage:@"正在加载"];
     [self.currentWhiteboardView addImage:ZegoWhiteboardViewImageTypeGraphic positionX:point.x positionY:point.y address:path complete:^(int errorcode) {
         if (errorcode == 0) {
-            [ZegoProgessHUD showTipMessage:@"加载成功"];
+            [ZegoToast toastWithMessage:@"加载成功"];
         }else {
-            [ZegoProgessHUD showTipMessageWithErrorCode:errorcode];
+            [ZegoToast toastWithError:errorcode];
+        }
+    }];
+}
+
+- (void)setBackgroundImage:(NSNotification *)noti {
+    NSDictionary *dict = noti.userInfo;
+    NSString *path = dict[@"file"];
+    NSNumber *mode = dict[@"mode"];
+    
+//    ZegoProgessHUD *hudView = [[ZegoProgessHUD alloc] initWithTitle:@"加载背景图片..." cancelBlock:nil];
+//    [self.currentWhiteboardView setBackgroundImageWithPath:path mode:mode.unsignedIntegerValue complete:^(int errorcode, float progress) {
+//        if (errorcode == 0) {
+//            [hudView updateProgress:progress];
+//            if (progress == 1) {
+//                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//                    [ZegoProgessHUD showTipMessage:@"加载完成"];
+//                });
+//            }
+//        }else {
+//            [ZegoProgessHUD dismiss];
+//            [ZegoToast toastWithError:errorcode];
+//        }
+//    }];
+    [ZegoToast toastWithMessage:@"正在加载"];
+    [self.currentWhiteboardView setBackgroundImageWithPath:path mode:mode.unsignedIntegerValue complete:^(int errorcode) {
+        if (errorcode == 0) {
+            [ZegoToast toastWithMessage:@"加载成功"];
+        }else {
+            [ZegoToast toastWithError:errorcode];
         }
     }];
 }
@@ -76,11 +107,12 @@
     if ([self fetchWhiteboardView:whiteboardView.whiteboardModel.whiteboardID]) {
         self.currentWhiteboardView = whiteboardView;
         self.currentDocsView = [self fetchDocsViewWithID:whiteboardView.whiteboardModel.whiteboardID];
+        [self.currentDocsView setOperationAuth:self.authInfo];
         [self addSubview:self.currentDocsView];
         [self addSubview:self.currentWhiteboardView];
         self.currentWhiteboardView.whiteboardViewDelegate = self;
         self.currentDocsView.delegate = self;
-        [self.currentWhiteboardView setWhiteboardOperationMode:ZegoWhiteboardOperationModeDraw];
+        [self.currentWhiteboardView setWhiteboardOperationMode:ZegoWhiteboardOperationModeDraw|ZegoWhiteboardOperationModeZoom];
         [self whiteboardLoadFinished];
     } else {
         self.currentWhiteboardView = whiteboardView;
@@ -91,7 +123,7 @@
         [self loadDocsViewWithComplement:^{
             
             __strong typeof(weakSelf) strongSelf = weakSelf;
-            [strongSelf.currentWhiteboardView setWhiteboardOperationMode:ZegoWhiteboardOperationModeDraw];
+            [strongSelf.currentWhiteboardView setWhiteboardOperationMode:ZegoWhiteboardOperationModeDraw|ZegoWhiteboardOperationModeZoom];
             ZegoWhiteboardViewModel *data = strongSelf.currentWhiteboardView.whiteboardModel;
             strongSelf.currentWhiteboardView.backgroundColor = [UIColor whiteColor];
             // 是由 设定的白板宽高比，根据给定的父视图 计算出白板视图的实际frame
@@ -120,11 +152,13 @@
 - (void)whiteboardLoadFinished {
     //将文件及白板视图传递给 操作中心单例
     [[ZegoBoardOperationManager shareManager] setupCurrentWhiteboardView:self.currentWhiteboardView docsView: self.currentDocsView];
-    //处理加载完成回调
-    if ([self.delegate respondsToSelector:@selector(onLoadFileFinish:docsView:currentPage:)]) {
-        NSInteger currentPage = [self getCurrentPage];
-        [self.delegate onLoadFileFinish:self.currentWhiteboardView docsView:self.currentDocsView currentPage:currentPage];
-    }
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        //处理加载完成回调
+        if ([self.delegate respondsToSelector:@selector(onLoadFileFinish:docsView:currentPage:)]) {
+            NSInteger currentPage = [self getCurrentPage];
+            [self.delegate onLoadFileFinish:self.currentWhiteboardView docsView:self.currentDocsView currentPage:currentPage];
+        }
+    });
 }
 
 - (void)removeWhiteboardWithID:(ZegoWhiteboardID)whiteboardID {
@@ -177,6 +211,7 @@
         __weak typeof(self) weakSelf = self;
         docsView.delegate = self;
         self.currentDocsView = docsView;
+        [self.currentDocsView setOperationAuth:self.authInfo];
         [self.docsViewArray addObject:docsView];
         [docsView loadFileWithFileID:self.currentWhiteboardView.whiteboardModel.fileInfo.fileID authKey:@"" completionBlock:^(ZegoDocsViewError errorCode) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -255,19 +290,36 @@
             [self.currentDocsView flipPage:pageNo step:MAX(self.currentWhiteboardView.whiteboardModel.pptStep, 1) completionBlock:^(BOOL isScrollSuccess) {
                 
             }];
+            
+            //处理加载完成回调
+            NSInteger currentPage = pageNo;
+            if ([self.delegate respondsToSelector:@selector(onScrollWithCurrentPage:totalPage:)]) {
+
+                [self.delegate onScrollWithCurrentPage:currentPage totalPage:currentPage?:kWhiteboarPageCount];
+            }
+            
         } else {
             [self.currentDocsView scrollTo:verticalPercent completionBlock:^(BOOL isScrollSuccess) {
                 
             }];
+            
+            //处理加载完成回调
+            NSInteger currentPage = [self getCurrentPage];
+            if ([self.delegate respondsToSelector:@selector(onScrollWithCurrentPage:totalPage:)]) {
+
+                [self.delegate onScrollWithCurrentPage:currentPage totalPage:(self.currentDocsView.pageCount)?:kWhiteboarPageCount];
+            }
         }
          
-    }
-    //处理加载完成回调
-    NSInteger currentPage = [self getCurrentPage];
-    if ([self.delegate respondsToSelector:@selector(onScrollWithCurrentPage:totalPage:)]) {
+    } else {
+        //处理加载完成回调
+        NSInteger currentPage = [self getCurrentPage];
+        if ([self.delegate respondsToSelector:@selector(onScrollWithCurrentPage:totalPage:)]) {
 
-        [self.delegate onScrollWithCurrentPage:currentPage totalPage:(self.currentDocsView.pageCount)?:kWhiteboarPageCount];
+            [self.delegate onScrollWithCurrentPage:currentPage totalPage:(self.currentDocsView.pageCount)?:kWhiteboarPageCount];
+        }
     }
+    
        
 }
 
@@ -342,6 +394,10 @@
             NSInteger pageNumFinal = round1 + 1;
             if (error_code == 0) {
                 DLog(@"onStepChangeForClick docsViewSysPPTStep: %ld Step: %d verticalPercent: %f 当前page: %ld step:%ld", (long)pageNumFinal, pptStep, verticalPercent,(long)strongSelf.currentDocsView.currentPage, (long)self.currentDocsView.currentStep);
+            } else {
+                if (error_code == ZegoWhiteboardViewErrorNoAuthScroll) {
+                    [ZegoToast toastWithError:error_code];
+                }
             }
         }];
     }

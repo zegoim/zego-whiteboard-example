@@ -19,7 +19,7 @@
 		<array>
 			<dict>
 				<key>title</key>
-				<string>禁止模式</string>
+				<string>不可操作模式</string>
 				<key>value</key>
 				<false/>
 			</dict>
@@ -37,9 +37,9 @@
 			</dict>
 			<dict>
 				<key>title</key>
-				<string>放大模式</string>
+				<string>放缩模式</string>
 				<key>value</key>
-				<false/>
+				<true/>
 			</dict>
 		</array>
 	</dict>
@@ -370,6 +370,141 @@
 				<string>https://storage.zego.im/goclass/star.svg</string>
 			</dict>
 		</array>
+	</dict>
+	<dict>
+		<key>title</key>
+		<string>背景模式</string>
+		<key>value</key>
+		<integer>-1</integer>
+		<key>tag</key>
+		<string></string>
+		<key>type</key>
+		<integer>3</integer>
+		<key>placeholder</key>
+		<string>背景图片显示模式</string>
+		<key>eventNumber</key>
+		<integer>10015</integer>
+		<key>options</key>
+		<array>
+			<dict>
+				<key>title</key>
+				<string>左对齐</string>
+				<key>value</key>
+				<string>0</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>右对齐</string>
+				<key>value</key>
+				<string>1</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>底部对齐</string>
+				<key>value</key>
+				<string>2</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>顶部对齐</string>
+				<key>value</key>
+				<string>3</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>居中对齐</string>
+				<key>value</key>
+				<string>4</string>
+			</dict>
+		</array>
+	</dict>
+	<dict>
+		<key>title</key>
+		<string>预设背景</string>
+		<key>value</key>
+		<integer>-1</integer>
+		<key>tag</key>
+		<string></string>
+		<key>type</key>
+		<integer>3</integer>
+		<key>placeholder</key>
+		<string>预设背景</string>
+		<key>eventNumber</key>
+		<real>10016</real>
+		<key>options</key>
+		<array>
+			<dict>
+				<key>title</key>
+				<string>背景图1</string>
+				<key>value</key>
+				<string>https://storage.zego.im/goclass/wbbg/1.jpg</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>背景图2</string>
+				<key>value</key>
+				<string>https://storage.zego.im/goclass/wbbg/2.jpg</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>背景图3</string>
+				<key>value</key>
+				<string>https://storage.zego.im/goclass/wbbg/3.png</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>背景图4</string>
+				<key>value</key>
+				<string>https://storage.zego.im/goclass/wbbg/4.jpeg</string>
+			</dict>
+		</array>
+	</dict>
+	<dict>
+		<key>title</key>
+		<string>本地背景</string>
+		<key>tag</key>
+		<string></string>
+		<key>type</key>
+		<integer>2</integer>
+		<key>placeholder</key>
+		<string></string>
+		<key>eventNumber</key>
+		<real>10017</real>
+	</dict>
+	<dict>
+		<key>title</key>
+		<string>网络背景</string>
+		<key>tag</key>
+		<string></string>
+		<key>type</key>
+		<integer>2</integer>
+		<key>placeholder</key>
+		<string></string>
+		<key>eventNumber</key>
+		<real>10018</real>
+		<key>options</key>
+		<array>
+			<dict>
+				<key>title</key>
+				<string>图片URL</string>
+				<key>value</key>
+				<string></string>
+			</dict>
+		</array>
+	</dict>
+	<dict>
+		<key>title</key>
+		<string>取消背景</string>
+		<key>tag</key>
+		<string></string>
+		<key>type</key>
+		<integer>2</integer>
+		<key>placeholder</key>
+		<string></string>
+		<key>eventNumber</key>
+		<real>10019</real>
+		<key>options</key>
+		<array/>
 	</dict>
 	<dict>
 		<key>title</key>

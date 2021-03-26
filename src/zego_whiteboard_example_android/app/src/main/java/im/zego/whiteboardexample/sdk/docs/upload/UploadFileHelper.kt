@@ -17,6 +17,24 @@ class UploadFileHelper {
         private var mRenderType: Int = ZegoDocsViewConstants.ZegoDocsViewRenderTypeVector
         private var seq: Int = 0
 
+        object MimeType {
+            const val PPT = "application/vnd.ms-powerpoint"
+            const val PPTX = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            const val DOC = "application/msword"
+            const val DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            const val XLS = "application/vnd.ms-excel"
+            const val XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            const val PDF = "application/pdf"
+            const val TXT = "text/plain"
+            const val JPG = "image/jpeg"
+            const val JPEG = "image/jpeg"
+            const val PNG = "image/png"
+            const val BMP = "image/bmp"
+            const val XMSBMP = "image/x-ms-bmp"
+            const val WBMP = "image/vnd.wap.wbmp"
+            const val HEIC = "image/heic"
+        }
+
         fun uploadFile(activity: Activity, renderType: Int) {
             PermissionHelper.onReadSDCardPermissionGranted(activity) { grant ->
                 if (grant) {
@@ -50,7 +68,12 @@ class UploadFileHelper {
                     } catch (e: SecurityException) {
                         Log.e(TAG, "FAILED TO TAKE PERMISSION")
                     }
-                    uploadFileInner(context, FileUtil.getPath(context, fileUri), uploadResult as (Int, Int, String?, Float) -> Void)
+                    val path = FileUtil.getPath(context, fileUri)
+                    if(path != null) {
+                        uploadFileInner(context, path, uploadResult as (Int, Int, String?, Float) -> Void)
+                    }else{
+                        Log.e(TAG, "url is NULL")
+                    }
                 }
             }
         }

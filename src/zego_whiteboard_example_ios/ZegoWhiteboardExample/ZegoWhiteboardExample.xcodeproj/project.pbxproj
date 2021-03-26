@@ -53,6 +53,7 @@
 		8631A69025EE235B00B1C6E8 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8631A65B25EE235B00B1C6E8 /* Info.plist */; };
 		8631A69125EE235B00B1C6E8 /* NSString+FormatValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 8631A65F25EE235B00B1C6E8 /* NSString+FormatValidator.m */; };
 		8631A69225EE235B00B1C6E8 /* ZGFormatValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 8631A66025EE235B00B1C6E8 /* ZGFormatValidator.m */; };
+		8635307C25FCA61400FEBE5A /* ZegoToast.m in Sources */ = {isa = PBXBuildFile; fileRef = 8635307B25FCA61400FEBE5A /* ZegoToast.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -142,7 +143,13 @@
 		8631A65F25EE235B00B1C6E8 /* NSString+FormatValidator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+FormatValidator.m"; sourceTree = "<group>"; };
 		8631A66025EE235B00B1C6E8 /* ZGFormatValidator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZGFormatValidator.m; sourceTree = "<group>"; };
 		8631A66125EE235B00B1C6E8 /* SceneDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
+		8635307A25FCA61400FEBE5A /* ZegoToast.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZegoToast.h; sourceTree = "<group>"; };
+		8635307B25FCA61400FEBE5A /* ZegoToast.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZegoToast.m; sourceTree = "<group>"; };
+		86675FD02601E884006AAE54 /* libZegoDocsView.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; path = libZegoDocsView.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		86675FD42601EBB4006AAE54 /* libZegoDocsView.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; path = libZegoDocsView.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		86675FD82601F7D8006AAE54 /* ZegoWhiteboardView.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ZegoWhiteboardView.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8685E82C25943B3400F7A767 /* libZegoWhiteboardView.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libZegoWhiteboardView.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		86AF142926047BC000522E45 /* ZegoWhiteboardView.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ZegoWhiteboardView.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		86E7FEB425E3D4B200BB1CCC /* ZegoWhiteboardView.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ZegoWhiteboardView.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		86F0798325E77D5600A97958 /* ZegoWhiteboardView.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ZegoWhiteboardView.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		86F0798725E7CD5400A97958 /* ZegoWhiteboardView.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ZegoWhiteboardView.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -194,6 +201,10 @@
 		75C5F3917D3413404AC747B4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				86AF142926047BC000522E45 /* ZegoWhiteboardView.framework */,
+				86675FD82601F7D8006AAE54 /* ZegoWhiteboardView.framework */,
+				86675FD42601EBB4006AAE54 /* libZegoDocsView.dylib */,
+				86675FD02601E884006AAE54 /* libZegoDocsView.dylib */,
 				86F0798725E7CD5400A97958 /* ZegoWhiteboardView.framework */,
 				86F0798325E77D5600A97958 /* ZegoWhiteboardView.framework */,
 				86E7FEB425E3D4B200BB1CCC /* ZegoWhiteboardView.framework */,
@@ -367,12 +378,14 @@
 		8631A64925EE235B00B1C6E8 /* Foundation */ = {
 			isa = PBXGroup;
 			children = (
-				8631A64A25EE235B00B1C6E8 /* UIColor+ZegoExtension.m */,
-				8631A64B25EE235B00B1C6E8 /* ZGAppSignHelper.m */,
-				8631A64C25EE235B00B1C6E8 /* ZegoProgessHUD.h */,
 				8631A64D25EE235B00B1C6E8 /* UIColor+ZegoExtension.h */,
+				8631A64A25EE235B00B1C6E8 /* UIColor+ZegoExtension.m */,
+				8631A64C25EE235B00B1C6E8 /* ZegoProgessHUD.h */,
 				8631A65325EE235B00B1C6E8 /* ZegoProgessHUD.m */,
 				8631A65425EE235B00B1C6E8 /* ZGAppSignHelper.h */,
+				8631A64B25EE235B00B1C6E8 /* ZGAppSignHelper.m */,
+				8635307A25FCA61400FEBE5A /* ZegoToast.h */,
+				8635307B25FCA61400FEBE5A /* ZegoToast.m */,
 			);
 			path = Foundation;
 			sourceTree = "<group>";
@@ -522,6 +535,7 @@
 				8631A66425EE235B00B1C6E8 /* ZegoLoginViewController.m in Sources */,
 				8631A66625EE235B00B1C6E8 /* ZegoCommonCellModel.m in Sources */,
 				8631A68F25EE235B00B1C6E8 /* AppDelegate.m in Sources */,
+				8635307C25FCA61400FEBE5A /* ZegoToast.m in Sources */,
 				8631A68225EE235B00B1C6E8 /* ZegoBoardServiceManager.m in Sources */,
 				8631A67125EE235B00B1C6E8 /* ZegoSettingTextTableViewCell.m in Sources */,
 				8631A68325EE235B00B1C6E8 /* ZegoOperationPannelEventHandler.m in Sources */,
@@ -695,6 +709,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = im.zego.zegowhiteboarddemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Debug;
 		};
@@ -717,6 +732,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = im.zego.zegowhiteboarddemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Release;
 		};

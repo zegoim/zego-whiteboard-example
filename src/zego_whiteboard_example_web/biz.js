@@ -1,6 +1,6 @@
 var dynamicPPTHD = zegoEnv.dynamicPPTHD;
 var pptStepMode = zegoEnv.pptStepMode;
-var idName = new Date().getTime() + '';
+var idName = createUserID();
 var parentId = 'mywhiteboard';
 var web_token = '';
 var zegoWhiteboard,
@@ -8,10 +8,12 @@ var zegoWhiteboard,
   zegoDocs,
   zegoDocsView,
   zegoWhiteboardViewList = [], // 白板/文件 展示下拉框
+  userIDList = [],
   isLogin = false,
   WBNameIndex = 1, // 白板索引
   fileHash,
   netImgUrlList = [], //自定义图形下拉框图片list
+  netBgImgUrlList = [], //白板背景图
   isRemote,
   myFile, // 上传文档对象
   _seq = 0;
@@ -20,6 +22,13 @@ if(!appID){
   alert('请在demo_config.js文件中填写你的appID！')
   window.location.href = './login.html'
 }
+var imageErrorTipsMap = {
+  3000002: '参数错误',
+  3000005: '下载失败',
+  3030008: '图片大小超过限制，请重新选择',
+  3030009: '图片格式暂不支持',
+  3030010: 'url地址错误或无效'
+};
 
 // 获取token
 $.ajaxSettings.async = false;
@@ -42,11 +51,12 @@ $.get(
   'https://storage.zego.im/goclass/config_images.json',
   function (data) {
     netImgUrlList = data['whiteboard_custom_images'];
+    netBgImgUrlList = data['whiteboard_bg_images'];
   },
   'json'
 );
 $.ajaxSettings.async = true;
-$.toastDefaults.position = 'top-center';
+// $.toastDefaults.position = 'top-center';
 
 // 初始化
 init();
@@ -62,6 +72,30 @@ $('#panel-change').on('click', 'button', function () {
 
 // 监听sdk回调
 function listen() {
+  zegoWhiteboard.on('roomUserUpdate', (roomID, type, list) => {
+    if (type == 'ADD') {
+      list.forEach((v) => userIDList.push(v.userID));
+    } else if (type == 'DELETE') {
+      list.forEach((v) => {
+        const id = v.userID;
+        const index = userIDList.findIndex((item) => id == item);
+        if (index != -1) {
+          userIDList.splice(index, 1);
+        }
+      });
+    }
+    $('#idNames').html('房间所有用户ID：' + userIDList.toString());
+  });
+  zegoWhiteboard.on('whiteboardAuthChange', (data) => {
+    $('#userViewAuth').html(`白板：${data.scale ? '缩放' : ''},${data.scroll ? '翻页' : ''}`);
+  });
+  zegoWhiteboard.on('whiteboardGraphicAuthChange', (data) => {
+    $('#userGraphicAuth').html(
+      `图元：${data.create ? '创建' : ''},${data.clear ? '清空' : ''},${data.update ? '编辑' : ''},${
+        data.move ? '移动' : ''
+      },${data.delete ? '擦除' : ''}`
+    );
+  });
   zegoWhiteboard.on('error', (e) => {
     console.error('on error', e);
     toast(e.code + '：' + e.msg);
@@ -115,12 +149,16 @@ function listen() {
     $('#totalPage').html(res.pageCount);
   });
 }
+function createUserID() {
+  var userID = sessionStorage.getItem('zegouid') || 'web' + new Date().getTime();
+  sessionStorage.setItem('zegouid', userID);
+  return userID;
+}
 // sdk初始化
 async function init() {
   // 互动白板
   zegoWhiteboard = new ZegoExpressEngine(appID, server);
 
-  console.warn('init:zegoWhiteboard', zegoWhiteboard);
   zegoWhiteboard.setLogConfig({ logLevel: 1 });
   zegoWhiteboard.setDebugVerbose(false);
   // 文件转码
@@ -140,6 +178,10 @@ async function init() {
    * Note: 2 在页中的第一步执行上一步时，不跳转，页中的最后一步执行下一步时，不跳转。
    */
   zegoDocs.setConfig('pptStepMode', pptStepMode);
+  if (zegoEnv.docs_env == 3) {
+    console.log('文件环境连接alpha');
+    zegoDocs.setConfig('set_alpha_env', 'true');
+  }
 
   listen();
   // 设置字体
@@ -156,6 +198,7 @@ function leaveRoom() {
   toast('leave room');
   isLogin = false;
   zegoWhiteboard.logoutRoom();
+  userIDList.shift();
   location.href = './login.html';
 }
 // 进入房间
@@ -181,7 +224,6 @@ function openRoom(idName, roomID, token) {
 
   //login
   async function startLogin() {
-    console.warn('startLogin');
     try {
       await zegoWhiteboard.loginRoom(
         roomID,
@@ -195,6 +237,8 @@ function openRoom(idName, roomID, token) {
           userUpdate: true
         }
       );
+      userIDList.unshift(idName);
+      $('#idNames').html('房间所有用户ID：' + userIDList.toString());
     } catch (error) {
       console.log(error);
     }
@@ -227,6 +271,7 @@ $(document).ready(function () {
       };
       zegoWhiteboardView = await zegoWhiteboard.createView(options);
       await zegoWhiteboard.attachView(zegoWhiteboardView, parentId);
+      setOperationModeState();
       zegoWhiteboardViewList.unshift(zegoWhiteboardView);
       updateRemoteView();
       zegoDocsView = null;
@@ -334,6 +379,10 @@ $('#tooltype').change(function () {
     if (type == 512) {
       zegoWhiteboardView.addImage(1, 0, 0, $('#netImgSelect').val());
     }
+    // 选择橡皮擦，批量删除图元
+    // if (type == 64) {
+    //   deleteSelectedGraphics();
+    // }
     zegoWhiteboardView.setToolType(+type);
   } else {
     zegoWhiteboardView.setToolType(null);
@@ -345,10 +394,6 @@ $('#netImgSelect').change(function () {
   var url = $('#netImgSelect').val();
   zegoWhiteboardView.addImage(1, 0, 0, url);
 });
-// 设置工具类型
-function setToolType(type) {
-  zegoWhiteboardView && zegoWhiteboardView.setToolType(Number(type));
-}
 
 // 删除选中图元
 function deleteSelectedGraphics() {
@@ -367,12 +412,13 @@ $('#brushsize').change(function () {
   zegoWhiteboardView && zegoWhiteboardView.setBrushSize(Number(val));
 });
 // 设置白板是否允许滚动、绘制、缩放
-$('#enableOperatioScroll,#enableOperatioDraw,#enableOperatioZoom').on('change', function () {
+$('#disableOperatio,#enableOperatioScroll,#enableOperatioDraw,#enableOperatioZoom').on('change', function () {
   if (!zegoWhiteboardView) return;
-  var scroll = Boolean($('#enableOperatioScroll').prop('checked')) ? 0 : 2;
-  var draw = Boolean($('#enableOperatioDraw').prop('checked')) ? 0 : 4;
-  var zoom = Boolean($('#enableOperatioZoom').prop('checked')) ? 0 : 8;
-  var val = scroll | draw | zoom || 1;
+  var none = Boolean($('#disableOperatio').prop('checked')) ? 1 : 0;
+  var scroll = Boolean($('#enableOperatioScroll').prop('checked')) ? 2 : 0;
+  var draw = Boolean($('#enableOperatioDraw').prop('checked')) ? 4 : 0;
+  var zoom = Boolean($('#enableOperatioZoom').prop('checked')) ? 8 : 0;
+  var val = none | scroll | draw | zoom || 14;
   console.log('setWhiteboardOperationMode', val);
   zegoWhiteboardView.setWhiteboardOperationMode(val);
 });
@@ -484,11 +530,21 @@ async function selectRemoteView(whiteboardID) {
     } else {
       zegoDocsView = null;
       await zegoWhiteboard.attachView(zegoWhiteboardView, parentId);
+      setOperationModeState();
     }
     $('#filename').html(zegoWhiteboardView.getName());
     $('#curPage').html(zegoWhiteboardView.getCurrentPage());
     $('#totalPage').html(zegoWhiteboardView.getPageCount());
   }
+}
+
+// 关联白板操作模式状态
+function setOperationModeState() {
+  $('#disableOperatio').prop('checked', false);
+  $('#enableOperatioScroll').prop('checked', false);
+  $('#enableOperatioDraw').prop('checked', false);
+  $('#enableOperatioZoom').prop('checked', false);
+  zegoWhiteboardView && zegoWhiteboardView.setWhiteboardOperationMode(2 | 4 | 8);
 }
 
 // 设置文本粗体
@@ -617,6 +673,7 @@ async function createFileView(fileID, sheetName) {
 async function createFileWBView(res) {
   if (isRemote) {
     await zegoWhiteboard.attachView(zegoWhiteboardView, res.viewID);
+    setOperationModeState();
     isRemote = false;
   } else {
     try {
@@ -642,6 +699,7 @@ async function createFileWBView(res) {
       // 更新白板列表
       updateRemoteView();
       await zegoWhiteboard.attachView(zegoWhiteboardView, res.viewID);
+      setOperationModeState();
     } catch (error) {
       console.error('createFileWBView error', error);
     }
@@ -729,18 +787,12 @@ function addImage(type) {
     positionY = positionY && +positionY;
     address = myLocalIMG || '';
   }
-  var errorMap = {
-    3000002: '3000002：参数错误',
-    3000005: '3000005：下载失败',
-    3030008: '3030008：图片大小超过限制，请重新选择',
-    3030009: '3030009：图片格式暂不支持',
-    3030010: '3030010：url地址错误或无效'
-  };
   console.warn(type, positionX, positionY, address);
   zegoWhiteboardView
-    .addImage(type, positionX, positionY, address)
+    .addImage(type, positionX, positionY, address, function (res) {
+      console.log('上传图片进度', res);
+    })
     .then((res) => {
-      console.warn(res);
       if (type == 1) {
         $('#netImg').val('');
         updateNetImgList(res);
@@ -748,8 +800,10 @@ function addImage(type) {
       }
     })
     .catch((e) => {
-      console.warn(e);
-      toast(errorMap[e.code] || errorMap[3000005]);
+      if (e && e.code) {
+        console.error(e);
+        toast(e.code + '：' + (imageErrorTipsMap[e.code] || e.msg));
+      }
     });
 }
 // 处理图片名字&更新本地数据
@@ -758,12 +812,16 @@ function updateNetImgList(res) {
   console.warn(res.replace(/(.*\/)*([^.]+).*/gi, '$2'));
   netImgUrlList.unshift({ id: res, name: tempImgName });
 }
-// 更新自定义图片下拉框数据
+// 更新 自定义图片、白板背景图 下拉框数据
 function updateNetOption() {
   var options = netImgUrlList.map(function (v) {
     return '<option value="' + v.id + '">' + v.name + '</option>';
   });
   $('#netImgSelect').html(options.join(''));
+  options = netBgImgUrlList.map(function (v) {
+    return '<option value="' + v.id + '">' + v.name + '</option>';
+  });
+  $('#whiteboardBgImgUrlSelect').html(options.join(''));
 }
 
 /**
@@ -781,7 +839,8 @@ function setDeferredRenderingTime() {
 }
 
 function toast(message) {
-  $.snack('info', message, 3000);
+  $('.toast').toast('show');
+  $('#error_msg').html(message);
 }
 
 function onKeydownHandle() {
@@ -820,4 +879,35 @@ async function saveImage() {
   const event = document.createEvent('MouseEvents');
   event.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
   save_link.dispatchEvent(event);
+}
+// 添加背景图片-本地
+var myLocalBGIMG;
+function uploadLocalBGIMG() {
+  myLocalBGIMG = event.target.files[0];
+}
+
+function setWhiteboardBg(type) {
+  var model = $('#whiteboardBgImgModelSelect').val();
+  if (!model) {
+    toast('渲染类型不能为空！');
+    return;
+  }
+  var url = $('#whiteboardBgImg').val() || $('#whiteboardBgImgUrlSelect').val();
+  zegoWhiteboardView
+    .setBackgroundImage(type === 1 ? url : myLocalBGIMG, +model, function (res) {
+      console.log('设置白板背景图进度', res);
+    })
+    .then((res) => {
+      console.log(res);
+    })
+    .catch((e) => {
+      if (e && e.code) {
+        console.error(e);
+        toast(e.code + '：' + (imageErrorTipsMap[e.code] || e.msg));
+      }
+    });
+}
+
+function clearBackgroundImage() {
+  zegoWhiteboardView.clearBackgroundImage();
 }

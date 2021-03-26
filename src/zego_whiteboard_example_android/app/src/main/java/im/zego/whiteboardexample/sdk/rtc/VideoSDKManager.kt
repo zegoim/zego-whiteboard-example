@@ -24,6 +24,7 @@ object VideoSDKManager {
     const val ENTERED = 2
     private val TAG = javaClass.simpleName
     private var roomID = ""
+    private var mUserID = 0L
 
     // 房间状态
     private var state = OUTSIDE
@@ -86,6 +87,7 @@ object VideoSDKManager {
         function: (Int) -> Unit
     ) {
         val userID = generateUserId()
+        mUserID = userID
         Logger.i(
             TAG,
             "enterRoom() called with: userID = [$userID], userName = [$userName], roomID = [$roomID] state = $state"
@@ -128,6 +130,10 @@ object VideoSDKManager {
         val userId = System.currentTimeMillis()
         Logger.i(TAG, "generateUserId() myUserId: $userId")
         return userId
+    }
+
+    fun getUserID():Long{
+        return mUserID
     }
 
     fun exitRoom() {

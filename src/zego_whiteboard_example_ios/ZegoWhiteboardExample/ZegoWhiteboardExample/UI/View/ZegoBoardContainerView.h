@@ -17,6 +17,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ZegoBoardContainerView : UIView
 @property (nonatomic, weak) id <ZegoBoardContainerViewDelegate> delegate;
 
+@property (nonatomic, strong,readonly) NSMutableArray *docsViewArray;
+
+@property (nonatomic, strong)NSDictionary *authInfo;
+
 //将白板添加到视图顶部并显示
 - (void)addWhiteboardView:(ZegoWhiteboardView *)whiteboardView;
 //移除白板

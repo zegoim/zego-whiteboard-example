@@ -42,6 +42,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)redoGraphic;
 - (void)undoGraphic;
 - (void)clearWhiteboardCache;
+- (void)cleanBackgroundImage;
+- (void)setCurrentAuthInfo:(NSDictionary *)authInfo;
 
 //****** 文件操作 ******
 - (void)playAnimationWithInfo:(NSString *)info;

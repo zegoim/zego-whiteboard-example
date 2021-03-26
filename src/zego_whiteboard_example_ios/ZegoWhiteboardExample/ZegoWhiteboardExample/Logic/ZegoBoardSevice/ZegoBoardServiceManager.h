@@ -39,9 +39,13 @@ typedef void(^ZegoGetWhiteboardListBlock)(ZegoWhiteboardViewError errorCode,  NS
 //收到远端动画执行回调
 - (void)onRemotePlayAnimation:(NSString *)animationInfo;
 
+- (void)onRemoteWhiteboardAuthChange:(NSDictionary *)authInfo;
+
+- (void)onRemoteWhiteboardGraphicAuthChange:(NSDictionary *)authInfo;
+
 //错误回调
 - (void)onError:(ZegoWhiteboardViewError)error
-   whiboardView:(ZegoWhiteboardView *)whiboardView;
+ whiteboardView:(ZegoWhiteboardView *)whiboardView;
 
 @end
 

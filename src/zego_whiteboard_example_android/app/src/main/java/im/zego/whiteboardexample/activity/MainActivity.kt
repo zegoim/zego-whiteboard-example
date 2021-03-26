@@ -13,17 +13,11 @@ import androidx.core.view.children
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import im.zego.whiteboardexample.R
+import im.zego.whiteboardexample.adapter.ColorAdapter
 import im.zego.whiteboardexample.sdk.docs.CacheHelper
 import im.zego.whiteboardexample.sdk.docs.upload.UploadFileHelper
 import im.zego.whiteboardexample.sdk.docs.upload.UploadFileHelper.Companion.uploadFile
-import im.zego.zegodocs.ZegoDocsViewConstants
-import im.zego.zegowhiteboard.ZegoWhiteboardConstants
-import im.zego.zegowhiteboard.ZegoWhiteboardManager
-import im.zego.zegowhiteboard.ZegoWhiteboardView
-import im.zego.zegowhiteboard.ZegoWhiteboardViewImageType
-import im.zego.zegowhiteboard.callback.IZegoWhiteboardManagerListener
-import im.zego.whiteboardexample.R
-import im.zego.whiteboardexample.adapter.ColorAdapter
 import im.zego.whiteboardexample.sdk.docs.upload.UploadPicHelper
 import im.zego.whiteboardexample.sdk.rtc.IZegoRoomStateListener
 import im.zego.whiteboardexample.sdk.rtc.VideoSDKManager
@@ -38,13 +32,16 @@ import im.zego.whiteboardexample.widget.dialog.LoadingDialog
 import im.zego.whiteboardexample.widget.dialog.ZegoDialog
 import im.zego.whiteboardexample.widget.dialog.dismissLoadingDialog
 import im.zego.whiteboardexample.widget.dialog.showLoadingDialog
-import im.zego.whiteboardexample.widget.popwindow.SelectBrushSizePopWindow
-import im.zego.whiteboardexample.widget.popwindow.SelectCustomImagePopWindow
-import im.zego.whiteboardexample.widget.popwindow.SelectFontSizePopWindow
-import im.zego.whiteboardexample.widget.popwindow.SelectGraffitiToolsPopWindow
+import im.zego.whiteboardexample.widget.popwindow.*
 import im.zego.whiteboardexample.widget.whiteboard.ZegoWhiteboardViewHolder
+import im.zego.zegodocs.ZegoDocsViewConstants
+import im.zego.zegowhiteboard.*
+import im.zego.zegowhiteboard.callback.IZegoWhiteboardManagerListener
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.layout_main_content.*
+import kotlinx.android.synthetic.main.popwindow_select.view.*
+import java.util.*
+import kotlin.collections.ArrayList
 
 class MainActivity : BaseActivity() {
 
@@ -62,6 +59,14 @@ class MainActivity : BaseActivity() {
     // 用于选择自定义图形
     var selectCustomImagePopWindow: SelectCustomImagePopWindow? = null
 
+    // 用于选择背景类型
+    var selectBackgroundFitModePopWindow: SelectBackgroundFitModePopWindow? = null
+
+    // 用于选择背景
+    var selectBackgroundPopWindow: SelectBackgroundPopWindow? = null
+    var fitMode: ZegoWhiteboardViewImageFitMode =
+        ZegoWhiteboardViewImageFitMode.ZegoWhiteboardViewImageFitModeCenter
+
     // 防止快速点击页面、步数、跳转、文本
     var lastClickPageChangeTime = 0L
     var lastClickPageJumpChangeTime = 0L
@@ -75,6 +80,9 @@ class MainActivity : BaseActivity() {
     var tempWbList = mutableListOf<ZegoWhiteboardView>()
 
     var selectGraffitiToolsPopWindow: SelectGraffitiToolsPopWindow? = null
+    var isScrollAuthorized = true
+    var whiteboardAuthInfo = HashMap<String, Int>()
+    var currentOpMode = SelectOpModePopWindow.DRAW_SCALE
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -148,10 +156,34 @@ class MainActivity : BaseActivity() {
      * 初始化右边绘制模块
      */
     private fun initRightDraw() {
-        // 禁用/开启白板
-        whiteboard_switch.setOnCheckedChangeListener { _, b -> currentHolder?.enableUserOperation(b) }
-        // 禁用/开启绘制
-        draw_switch.setOnCheckedChangeListener { _, b -> currentHolder?.setCanDraw(b) }
+        // 操作模式
+//        draw_whiteboard_mode.text = SelectOpModePopWindow.DRAW_STRING
+//        draw_whiteboard_mode.setOnClickListener {
+//            val selectOpModePopWindow = SelectOpModePopWindow(this,currentOpMode)
+//            selectOpModePopWindow.setOnConfirmClickListener { mode, modeString ->
+//                currentHolder?.setOperationMode(mode)
+//                currentOpMode = mode
+//                draw_whiteboard_mode.text = modeString
+//            }
+//            selectOpModePopWindow.show(draw_whiteboard_mode,Gravity.BOTTOM)
+//        }
+        mode_none.setOnCheckedChangeListener { buttonView, isChecked ->
+            setHolderOperationMode()
+        }
+        mode_scale.setOnCheckedChangeListener { buttonView, isChecked ->
+            setHolderOperationMode()
+        }
+        mode_scroll.setOnCheckedChangeListener { buttonView, isChecked ->
+            setHolderOperationMode()
+        }
+        mode_draw.setOnCheckedChangeListener { buttonView, isChecked ->
+            setHolderOperationMode()
+        }
+        mode_none.isChecked = false
+        mode_scale.isChecked = true
+        mode_scroll.isChecked = false
+        mode_draw.isChecked = true
+
         // 关闭/开启粗体
         text_style_bold.setOnCheckedChangeListener { _, b ->
             ZegoWhiteboardManager.getInstance().isFontBold = b
@@ -182,10 +214,14 @@ class MainActivity : BaseActivity() {
         draw_graffiti_tools_tv.setOnClickListener {
             currentHolder?.let {
                 selectGraffitiToolsPopWindow =
-                    SelectGraffitiToolsPopWindow(this, draw_graffiti_tools_tv.text.toString(),it.isDynamicPPT())
+                    SelectGraffitiToolsPopWindow(
+                        this,
+                        draw_graffiti_tools_tv.text.toString(),
+                        it.isDynamicPPT()
+                    )
                 selectGraffitiToolsPopWindow!!.setOnConfirmClickListener { str ->
-                    unSelectOtherChild(str)
                     draw_graffiti_tools_tv.text = str
+                    unSelectOtherChild(str)
                 }
                 selectGraffitiToolsPopWindow!!.show(draw_graffiti_tools_tv)
             }
@@ -236,7 +272,7 @@ class MainActivity : BaseActivity() {
                             ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicImageTypeNotSupport -> {
                                 Toast.makeText(this, "图片格式暂不支持", Toast.LENGTH_SHORT).show()
                             }
-                            ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicIllegalUrl -> {
+                            ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicIllegalAddress -> {
                                 Toast.makeText(this, "非法图片URL", Toast.LENGTH_SHORT).show()
                             }
                             else -> {
@@ -291,7 +327,7 @@ class MainActivity : BaseActivity() {
                             Toast.makeText(this, "${errorCode}: 图片格式暂不支持", Toast.LENGTH_SHORT)
                                 .show()
                         }
-                        ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicIllegalUrl -> {
+                        ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicIllegalAddress -> {
                             Toast.makeText(this, "${errorCode}: 非法图片URL", Toast.LENGTH_SHORT).show()
                         }
                         else -> {
@@ -357,7 +393,7 @@ class MainActivity : BaseActivity() {
                                 Toast.makeText(this, "${errorCode}: 图片格式暂不支持", Toast.LENGTH_SHORT)
                                     .show()
                             }
-                            ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicIllegalUrl -> {
+                            ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicIllegalAddress -> {
                                 Toast.makeText(this, "${errorCode}: 非法图片URL", Toast.LENGTH_SHORT)
                                     .show()
                             }
@@ -381,18 +417,86 @@ class MainActivity : BaseActivity() {
 //                "https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=1847302647,2281910151&fm=26&gp=0.jpg"
 //                "http://iconfont.alicdn.com/s/fdec9020-3aa0-43db-99d2-7f6e199f1e78_origin.svg"
         }
+        //设置背景的显示模式的弹窗
+        selectBackgroundFitModePopWindow = SelectBackgroundFitModePopWindow(this).also {
+            it.setOnConfirmClickListener { mSelectMode ->
+                //更换背景图片模式
+                fitMode = mSelectMode.mode
+                draw_background_mode_tv.text = mSelectMode.modeName
+            }
+        }
+        //设置背景的显示模式
+        draw_background_mode_tv.setOnClickListener {
+            selectBackgroundFitModePopWindow?.show(draw_background_mode_tv)
+        }
+        //设置背景的弹窗
+        selectBackgroundPopWindow = SelectBackgroundPopWindow(this).also {
+            it.setOnConfirmClickListener { mSelectUrl ->
+                //更换背景图片
+                setBackgroundForUrl(mSelectUrl.url, false)
+                draw_background_name_tv.text = mSelectUrl.imageName
+            }
+        }
+
+        draw_background_name_tv.setOnClickListener {
+            selectBackgroundPopWindow?.show(draw_background_name_tv)
+        }
+
+        //设置url为背景
+        draw_upload_background_confirm_btn.setOnClickListener {
+            val url = draw_upload_background_url_et.text.toString()
+            setBackgroundForUrl(url, false)
+
+        }
+        //设置本地图片为背景
+        draw_local_upload_background_btn.setOnClickListener {
+            if (currentHolder == null) {
+                Toast.makeText(this, "当前没有白板，请添加白板", Toast.LENGTH_SHORT).show()
+            } else {
+                UploadPicHelper.startChooseBackground(this)
+            }
+
+        }
+        //  清除背景
+        draw_clean_background_btn.setOnClickListener {
+            if (currentHolder == null) {
+                Toast.makeText(this, "当前没有白板，请添加白板", Toast.LENGTH_SHORT).show()
+            } else {
+                currentHolder?.clearBackgroundImage { errorCode ->
+                    Log.d(TAG, "clearBackgroundImage() called with: errorCode = $errorCode")
+                    if (errorCode != 0) {
+                        ToastUtils.showCenterToast("errorCode = $errorCode")
+                    }
+                }
+            }
+        }
+
+
         // 清空当前页
         draw_empty_current_page_btn.setOnClickListener {
-            currentHolder?.clearCurrentPage()
+            currentHolder?.clearCurrentPage { p0 ->
+                if (p0 != 0) {
+                    ToastUtils.showCenterToast("errorCode:$p0")
+                }
+            }
         }
         // 清空所有页
         draw_empty_all_page_btn.setOnClickListener {
-            currentHolder?.clear()
+            currentHolder?.clear { p0 ->
+                if (p0 != 0) {
+                    ToastUtils.showCenterToast("errorCode:$p0")
+                }
+            }
         }
         // 删除选中图元
         draw_delete_selected_graphics_btn.setOnClickListener {
-            currentHolder?.deleteSelectedGraphics()
+            currentHolder?.deleteSelectedGraphics{ p0 ->
+                if (p0 != 0) {
+                    ToastUtils.showCenterToast("errorCode:$p0")
+                }
+            }
         }
+
         // 撤销
         draw_undo_btn.setOnClickListener {
             currentHolder?.undo()
@@ -413,7 +517,13 @@ class MainActivity : BaseActivity() {
                 if (y.isEmpty()) {
                     y = "0"
                 }
-                currentHolder?.addText(draw_text_content_et.text.toString(), x.toInt(), y.toInt())
+                currentHolder?.addText(
+                    draw_text_content_et.text.toString(),
+                    x.toInt(),
+                    y.toInt()
+                ) { p0 ->
+                    ToastUtils.showCenterToast("errorCode:$p0")
+                }
                 draw_graffiti_tools_tv.text = getString(R.string.draw_graffiti_tools_selector)
                 unSelectOtherChild(getString(R.string.draw_graffiti_tools_selector))
                 ZegoWhiteboardManager.getInstance().toolType =
@@ -430,24 +540,85 @@ class MainActivity : BaseActivity() {
         })
     }
 
+    private fun setHolderOperationMode() {
+        val noneMode =
+            if (mode_none.isChecked) ZegoWhiteboardConstants.ZegoWhiteboardOperationModeNone else 0
+        val scaleMode =
+            if (mode_scale.isChecked) ZegoWhiteboardConstants.ZegoWhiteboardOperationModeZoom else 0
+        val scrollMode =
+            if (mode_scroll.isChecked) ZegoWhiteboardConstants.ZegoWhiteboardOperationModeScroll else 0
+        val drawMode =
+            if (mode_draw.isChecked) ZegoWhiteboardConstants.ZegoWhiteboardOperationModeDraw else 0
+        val mode = noneMode or scaleMode or scrollMode or drawMode
+        currentHolder?.setOperationMode(mode)
+        currentOpMode = mode
+    }
+
+    private fun setBackgroundForUrl(url: String, cleanUrlText: Boolean) {
+
+
+        if (currentHolder == null) {
+            Toast.makeText(this, "当前没有白板，请添加白板", Toast.LENGTH_SHORT).show()
+        } else {
+
+            currentHolder?.setBackgroundImage(
+                url,
+                fitMode
+            ) { errorCode ->
+                if (cleanUrlText) {
+                    draw_upload_background_url_et.setText("")
+                }
+                when (errorCode) {
+                    0 -> {
+                        Toast.makeText(this, "${errorCode}: 背景设置成功", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                    ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicImageSizeLimit -> {
+                        Toast.makeText(
+                            this,
+                            "${errorCode}: 图片大小不能超过10M，请重新选择",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
+                    ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicImageTypeNotSupport -> {
+                        Toast.makeText(this, "${errorCode}: 图片格式暂不支持", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                    ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicIllegalAddress -> {
+                        Toast.makeText(this, "${errorCode}: 非法图片URL", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                    else -> {
+                        Toast.makeText(
+                            this,
+                            "errorCode = ${errorCode} ",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * 返回当前控件的状态，设置为选中，并且取消选中其他控件
      */
     private fun unSelectOtherChild(it: String) {
+        currentHolder?.setDocsScaleEnable(it == getString(R.string.draw_graffiti_tools_click))
         when (it) {
-            getString(R.string.draw_graffiti_tools_none) -> {
-                currentHolder?.setCanDraw(false)
-            }
-            getString(R.string.draw_graffiti_tools_click) -> {
-                currentHolder?.setDocsScaleEnable(true)
-            }
             getString(R.string.draw_graffiti_tools_text) -> {
-                currentHolder?.addTextEdit()
+                currentHolder?.addTextEdit { p0 ->
+                    if (p0 != 0) {
+                        ToastUtils.showCenterToast("errorCode:$p0")
+                    } else {
+                        draw_graffiti_tools_tv.text =
+                            getString(R.string.draw_graffiti_tools_selector)
+                    }
+                }
             }
             else -> {
-                if (draw_switch.isChecked) {
-                    currentHolder?.setCanDraw(true)
-                }
             }
         }
     }
@@ -491,7 +662,15 @@ class MainActivity : BaseActivity() {
         }
         // 缩略图列表
         docs_preview_list.setSelectedListener { oldPage, newPage ->
-            currentHolder?.flipToPage(newPage + 1)
+            currentHolder?.let {
+                if ((isScrollAuthorized) || it.isPureWhiteboard()) {
+                    it.flipToPage(newPage + 1) { errorCode ->
+                        if (errorCode != 0) {
+                            ToastUtils.showCenterToast("errorCode:$errorCode")
+                        }
+                    }
+                }
+            }
         }
         // 上传动态文件
         upload_dynamic.setOnClickListener {
@@ -539,7 +718,11 @@ class MainActivity : BaseActivity() {
                 )
 
                 if (errorCode != 0) {
-                    cache_state_tv.text = getString(R.string.docs_cache_fail, fileId,errorCode.toString())
+                    cache_state_tv.text = getString(
+                        R.string.docs_cache_fail,
+                        fileId,
+                        errorCode.toString()
+                    )
                 } else {
                     cache_state_tv.text =
                         getString(R.string.docs_cache_success, fileId, uploadPercent.toString())
@@ -547,30 +730,37 @@ class MainActivity : BaseActivity() {
             }
         }
 
-        cancel_cache.setOnClickListener{
-            CacheHelper.cancelCache(this){
-                errorCode: Int ->
+        cancel_cache.setOnClickListener {
+            CacheHelper.cancelCache(this) { errorCode: Int ->
                 if (errorCode != 0) {
-                    cache_state_tv.text = getString(R.string.docs_cancel_cache_fail,errorCode.toString())
+                    cache_state_tv.text = getString(
+                        R.string.docs_cancel_cache_fail,
+                        errorCode.toString()
+                    )
                 } else {
                     cache_state_tv.text = getString(R.string.docs_cancel_cache_success)
                 }
             }
         }
 
-        query_cache.setOnClickListener{
+        query_cache.setOnClickListener {
             val fileId = cache_url_et.text.toString()
             if (fileId.isNullOrBlank()) {
                 ToastUtils.showCenterToast(getString(R.string.docs_cache_file_id_null))
                 return@setOnClickListener
             }
-            CacheHelper.queryFileCached(this, fileId){
-                errorCode: Int ,exist : Boolean->
+            CacheHelper.queryFileCached(this, fileId) { errorCode: Int, exist: Boolean ->
                 if (errorCode != 0) {
                     cache_state_tv.text = getString(R.string.docs_query_cache_fail)
                 } else {
-                    val existname = if(exist) { getString(R.string.docs_cache_exist) }else{ getString(R.string.docs_cache_no_exist) };
-                    cache_state_tv.text = getString(R.string.docs_query_cache_success,existname)
+                    val existname = if (exist) {
+                        getString(R.string.docs_cache_exist)
+                    } else {
+                        getString(
+                            R.string.docs_cache_no_exist
+                        )
+                    };
+                    cache_state_tv.text = getString(R.string.docs_query_cache_success, existname)
                 }
             }
         }
@@ -578,7 +768,10 @@ class MainActivity : BaseActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
+        Log.d(
+            TAG,
+            "onActivityResult() called with: requestCode = [$requestCode], resultCode = [$resultCode]"
+        )
         if (requestCode == UploadFileHelper.REQUEST_CODE_UPLOAD) {
             // 上传文件回调
             UploadFileHelper.onActivityResult(
@@ -643,7 +836,7 @@ class MainActivity : BaseActivity() {
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }
-                                ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicIllegalUrl -> {
+                                ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicIllegalAddress -> {
                                     Toast.makeText(
                                         this,
                                         "${errorCode}: 非法图片URL",
@@ -665,6 +858,53 @@ class MainActivity : BaseActivity() {
                     Toast.makeText(this, "请填写坐标参数", Toast.LENGTH_SHORT).show()
                 }
             }
+        } else if (requestCode == UploadPicHelper.REQUEST_CODE_FOR_CHOOSE_BACKGROUND) {
+            UploadPicHelper.handleActivityResult(this, requestCode, resultCode, data) { filePath ->
+
+                currentHolder?.let { holder ->
+                    holder.setBackgroundImage(
+                        filePath,
+                        fitMode,
+                    ) { errorCode ->
+                        when (errorCode) {
+                            0 -> {
+                                Toast.makeText(this, "${errorCode}: 上传成功", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                            ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicImageSizeLimit -> {
+                                Toast.makeText(
+                                    this,
+                                    "${errorCode}: 图片大小不能超过10M，请重新选择",
+                                    Toast.LENGTH_SHORT
+                                )
+                                    .show()
+                            }
+                            ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicImageTypeNotSupport -> {
+                                Toast.makeText(
+                                    this,
+                                    "${errorCode}: 图片格式暂不支持",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicIllegalAddress -> {
+                                Toast.makeText(
+                                    this,
+                                    "${errorCode}: 非法图片URL",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            else -> {
+                                Toast.makeText(
+                                    this,
+                                    "${errorCode}: 上传失败，请重试",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    }
+                }
+
+            }
         }
     }
 
@@ -679,6 +919,7 @@ class MainActivity : BaseActivity() {
             if (errorCode == 0) {
                 // 创建成功，添加白板
                 drawer_whiteboard_list.addWhiteboard(holder.getCurrentWhiteboardModel())
+                holder.setDocsViewAuthInfo(whiteboardAuthInfo)
             }
         }
     }
@@ -708,7 +949,15 @@ class MainActivity : BaseActivity() {
                 return@setOnClickListener
             }
             lastClickPageChangeTime = System.currentTimeMillis()
-            currentHolder?.flipToPrevPage()
+            currentHolder?.let {
+                if ((isScrollAuthorized) || it.isPureWhiteboard()) {
+                    currentHolder?.flipToPrevPage() { errorCode ->
+                        if (errorCode != 0) {
+                            ToastUtils.showCenterToast("errorCode:$errorCode")
+                        }
+                    }
+                }
+            }
         }
         // 下一页s
         main_page_next.setOnClickListener {
@@ -716,7 +965,15 @@ class MainActivity : BaseActivity() {
                 return@setOnClickListener
             }
             lastClickPageChangeTime = System.currentTimeMillis()
-            currentHolder?.flipToNextPage()
+            currentHolder?.let {
+                if ((isScrollAuthorized) || it.isPureWhiteboard()) {
+                    currentHolder?.flipToNextPage() { errorCode ->
+                        if (errorCode != 0) {
+                            ToastUtils.showCenterToast("errorCode:$errorCode")
+                        }
+                    }
+                }
+            }
         }
         // 跳到指定页数
         jump_btn.setOnClickListener {
@@ -724,7 +981,17 @@ class MainActivity : BaseActivity() {
                 return@setOnClickListener
             }
             lastClickPageJumpChangeTime = System.currentTimeMillis()
-            currentHolder?.flipToPage(main_page_to_index.text.toString().toIntOrNull() ?: 0)
+            currentHolder?.let {
+                if ((isScrollAuthorized) || it.isPureWhiteboard()) {
+                    currentHolder?.flipToPage(
+                        main_page_to_index.text.toString().toIntOrNull() ?: 0
+                    ) { errorCode ->
+                        if (errorCode != 0) {
+                            ToastUtils.showCenterToast("errorCode:$errorCode")
+                        }
+                    }
+                }
+            }
         }
         // 上一步
         main_step_prev.setOnClickListener {
@@ -732,7 +999,15 @@ class MainActivity : BaseActivity() {
                 return@setOnClickListener
             }
             lastClickStepChangeTime = System.currentTimeMillis()
-            currentHolder?.previousStep()
+            currentHolder?.let {
+                if (isScrollAuthorized) {
+                    currentHolder?.previousStep {
+                        if (it != 0) {
+                            ToastUtils.showCenterToast("errorCode:$it")
+                        }
+                    }
+                }
+            }
         }
         // 下一步
         main_step_next.setOnClickListener {
@@ -740,8 +1015,18 @@ class MainActivity : BaseActivity() {
                 return@setOnClickListener
             }
             lastClickStepChangeTime = System.currentTimeMillis()
-            currentHolder?.nextStep()
+            currentHolder?.let {
+                if (isScrollAuthorized) {
+                    currentHolder?.nextStep {
+                        if (it != 0) {
+                            ToastUtils.showCenterToast("errorCode:$it")
+                        }
+                    }
+                }
+            }
+
         }
+        userid_tv.setText("UID:${VideoSDKManager.getUserID()}")
     }
 
     /**
@@ -878,7 +1163,7 @@ class MainActivity : BaseActivity() {
                             if (newHolder) {
                                 drawer_whiteboard_list.addWhiteboard(model)
                             }
-//                            holder.visibility = View.VISIBLE
+                            holder.setDocsViewAuthInfo(whiteboardAuthInfo)
                         }
                     } else {
                         tempWbList.add(zegoWhiteboardView)
@@ -895,6 +1180,26 @@ class MainActivity : BaseActivity() {
                 }
 
                 override fun onError(errorCode: Int) {
+                    Log.d(TAG, "onError() called with: errorCode = $errorCode")
+                    ToastUtils.showCenterToast("errorCode:$errorCode")
+                }
+
+                override fun onWhiteboardAuthChanged(authInfo: HashMap<String, Int>) {
+                    super.onWhiteboardAuthChanged(authInfo)
+                    Log.d(TAG, "onWhiteboardAuthChanged() called with: authInfo = $authInfo")
+//                    auth_whiteboard.setText(authInfo.toString())
+                    // 从白板的回到中获取到 滚动 的权限状态，更新相关的操作权限
+                    isScrollAuthorized = authInfo["scroll"] == 1
+                    whiteboardAuthInfo.putAll(authInfo)
+                    container.getWhiteboardViewHolderList().forEach {
+                        it.setDocsViewAuthInfo(whiteboardAuthInfo)
+                    }
+                }
+
+                override fun onWhiteboardGraphicAuthChanged(authInfo: HashMap<String, Int>) {
+                    super.onWhiteboardGraphicAuthChanged(authInfo)
+                    Log.d(TAG, "onWhiteboardGraphicAuthChanged() called with: authInfo = $authInfo")
+//                    auth_graph.setText(authInfo.toString())
                 }
             })
 
@@ -922,14 +1227,10 @@ class MainActivity : BaseActivity() {
                     TAG,
                     "setWhiteboardScrollListener(),currentPage:${currentPage},pageCount:${pageCount}, ${currentHolder?.getCurrentPage()}"
                 )
-
-                currentHolder?.let {
-                        holder ->
-                            val current = holder.getCurrentPage()
-                            val pageCounts = holder.getPageCount()
-                            main_page_index.text =
-                                "%s/%s".format(current.toString(), pageCounts.toString())
-                            docs_preview_list.setSelectedPage(current - 1)
+                currentHolder?.let { _ ->
+                    main_page_index.text =
+                        "%s/%s".format(currentPage.toString(), pageCount.toString())
+                    docs_preview_list.setSelectedPage(currentPage - 1)
                 }
 
 
@@ -950,70 +1251,79 @@ class MainActivity : BaseActivity() {
     }
 
     private fun onWhiteboardHolderSelected(holder: ZegoWhiteboardViewHolder) {
-        Logger.i(TAG, "onWhiteboardHolderSelected:${holder.getCurrentWhiteboardMsg()}")
+        Log.d(TAG, "onWhiteboardHolderSelected() called with: holder = $holder,currentHolder:$currentHolder")
+        val holderChanged = currentHolder != holder
+        // onResume 触发的重复设置不再更新
         currentHolder = holder
-        main_top_whiteboard_name.text = holder.getCurrentWhiteboardName()
 
+        if(holderChanged){
+            mode_none.isChecked = false
+            mode_scale.isChecked = true
+            mode_scroll.isChecked = false
+            mode_draw.isChecked = true
+            main_top_whiteboard_name.text = holder.getCurrentWhiteboardName()
+
+            if (holder.isPureWhiteboard() || holder.isDocsViewLoadSuccessed()) {
+                main_page_index.text = "%s/%s".format(
+                    holder.getCurrentPage().toString(),
+                    holder.getPageCount().toString()
+                )
+            } else {
+                main_page_index.text = ""
+            }
+
+            Logger.i(TAG, "holder.isExcel():${holder.isExcel()}")
+            if (holder.isExcel()) {
+                main_top_sheet_name.text = holder.getCurrentWhiteboardModel().fileInfo.fileName
+            }
+
+            main_top_sheet_name.visibility = if (holder.isExcel()) View.VISIBLE else View.INVISIBLE
+            main_top_jump_page_layout.visibility =
+                if (holder.isExcel()) View.INVISIBLE else View.VISIBLE
+            main_top_page_layout.visibility = if (holder.isExcel()) View.INVISIBLE else View.VISIBLE
+            main_top_step_layout.visibility =
+                if (holder.isDynamicPPT()) View.VISIBLE else View.INVISIBLE
+
+            selectDefaultChild()
+            holder.setOperationMode(SelectOpModePopWindow.DRAW_SCALE)
+
+            // 选中白板的时候，要设置当前的自定义图形
+            selectCustomImagePopWindow?.let {
+                holder.addImage(
+                    ZegoWhiteboardViewImageType.ZegoWhiteboardViewImageCustom,
+                    it.mSelectImage.url,
+                    0,
+                    0
+                ) { errorCode ->
+                    when (errorCode) {
+                        0 -> {
+                            draw_custom_image_tv.text = it.mSelectImage.imageName
+                        }
+                        ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicImageSizeLimit -> {
+                            Toast.makeText(this, "${errorCode}: 图片大小不能超过500k，请重新选择", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                        ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicImageTypeNotSupport -> {
+                            Toast.makeText(this, "${errorCode}: 图片格式暂不支持", Toast.LENGTH_SHORT).show()
+                        }
+                        else -> {
+                            Toast.makeText(
+                                this,
+                                "${errorCode}: " + getString(R.string.draw_input_url),
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        }
+                    }
+                }
+            }
+        }
+        selectGraffitiToolsPopWindow?.dismiss()
         // currentWhiteboard有可能不等于List里面的白板，所以遍历一下
         holder.getWhiteboardIDList().forEach {
             drawer_whiteboard_list.setSelectedWhiteboard(it)
         }
 
-        if (holder.isPureWhiteboard() || holder.isDocsViewLoadSuccessed()) {
-            main_page_index.text = "%s/%s".format(
-                holder.getCurrentPage().toString(),
-                holder.getPageCount().toString()
-            )
-        } else {
-            main_page_index.text = ""
-        }
-
-        Logger.i(TAG, "holder.isExcel():${holder.isExcel()}")
-        if (holder.isExcel()) {
-            main_top_sheet_name.text = holder.getCurrentWhiteboardModel().fileInfo.fileName
-        }
-
-        main_top_sheet_name.visibility = if (holder.isExcel()) View.VISIBLE else View.INVISIBLE
-        main_top_jump_page_layout.visibility =
-            if (holder.isExcel()) View.INVISIBLE else View.VISIBLE
-        main_top_page_layout.visibility = if (holder.isExcel()) View.INVISIBLE else View.VISIBLE
-        main_top_step_layout.visibility =
-            if (holder.isDynamicPPT()) View.VISIBLE else View.INVISIBLE
-
-        selectDefaultChild()
-
-        selectGraffitiToolsPopWindow?.dismiss()
-
-        // 选中白板的时候，要设置当前的自定义图形
-        selectCustomImagePopWindow?.let {
-            holder.addImage(
-                ZegoWhiteboardViewImageType.ZegoWhiteboardViewImageCustom,
-                it.mSelectImage.url,
-                0,
-                0
-            ) { errorCode ->
-                when (errorCode) {
-                    0 -> {
-                        draw_custom_image_tv.text = it.mSelectImage.imageName
-                    }
-                    ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicImageSizeLimit -> {
-                        Toast.makeText(this, "${errorCode}: 图片大小不能超过500k，请重新选择", Toast.LENGTH_SHORT)
-                            .show()
-                    }
-                    ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicImageTypeNotSupport -> {
-                        Toast.makeText(this, "${errorCode}: 图片格式暂不支持", Toast.LENGTH_SHORT).show()
-                    }
-                    else -> {
-                        Toast.makeText(
-                            this,
-                            "${errorCode}: " + getString(R.string.draw_input_url),
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -1027,6 +1337,8 @@ class MainActivity : BaseActivity() {
 
             override fun onDisconnect(errorCode: Int, roomID: String) {
                 dismissLoadingDialog(loadingDialog)
+                VideoSDKManager.exitRoom()
+                finish()
             }
 
             override fun connecting(errorCode: Int, roomID: String) {
@@ -1106,6 +1418,9 @@ class MainActivity : BaseActivity() {
                     container.onEnterRoomReceiveWhiteboardList(list) { resultCode ->
                         if (resultCode == 0) {
                             val holderList = container.getWhiteboardViewHolderList()
+                            holderList.forEach {
+                                it.setDocsViewAuthInfo(whiteboardAuthInfo)
+                            }
                             Logger.i(
                                 TAG,
                                 "process Enter List finished,resultCode = $resultCode,holderList:${holderList.size}"

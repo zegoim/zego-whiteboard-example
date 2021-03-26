@@ -10,12 +10,14 @@
 #import "ZegoFunctionPannelView.h"
 #import "ZegoTopBarView.h"
 #import "ZegoFileSelectView.h"
+#import "ZegoToast.h"
 
 @interface ZegoMainBoardViewController ()<ZegoBoardServiceDelegate,ZegoRoomSeviceClientDelegate,ZegoBoardContainerViewDelegate,ZegoTopBarViewDelegate,ZegoFileSelectViewDelegate>
 @property (nonatomic, strong) ZegoBoardContainerView *boardContainerView;
 @property (nonatomic, strong) ZegoFunctionPannelView *functionPannelView;
 @property (nonatomic, strong) ZegoTopBarView *topBarView;
 @property (nonatomic, strong) ZegoFileSelectView *fileSelectView;
+@property (nonatomic, strong) NSDictionary *authInfo;
 
 
 @end
@@ -181,10 +183,21 @@
     DLog(@"onRemotePlayAnimation,animationInfo:%@",animationInfo);
 }
 
-- (void)onError:(ZegoWhiteboardViewError)error whiboardView:(nonnull ZegoWhiteboardView *)whiboardView {
-    
+- (void)onError:(ZegoWhiteboardViewError)error whiteboardView:(nonnull ZegoWhiteboardView *)whiboardView {
+    [ZegoToast toastWithError:error];
 }
 
+- (void)onRemoteWhiteboardAuthChange:(NSDictionary *)authInfo {
+    _authInfo = authInfo;
+    for (ZegoDocsView *docsView in self.boardContainerView.docsViewArray) {
+        [docsView setOperationAuth:authInfo];
+    }
+    [[ZegoBoardOperationManager shareManager]setCurrentAuthInfo:authInfo];
+}
+
+- (void)onRemoteWhiteboardGraphicAuthChange:(NSDictionary *)authInfo {
+    
+}
 
 
 #pragma mark - ZegoRoomSeviceClientDelegate
@@ -243,6 +256,7 @@
     NSArray *whiteboardList = [ZegoBoardServiceManager shareManager].whiteboardViewList;
     if (index < whiteboardList.count) {
         ZegoWhiteboardView *view = whiteboardList[index];
+        self.boardContainerView.authInfo = _authInfo;
         [self.boardContainerView addWhiteboardView:view];
         DLog(@"selectWhiteboardFinish，index:%ld WhiteboardViewID:%llu",(long)index,view.whiteboardModel.whiteboardID);
     } else {

@@ -10,8 +10,8 @@ package im.zego.whiteboardexample;
  */
 public class AuthConstants {
 
-    public final static long APP_ID = YOUR_APP_ID;
+    public final static long APP_ID = YOUR_APP_ID;   // 该参数为long型，需要在末尾添加 L，例如 long APP_ID = 12345678L;
 
-    public final static String APP_SIGN = YOUR_APP_SIGN;
+    public final static String APP_SIGN = YOUR_APP_SIGN;     // 该参数为String型，需要用双引号包围
 
 }

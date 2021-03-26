@@ -44,6 +44,11 @@ typedef NS_ENUM(NSUInteger, ZegoOperationEventFlagType) {
     ZegoOperationEventFlagTypeUploadPicByURL               = 10012,
     ZegoOperationEventFlagTypeUploadPicByAlbum             = 10013,
     ZegoOperationEventFlagTypeUploadLog                    = 10014,
+    ZegoOperationEventFlagTypeBackgroundMode                = 10015,
+    ZegoOperationEventFlagTypePresetBackground                = 10016,
+    ZegoOperationEventFlagTypeLocalBackground                = 10017,
+    ZegoOperationEventFlagTypeOnlineBackground                = 10018,
+    ZegoOperationEventFlagTypeCleanBackground                = 10019,
     
     ZegoOperationEventFlagTypeWhiteboardAdd                  = 20001,
     ZegoOperationEventFlagTypeWhiteboardClearCache           = 20002,

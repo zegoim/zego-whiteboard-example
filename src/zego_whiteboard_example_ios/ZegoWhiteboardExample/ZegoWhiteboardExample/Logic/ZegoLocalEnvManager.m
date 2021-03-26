@@ -65,4 +65,9 @@
     return @"<#YOUR_APP_SIGN#>";
     
 }
+
+- (NSString *)userID {
+    return [[NSUserDefaults standardUserDefaults] stringForKey:kUserIDKey];
+}
+
 @end

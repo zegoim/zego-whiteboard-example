@@ -48,21 +48,22 @@
 + (void)showTipMessageWithErrorCode:(int)error {
     
     NSString *msg = nil;
-    switch (error) {
-        case 3030008:
-            msg = @"图片图元大小超出限制";
-            break;
-        case 3030009:
-            msg = @"不支持的图元类型";
-            break;
-        case 3030010:
-            msg = @"非法图片 url";
-            break;
-            
-        default:
-            msg = [NSString stringWithFormat:@"error: %d", error];
-            break;
-    }
+//    switch (error) {
+//        case 3030008:
+//            msg = @"图片图元大小超出限制";
+//            break;
+//        case 3030009:
+//            msg = @"不支持的图元类型";
+//            break;
+//        case 3030010:
+//            msg = @"非法图片 url";
+//            break;
+//
+//        default:
+//            msg = [NSString stringWithFormat:@"error: %d", error];
+//            break;
+//    }
+    msg = [NSString stringWithFormat:@"错误码: %d", error];
     [ZegoProgessHUD showTipMessage:msg];
 }
 
@@ -71,20 +72,23 @@
         UIWindow *key = [UIApplication sharedApplication].keyWindow;
         [MBProgressHUD hideHUDForView:key animated:NO];
         MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:key animated:YES];
+        self.hudView = hud;
         hud.bezelView.color = [UIColor colorWithWhite:0 alpha:0.8];
         hud.bezelView.style = MBProgressHUDBackgroundStyleSolidColor;
         hud.bezelView.layer.masksToBounds = YES;
         hud.bezelView.layer.cornerRadius = 4;
         
         hud.contentColor = [UIColor whiteColor];
+        hud.mode = MBProgressHUDModeDeterminateHorizontalBar;
         
         hud.label.textColor = [UIColor whiteColor];
         hud.label.font = [UIFont systemFontOfSize:12];
         hud.label.text = title;
-        [hud.button addTarget:self action:@selector(didClickCancel:) forControlEvents:UIControlEventTouchUpInside];
-        [hud.button setTitle:@"取消" forState:UIControlStateNormal];
-        self.hudView = hud;
-        self.cancleBlock = cancelBlock;
+        if (cancelBlock) {
+            [hud.button addTarget:self action:@selector(didClickCancel:) forControlEvents:UIControlEventTouchUpInside];
+            [hud.button setTitle:@"取消" forState:UIControlStateNormal];
+            self.cancleBlock = cancelBlock;
+        }
     }
     return self;
 }

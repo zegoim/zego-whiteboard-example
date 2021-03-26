@@ -11,14 +11,15 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.Toast
 import im.zego.zegodocs.*
-import im.zego.zegowhiteboard.ZegoWhiteboardManager
-import im.zego.zegowhiteboard.ZegoWhiteboardView
-import im.zego.zegowhiteboard.ZegoWhiteboardViewImageType
 import im.zego.zegowhiteboard.callback.IZegoWhiteboardViewScaleListener
 import im.zego.zegowhiteboard.callback.IZegoWhiteboardViewScrollListener
 import im.zego.zegowhiteboard.model.ZegoWhiteboardViewModel
 import im.zego.whiteboardexample.util.CONFERENCE_ID
 import im.zego.whiteboardexample.util.Logger
+import im.zego.whiteboardexample.util.ToastUtils
+import im.zego.zegowhiteboard.*
+import im.zego.zegowhiteboard.callback.IZegoWhiteboardExecuteListener
+import java.util.HashMap
 import kotlin.math.round
 
 /**
@@ -238,8 +239,8 @@ class ZegoWhiteboardViewHolder : FrameLayout {
                 "hori:${getCurrentWhiteboardModel().horizontalScrollPercent},vertical:${getCurrentWhiteboardModel().verticalScrollPercent}"
     }
 
-    fun addTextEdit() {
-        currentWhiteboardView?.addTextEdit(context)
+    fun addTextEdit(listener:IZegoWhiteboardExecuteListener) {
+        currentWhiteboardView?.addTextEdit(listener)
     }
 
     fun undo() {
@@ -250,7 +251,7 @@ class ZegoWhiteboardViewHolder : FrameLayout {
         currentWhiteboardView?.redo()
     }
 
-    fun clearCurrentPage() {
+    fun clearCurrentPage(listener:IZegoWhiteboardExecuteListener) {
         val curPageRectF = if (isPureWhiteboard()) {
             currentWhiteboardView?.let {
                 val width = it.width.toFloat()
@@ -271,29 +272,29 @@ class ZegoWhiteboardViewHolder : FrameLayout {
         }
 
         Logger.i(TAG, "clearCurrentPage: ${curPageRectF.toString()}")
-        currentWhiteboardView?.clear(curPageRectF!!)
+        currentWhiteboardView?.clear(curPageRectF!!,listener)
     }
 
-    fun setCanDraw(canDraw: Boolean) {
-        currentWhiteboardView?.setCanDraw(canDraw)
+    fun setOperationMode(opMode:Int) {
+        currentWhiteboardView?.setWhiteboardOperationMode(opMode)
     }
 
-    fun scrollTo(horizontalPercent: Float, verticalPercent: Float, currentStep: Int = 1) {
+    fun scrollTo(horizontalPercent: Float, verticalPercent: Float, currentStep: Int = 1,listener: IZegoWhiteboardExecuteListener?) {
         Logger.d(
             TAG,
             "scrollTo() called with: horizontalPercent = $horizontalPercent, verticalPercent = $verticalPercent, currentStep = $currentStep"
         )
         if (getFileID() != null) {
             if (isDocsViewLoadSuccessed()) {
-                currentWhiteboardView?.scrollTo(horizontalPercent, verticalPercent, currentStep)
+                currentWhiteboardView?.scrollTo(horizontalPercent, verticalPercent, currentStep,listener)
             }
         } else {
-            currentWhiteboardView?.scrollTo(horizontalPercent, verticalPercent, currentStep)
+            currentWhiteboardView?.scrollTo(horizontalPercent, verticalPercent, currentStep,listener)
         }
     }
 
-    fun clear() {
-        currentWhiteboardView?.clear()
+    fun clear(listener:IZegoWhiteboardExecuteListener) {
+        currentWhiteboardView?.clear(listener)
     }
 
     private fun addDocsView(docsView: ZegoDocsView, estimatedSize: Size) {
@@ -382,7 +383,11 @@ class ZegoWhiteboardViewHolder : FrameLayout {
                     override fun onStepChangeForClick() {
                         // 动态PPT，直接点击H5，触发翻页、步数变化
                         Logger.d(TAG, "onStepChangeForClick() called")
-                        scrollTo(0f, docsview.verticalPercent, docsview.currentStep)
+                        scrollTo(0f, docsview.verticalPercent, docsview.currentStep){
+                            if(it != 0){
+                                ToastUtils.showCenterToast("errorCode:$it")
+                            }
+                        }
                     }
                 })
             }
@@ -507,7 +512,7 @@ class ZegoWhiteboardViewHolder : FrameLayout {
                             Toast.makeText(context, "删除白板失败:错误码:$code", Toast.LENGTH_LONG)
                                 .show()
                         } else {
-                            zegoDocsView?.unloadFile()
+                            unloadFile()
                             fileLoadSuccessed = false
                         }
                         requestResult.invoke(errorCode)
@@ -520,7 +525,7 @@ class ZegoWhiteboardViewHolder : FrameLayout {
                 if (errorCode != 0) {
                     Toast.makeText(context, "删除白板失败:错误码:$errorCode", Toast.LENGTH_LONG).show()
                 } else {
-                    zegoDocsView?.unloadFile()
+                    unloadFile()
                     fileLoadSuccessed = false
                 }
                 requestResult.invoke(errorCode)
@@ -579,26 +584,10 @@ class ZegoWhiteboardViewHolder : FrameLayout {
             TAG,
             "loadFileWhiteBoardView,start loadFile fileID:${fileID},estimatedSize:${estimatedSize}"
         )
-        ZegoDocsView(context).let {
-            addDocsView(it, estimatedSize)
-            it.loadFile(fileID, "", IZegoDocsViewLoadListener { errorCode ->
-                fileLoadSuccessed = errorCode == 0
-                if (errorCode == 0) {
-                    Logger.i(
-                        TAG,
-                        "loadFileWhiteBoardView loadFile fileID:${fileID} success,getVisibleSize:${it.getVisibleSize()}," +
-                                "contentSize:${it.getContentSize()}," + "name:${it.getFileName()}" +
-                                "nameList:${it.getSheetNameList()}"
-                    )
-                    it.setBackgroundColor(Color.parseColor("#f4f5f8"))
-                } else {
-                    Logger.i(
-                        TAG,
-                        "loadFileWhiteBoardView loadFile fileID:${fileID} failed，errorCode：${errorCode}"
-                    )
-                }
-                requestResult.invoke(errorCode, it)
-            })
+        val docsView = ZegoDocsView(context)
+        addDocsView(docsView, estimatedSize)
+        loadDocsFile(fileID) { errorCode ->
+            requestResult.invoke(errorCode, docsView)
         }
     }
 
@@ -692,64 +681,64 @@ class ZegoWhiteboardViewHolder : FrameLayout {
         }
     }
 
-    fun flipToPage(targetPage: Int) {
+    fun flipToPage(targetPage: Int,listener: IZegoWhiteboardExecuteListener?) {
         Logger.i(TAG, "targetPage:${targetPage}")
         if (zegoDocsView != null && getFileID() != null && isDocsViewLoadSuccessed()) {
             zegoDocsView!!.flipPage(targetPage) { result ->
                 Logger.i(TAG, "it.flipToPage() result:$result")
                 if (result) {
-                    scrollTo(0f, zegoDocsView!!.getVerticalPercent())
+                    scrollTo(0f, zegoDocsView!!.getVerticalPercent(),1,listener )
                 }
             }
         } else {
-            scrollTo((targetPage - 1).toFloat() / getPageCount(), 0f)
+            scrollTo((targetPage - 1).toFloat() / getPageCount(), 0f,1,listener)
         }
     }
 
     /**
      * 此处的page是从1开始的
      */
-    fun flipToPrevPage(): Int {
+    fun flipToPrevPage(listener: IZegoWhiteboardExecuteListener?): Int {
         val currentPage = getCurrentPage()
         val targetPage = if (currentPage - 1 <= 0) 1 else currentPage - 1
         if (targetPage != currentPage) {
-            flipToPage(targetPage)
+            flipToPage(targetPage,listener)
         }
         return targetPage
     }
 
-    fun flipToNextPage(): Int {
+    fun flipToNextPage(listener: IZegoWhiteboardExecuteListener?): Int {
         val currentPage = getCurrentPage()
         val targetPage =
             if (currentPage + 1 > getPageCount()) getPageCount() else currentPage + 1
         if (targetPage != currentPage) {
-            flipToPage(targetPage)
+            flipToPage(targetPage,listener)
         }
         return targetPage
     }
 
-    fun previousStep() {
+    fun previousStep(listener: IZegoWhiteboardExecuteListener?) {
         Logger.d(TAG, "previousStep() called,fileLoadSuccessed:${isDocsViewLoadSuccessed()}")
         if (getFileID() != null && isDynamicPPT() && isDocsViewLoadSuccessed()) {
             zegoDocsView?.let {
                 it.previousStep(IZegoDocsViewScrollCompleteListener { result ->
                     Logger.d(TAG, "previousStep:result = $result")
                     if (result) {
-                        scrollTo(0f, it.getVerticalPercent(), it.getCurrentStep())
+                        scrollTo(0f, it.getVerticalPercent(), it.getCurrentStep(),listener)
                     }
                 })
             }
         }
     }
 
-    fun nextStep() {
+    fun nextStep(listener: IZegoWhiteboardExecuteListener?) {
         Logger.i(TAG, "nextStep() called,fileLoadSuccessed:${isDocsViewLoadSuccessed()}")
         if (getFileID() != null && isDynamicPPT() && isDocsViewLoadSuccessed()) {
             zegoDocsView?.let {
                 it.nextStep(IZegoDocsViewScrollCompleteListener { result ->
                     Logger.i(TAG, "nextStep:result = $result")
                     if (result) {
-                        scrollTo(0f, it.getVerticalPercent(), it.getCurrentStep())
+                        scrollTo(0f, it.getVerticalPercent(), it.getCurrentStep(),listener)
                     }
                 })
             }
@@ -785,12 +774,12 @@ class ZegoWhiteboardViewHolder : FrameLayout {
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         // 保底处理
-        zegoDocsView?.unloadFile()
+        unloadFile()
         fileLoadSuccessed = false
     }
 
-    fun addText(text: String, positionX: Int, positionY: Int) {
-        currentWhiteboardView?.addText(text, positionX, positionY)
+    fun addText(text: String, positionX: Int, positionY: Int, listener: IZegoWhiteboardExecuteListener) {
+        currentWhiteboardView?.addText(text, positionX, positionY,listener)
     }
 
     fun addImage(
@@ -807,12 +796,20 @@ class ZegoWhiteboardViewHolder : FrameLayout {
         }
     }
 
-    fun enableUserOperation(enable: Boolean) {
-        currentWhiteboardView?.enableUserOperation(enable)
+    fun setBackgroundImage(address :String,mode :ZegoWhiteboardViewImageFitMode,result: (errorCode: Int) -> Unit){
+        currentWhiteboardView?.setBackgroundImage(address,mode){
+            result(it)
+        }
     }
 
-    fun deleteSelectedGraphics() {
-        currentWhiteboardView?.deleteSelectedGraphics()
+    fun clearBackgroundImage(result: (errorCode: Int) -> Unit){
+        currentWhiteboardView?.clearBackgroundImage{
+            result(it)
+        }
+    }
+
+    fun deleteSelectedGraphics(listener:IZegoWhiteboardExecuteListener) {
+        currentWhiteboardView?.deleteSelectedGraphics(listener)
     }
 
     /**
@@ -830,13 +827,23 @@ class ZegoWhiteboardViewHolder : FrameLayout {
      * 加载文件
      * @param fileID 文件 ID
      */
-    fun loadDocsFile(fileID: String, listener: IZegoDocsViewLoadListener) {
+   private fun loadDocsFile(fileID: String, listener: IZegoDocsViewLoadListener) {
         zegoDocsView?.loadFile(fileID, "", IZegoDocsViewLoadListener { errorCode: Int ->
-            Logger.d(TAG, "onLoadFile() called with: errorCode = [$errorCode]")
-            Logger.d(
-                TAG,
-                "onLoadFile() called with: docsView.isScaleEnable() = [" + zegoDocsView?.isScaleEnable + "]"
-            )
+            fileLoadSuccessed = errorCode == 0
+            if (errorCode == 0) {
+                Logger.i(
+                    TAG,
+                    "loadDocsFile fileID:${fileID} success,getVisibleSize:${zegoDocsView!!.getVisibleSize()}," +
+                            "contentSize:${zegoDocsView!!.getContentSize()}," + "name:${zegoDocsView!!.getFileName()}" +
+                            "nameList:${zegoDocsView!!.getSheetNameList()}"
+                )
+                zegoDocsView!!.setBackgroundColor(Color.parseColor("#f4f5f8"))
+            } else {
+                Logger.i(
+                    TAG,
+                    "loadDocsFile fileID:${fileID} failed，errorCode：${errorCode}"
+                )
+            }
             listener.onLoadFile(errorCode)
         })
     }
@@ -849,15 +856,15 @@ class ZegoWhiteboardViewHolder : FrameLayout {
     }
 
     fun reload() {
-        Log.d(TAG, "reload() called")
-        if (zegoDocsView != null) {
-            zegoDocsView?.reloadFile(IZegoDocsViewLoadListener { loadCode ->
-                if (loadCode == 0) {
-                    Logger.d(TAG, "visibleRegion:${zegoDocsView!!.getVisibleSize()}")
-                    currentWhiteboardView?.setVisibleRegion(zegoDocsView!!.visibleSize)
-                }
-            })
-        }
+        zegoDocsView?.reloadFile(IZegoDocsViewLoadListener { loadCode ->
+            if (loadCode == 0) {
+                Logger.d(TAG, "visibleRegion:${zegoDocsView!!.getVisibleSize()}")
+                currentWhiteboardView?.setVisibleRegion(zegoDocsView!!.visibleSize)
+            }
+        })
     }
 
+    fun setDocsViewAuthInfo(authInfo: HashMap<String, Int>){
+        zegoDocsView?.setOperationAuth(authInfo)
+    }
 }

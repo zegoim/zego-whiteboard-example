@@ -36,12 +36,10 @@ object DocsViewSDKManager {
 
         // 设置存储路径
         if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED) {
-            config.logFolder =
-                application.getExternalFilesDir(null)!!.absolutePath + File.separator + AppConstants.LOG_SUBFOLDER
-            config.dataFolder =
-                application.getExternalFilesDir(null)!!.absolutePath + File.separator + "zegodocs" + File.separator + "data"
-            config.cacheFolder =
-                application.getExternalFilesDir(null)!!.absolutePath + File.separator + "zegodocs" + File.separator + "cache"
+            // 可选设置
+            config.logFolder = application.getExternalFilesDir(null)!!.absolutePath + File.separator + AppConstants.LOG_SUBFOLDER
+            config.dataFolder = application.getExternalFilesDir(null)!!.absolutePath + File.separator + "zegodocs" + File.separator + "data"
+            config.cacheFolder = application.getExternalFilesDir(null)!!.absolutePath + File.separator + "zegodocs" + File.separator + "cache"
         }
 
         // 设置 PPT 步数模式

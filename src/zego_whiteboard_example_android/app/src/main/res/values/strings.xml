@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Zego Whiteboard Example</string>
 
     <!--登陆页面-->
@@ -7,7 +7,7 @@
     <string name="join_button">登录房间</string>
     <string name="join_input_null">请正确输入用户名和房间ID</string>
     <string name="join_init_video_failed">音视频引擎还未初始化成功，请检查appID和appSign是否正确</string>
-    <string name="join_init_docs_failed">文件转码服务还未初始化成功，请检查appID和appSign是否正确</string>
+    <string name="join_init_docs_failed">文件转码服务还未初始化成功，请检查appID、appSign和folder是否正确</string>
     <string name="join_init_wb_failed">白板服务还未初始化成功，请检查appID和appSign是否正确</string>
     <string name="join_max_user_limit">加入课堂失败，当前已达到%d人的最大人数限制</string>
     <string name="join_other">登陆房间失败，错误码:%d</string>
@@ -69,6 +69,7 @@
     <string name="docs_background">下一步触发下一页</string>
 
     <string name="draw_whiteboard_switch">禁用/开启白板</string>
+    <string name="draw_whiteboard_mode">操作模式</string>
     <string name="draw_switch">禁用/开启绘制</string>
     <string name="draw_bold">粗体</string>
     <string name="draw_italic">斜体</string>
@@ -93,6 +94,9 @@
     <string name="draw_upload_image">上传图片</string>
     <string name="draw_upload_image_url">图片 URL</string>
     <string name="draw_local_upload_image">本地上传</string>
+    <string name="draw_set_background">设置背景</string>
+    <string name="draw_set_background_fit_mode">背景图显示模式</string>
+    <string name="draw_clean_background">取消设置</string>
     <string name="draw_color">颜色</string>
     <string name="draw_text_size">字号大小</string>
     <string name="draw_brush_size">画笔粗细</string>
@@ -120,6 +124,13 @@
     <string name="file_static">静态</string>
     <string name="file_list_title">选择文件</string>
     <string name="sheet_list">sheet列表</string>
+
+    <string name="switch_yes">是</string>
+    <string name="switch_no">否</string>
+    <string name="mode_none">不可操作模式</string>
+    <string name="mode_scroll">滚动模式</string>
+    <string name="mode_draw">绘制模式</string>
+    <string name="mode_scale">缩放模式</string>
 
     <!-- PopWindow -->
 

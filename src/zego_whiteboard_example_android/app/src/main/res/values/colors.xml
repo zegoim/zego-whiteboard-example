@@ -17,6 +17,8 @@
     <color name="background">#fbfcff</color>
 
     <color name="default_color">#f54326</color>
+    <color name="fsk_green">#41bb54</color>
+    <color name="fsk_base_bg">#d3d3d3</color>
 
     <array name="graffiti_color">
         <item>#ffffff</item>

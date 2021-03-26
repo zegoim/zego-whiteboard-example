@@ -13,7 +13,7 @@ ZegoWhiteboardExample是集成即构[互动白板SDK](https://doc-zh.zego.im/zh/
 
 - Android Studio 4.0 或以上版本。
 - 已经下载 Android SDK 30 和 Android SDK Platform-Tools 30.*.*。
-- Android 版本不低于 5.0 的 Android 设备或模拟器（推荐使用真机），如果是真机，请在开发者选项中开启”允许调试”选项。
+- Android 版本不低于 5.0 且支持音视频的 Android 设备。
 - Android 设备已经连接到 Internet。
 
 > 首次编译示例源码时，没有对应的依赖库或者构建工具，Android Studio 会自行下载，可能需要较长时间，请耐心等待。

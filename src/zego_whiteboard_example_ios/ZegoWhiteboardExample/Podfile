@@ -9,7 +9,8 @@ target 'ZegoWhiteboardExample' do
   pod 'Masonry'
   pod 'IQKeyboardManager'
   pod 'YYWebImage'
-
+  pod 'Toast', '~> 4.0.0'
+  
   pod 'ZegoDocsView/Basic_zh'
   pod 'ZegoWhiteboardView/Express'
 end

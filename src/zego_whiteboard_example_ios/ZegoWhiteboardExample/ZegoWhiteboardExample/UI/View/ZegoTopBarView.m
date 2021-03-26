@@ -186,7 +186,7 @@
 }
 
 - (void)setupBboardName:(NSString *)boardName {
-    self.boardNameLabel.text = [NSString stringWithFormat:@"%@",boardName];
+    self.boardNameLabel.text = [NSString stringWithFormat:@"%@-%@",boardName,[ZegoLocalEnvManager shareManager].userID];
     DLog(@"***topBar setupBboardName:%@",boardName);
 }
 

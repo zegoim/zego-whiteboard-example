@@ -18,6 +18,9 @@
 @end
 
 @implementation ZegoOperationPannelEventHandler
+{
+    NSNumber *_backgroundMode;
+}
 //所有操作视图cell 时间处理中心，根据model 的type 分类处理
 //根据model 中的eventNumber 处理指定事件
 - (void)onSettingCellValueChange:(ZegoCommonCellModel *)valueChangeModel {
@@ -68,7 +71,7 @@
 
 - (void)handlePickerEventWithModel:(ZegoCommonCellModel *)model {
     ZegoCellOptionModel *optionModel = model.options[[model.value integerValue] ];
-    DLog(@"EventHandler>>> handleSwitchEventWithModel:%lu",(unsigned long)model.eventNumber);
+    DLog(@"EventHandler>>> handlePickerEventWithModel:%lu",(unsigned long)model.eventNumber);
     switch (model.eventNumber) {
         case ZegoOperationEventFlagTypeToolType:
             [[ZegoBoardOperationManager shareManager] setupToolType:[optionModel.value integerValue]];
@@ -84,6 +87,14 @@
             
         case ZegoOperationEventFlagTypeSelectedGraphic:
             [self handleSelectGraphicWithModel:model];
+            break;
+        
+        case ZegoOperationEventFlagTypeBackgroundMode:
+            [self handleBackgroundModeWithModel:model];
+            break;
+            
+        case ZegoOperationEventFlagTypePresetBackground:
+            [self handlePresetBackgroundWithModel:model];
             break;
             
             
@@ -136,6 +147,15 @@
         case ZegoOperationEventFlagTypeUploadLog:
             [ZegoProgessHUD showTipMessage:@"日志已上传"];
             [ZegoRoomSeviceCenter uploadLog];
+            break;
+        case ZegoOperationEventFlagTypeLocalBackground:
+            [self handleLocalBackground];
+            break;
+        case ZegoOperationEventFlagTypeOnlineBackground:
+            [self handleOnlineBackgroundWithModel:model];
+            break;
+        case ZegoOperationEventFlagTypeCleanBackground:
+            [[ZegoBoardOperationManager shareManager] cleanBackgroundImage];
             break;
         default:
             break;
@@ -199,12 +219,12 @@
             currentMode = currentMode | (1 << i);
         }
     }
-    bool result1 = (currentMode & ZegoWhiteboardOperationModeDraw);
-    bool result2 = (currentMode & ZegoWhiteboardOperationModeScroll);
-    if ( result1 == result2) {
-        [ZegoProgessHUD showTipMessage:@"不可以同时设置scroll和draw 模式"];
-        return;
-    }
+//    bool result1 = (currentMode & ZegoWhiteboardOperationModeDraw);
+//    bool result2 = (currentMode & ZegoWhiteboardOperationModeScroll);
+//    if ( result1 == result2) {
+//        [ZegoProgessHUD showTipMessage:@"不可以同时设置scroll和draw 模式"];
+//        return;
+//    }
     DLog(@"EventHandler>>> handleEventOperationMode:%ld",(long)currentMode);
 
     [[ZegoBoardOperationManager shareManager] setupWhiteboardOperationMode:currentMode];
@@ -354,6 +374,37 @@
 
 - (void)uploadPicture:(NSString *)filePath {
     [[NSNotificationCenter defaultCenter]postNotificationName:@"addImage" object:nil userInfo:@{@"file":filePath,@"point":@(self.imagePoint)}];
+}
+
+- (void)uploadBackgroundPicture:(NSString *)filePath {
+    if (!_backgroundMode) {
+        _backgroundMode = @(0);
+    }
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"setBackgroundImage" object:nil userInfo:@{@"file":filePath, @"mode":_backgroundMode}];
+}
+
+- (void)handleBackgroundModeWithModel:(ZegoCommonCellModel *)model {
+    _backgroundMode = model.value;
+}
+
+- (void)handlePresetBackgroundWithModel:(ZegoCommonCellModel *)model {
+    NSInteger index = ((NSNumber *)model.value).integerValue;
+    NSString *path = model.options[index].value;
+    [self uploadBackgroundPicture:path];
+}
+
+- (void)handleOnlineBackgroundWithModel:(ZegoCommonCellModel *)model {
+    ZegoCellOptionModel *urlModel = model.options.firstObject;
+    [self uploadBackgroundPicture:urlModel.value];
+}
+
+- (void)handleLocalBackground {
+    __weak typeof(self) weakSelf = self;
+    self.documentSelectorBlock = ^(NSURL *fileUrl) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        [strongSelf uploadBackgroundPicture:fileUrl.path];
+    };
+    [self openDocumentSelector];
 }
 
 //上传文件
