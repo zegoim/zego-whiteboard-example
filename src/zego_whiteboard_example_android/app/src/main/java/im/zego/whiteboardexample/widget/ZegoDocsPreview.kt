@@ -26,7 +26,7 @@ class ZegoDocsPreview : LinearLayout {
     )
 
     init {
-        LayoutInflater.from(context).inflate(R.layout.item_preview_list, this, true)
+        val inflate = LayoutInflater.from(context).inflate(R.layout.item_preview_list, this, true)
         previewLayouManager = LinearLayoutManager(context)
         previewListAdapter = PreviewListAdapter()
 
@@ -38,10 +38,15 @@ class ZegoDocsPreview : LinearLayout {
             it.itemAnimator = null
 
         }
+
+        inflate.findViewById<ImageView>(R.id.close_preview).setOnClickListener {
+            onCloseBtnClick.invoke()
+        }
     }
 
     private var previewListAdapter: PreviewListAdapter
     private var previewLayouManager:LinearLayoutManager
+    private var onCloseBtnClick: () -> Unit = {}
 
     companion object {
         const val TAG = "ZegoDocsPreview"
@@ -49,6 +54,10 @@ class ZegoDocsPreview : LinearLayout {
 
     fun setSelectedListener(onPageSelected: (Int, Int) -> Unit) {
         previewListAdapter.onPageSelected = onPageSelected
+    }
+
+    fun setCloseBtnListener(onCloseBtnClick: () -> Unit) {
+        this.onCloseBtnClick = onCloseBtnClick
     }
 
     fun setThumbnailUrlList(urls: ArrayList<String>) {

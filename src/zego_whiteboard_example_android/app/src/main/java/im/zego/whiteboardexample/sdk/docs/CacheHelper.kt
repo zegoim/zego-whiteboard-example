@@ -30,15 +30,16 @@ class CacheHelper {
                 seq = infoMap[ZegoDocsViewConstants.REQUEST_SEQ] as Int
                 when {
                     errorCode != ZegoDocsViewConstants.ZegoDocsViewSuccess -> {
-                        Logger.i(TAG, "cacheFile(fileID):${fileID}, state: $state, errorCode: $errorCode, seq: $seq")
+                        Logger.i(TAG, "cacheFile(fileID):${fileID},ZegoDocsViewSuccess state: $state, errorCode: $errorCode, seq: $seq, cachePercent: 0")
                         cacheResult(errorCode, state, 0f)
                     }
                     state == ZegoDocsViewConstants.ZegoDocsViewCacheStateCaching -> {
-                        val uploadPercent = infoMap[ZegoDocsViewConstants.UPLOAD_PERCENT] as Float * 100
-                        cacheResult(errorCode, state, uploadPercent)
+                        val cachePercent = infoMap[ZegoDocsViewConstants.CACHE_PERCENT] as Float * 100
+                        cacheResult(errorCode, state, cachePercent)
+                        Logger.i(TAG, "cacheFile(fileID):${fileID},ZegoDocsViewCacheStateCaching state: $state, errorCode: $errorCode, seq: $seq, cachePercent: $cachePercent")
                     }
                     state == ZegoDocsViewConstants.ZegoDocsViewCacheStateCached -> {
-                        Logger.i(TAG, "cacheFile(fileID):${fileID}, state: $state, errorCode: $errorCode, seq: $seq")
+                        Logger.i(TAG, "cacheFile(fileID):${fileID},ZegoDocsViewCacheStateCached state: $state, errorCode: $errorCode, seq: $seq, cachePercent: 100")
                         cacheResult(errorCode, state, 100f)
                     }
                 }
@@ -79,6 +80,14 @@ class CacheHelper {
             ZegoDocsViewManager.getInstance().queryFileCached(fileID) { errorCode, exist ->
                 Logger.i(TAG, "queryFileCacheInner(fileID):${fileID}, exist: $exist, errorCode: $errorCode")
                 queryFileResult(errorCode, exist)
+            }
+        }
+
+        fun clearAllCached(activity: Activity) {
+            PermissionHelper.onReadSDCardPermissionGranted(activity) { grant ->
+                if (grant) {
+                    ZegoDocsViewManager.getInstance().clearCacheFolder()
+                }
             }
         }
 

@@ -71,7 +71,7 @@ dependencies {
 
     //glide
     implementation 'com.github.bumptech.glide:glide:4.12.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
 
     // PickerView
     implementation 'com.github.zyyoona7:wheelview:1.0.7'
@@ -82,15 +82,8 @@ dependencies {
 
 }
 
-task aaaUpdateLibrary(type: Exec) {
-    workingDir './../builds/'
-    commandLine "python3","update_libs.py"
-}
 
-task aaaBuildWhiteboard(type: Exec) {
-    commandLine "sh","./generate_android.sh"
-}
 
-task aaaBuildDocsView(type: Exec) {
-    commandLine "sh","./generate_android.sh"
-}
+
+
+

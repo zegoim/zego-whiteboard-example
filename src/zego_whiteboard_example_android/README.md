@@ -23,7 +23,7 @@ ZegoWhiteboardExample是集成即构[互动白板SDK](https://doc-zh.zego.im/zh/
 > 示例源码中使用的gradle相关版本如下：
 >
 > - gradle： 6.5
-> - gradle Android 插件： 4.1.2
+> - gradle Android 插件： 4.1.3
 
 # 快速启动
 #### 1. 在开发电脑中找到 Android Studio 软件图标。

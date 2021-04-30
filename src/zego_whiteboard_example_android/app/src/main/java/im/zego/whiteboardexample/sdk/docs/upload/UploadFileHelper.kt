@@ -6,6 +6,8 @@ import android.util.Log
 import im.zego.zegodocs.ZegoDocsViewConstants
 import im.zego.zegodocs.ZegoDocsViewManager
 import im.zego.whiteboardexample.tool.PermissionHelper
+import im.zego.zegodocs.IZegoDocsViewUploadListener
+import im.zego.zegodocs.ZegoDocsViewCustomH5Config
 
 /**
  * 上传、取消上传
@@ -13,15 +15,19 @@ import im.zego.whiteboardexample.tool.PermissionHelper
 class UploadFileHelper {
     companion object {
         private const val TAG = "UploadHelper"
-        const val REQUEST_CODE_UPLOAD = 10000
+        const val REQUEST_CODE_UPLOAD_FILE = 10000
+        const val REQUEST_CODE_UPLOAD_H5 = 10001
         private var mRenderType: Int = ZegoDocsViewConstants.ZegoDocsViewRenderTypeVector
+        private var mH5Config: ZegoDocsViewCustomH5Config = ZegoDocsViewCustomH5Config()
         private var seq: Int = 0
 
         object MimeType {
             const val PPT = "application/vnd.ms-powerpoint"
-            const val PPTX = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            const val PPTX =
+                "application/vnd.openxmlformats-officedocument.presentationml.presentation"
             const val DOC = "application/msword"
-            const val DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            const val DOCX =
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             const val XLS = "application/vnd.ms-excel"
             const val XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             const val PDF = "application/pdf"
@@ -45,17 +51,35 @@ class UploadFileHelper {
                         it.addCategory(Intent.CATEGORY_OPENABLE)
                         it.type = "*/*"
                     }
-                    mRenderType = renderType;
-                    activity.startActivityForResult(uploadIntent, REQUEST_CODE_UPLOAD)
+                    mRenderType = renderType
+                    activity.startActivityForResult(uploadIntent, REQUEST_CODE_UPLOAD_FILE)
+                }
+            }
+        }
+
+        fun uploadH5File(activity: Activity, h5Config: ZegoDocsViewCustomH5Config) {
+            PermissionHelper.onReadSDCardPermissionGranted(activity) { grant ->
+                if (grant) {
+                    val uploadIntent = Intent().also {
+                        it.action = Intent.ACTION_OPEN_DOCUMENT
+                        it.flags =
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                        it.addCategory(Intent.CATEGORY_OPENABLE)
+                        it.type = "*/*"
+                    }
+                    mH5Config = h5Config
+                    activity.startActivityForResult(uploadIntent, REQUEST_CODE_UPLOAD_H5)
                 }
             }
         }
 
         fun onActivityResult(
             context: Activity, requestCode: Int, resultCode: Int, data: Intent?,
-            uploadResult: (Int, Int, String?, Float) -> Void?
+            uploadResult: (Int, Int, String?, Float) -> Unit
         ) {
-            if (requestCode == REQUEST_CODE_UPLOAD && resultCode == Activity.RESULT_OK) {
+            val isUploadAction =
+                (requestCode == REQUEST_CODE_UPLOAD_FILE || requestCode == REQUEST_CODE_UPLOAD_H5)
+            if (resultCode == Activity.RESULT_OK && isUploadAction) {
                 val fileUri = data?.data
                 Log.d(TAG, "fileUri  = $fileUri ")
                 if (fileUri != null) {
@@ -69,9 +93,10 @@ class UploadFileHelper {
                         Log.e(TAG, "FAILED TO TAKE PERMISSION")
                     }
                     val path = FileUtil.getPath(context, fileUri)
-                    if(path != null) {
-                        uploadFileInner(context, path, uploadResult as (Int, Int, String?, Float) -> Void)
-                    }else{
+                    val isH5File = requestCode == REQUEST_CODE_UPLOAD_H5
+                    if (path != null) {
+                        uploadFileInner(context, path, isH5File, uploadResult)
+                    } else {
                         Log.e(TAG, "url is NULL")
                     }
                 }
@@ -81,11 +106,18 @@ class UploadFileHelper {
         private fun uploadFileInner(
             context: Activity,
             filePath: String,
-            uploadResult: (errorCode: Int, state: Int, fileID: String?, uploadPercent: Float) -> Void
+            isH5File: Boolean,
+            uploadResult: (errorCode: Int, state: Int, fileID: String?, uploadPercent: Float) -> Unit
         ) {
-            ZegoDocsViewManager.getInstance().uploadFile(filePath, mRenderType)
-            { state, errorCode, infoMap ->
-                seq = infoMap[ZegoDocsViewConstants.REQUEST_SEQ] as Int
+            val listener = IZegoDocsViewUploadListener { state, errorCode, infoMap ->
+                Log.d(
+                    TAG,
+                    "uploadFileInner() called with: state = $state, errorCode = $errorCode, infoMap = $infoMap"
+                )
+                val sequence = infoMap[ZegoDocsViewConstants.REQUEST_SEQ]
+                if (sequence != null) {
+                    seq = sequence as Int
+                }
                 when {
                     errorCode != ZegoDocsViewConstants.ZegoDocsViewSuccess -> {
                         uploadResult(errorCode, state, null, 0f)
@@ -102,11 +134,20 @@ class UploadFileHelper {
                     }
                 }
             }
+            if (isH5File) {
+                ZegoDocsViewManager.getInstance().uploadH5File(filePath, mH5Config, listener)
+            } else {
+                ZegoDocsViewManager.getInstance().uploadFile(filePath, mRenderType, listener)
+            }
+
         }
 
         fun cancelUploadFile(uploadResult: (Int) -> Unit) {
-            ZegoDocsViewManager.getInstance()
-                .cancelUploadFile(seq) { errorCode -> uploadResult(errorCode) }
+            if (seq != 0) {
+                ZegoDocsViewManager.getInstance().cancelUploadFile(seq) { errorCode ->
+                    uploadResult(errorCode)
+                }
+            }
         }
 
     }

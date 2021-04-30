@@ -14,6 +14,7 @@ import im.zego.zegodocs.ZegoDocsViewConstants
 import im.zego.zegowhiteboard.ZegoWhiteboardView
 import im.zego.zegowhiteboard.callback.IZegoWhiteboardViewScrollListener
 import im.zego.whiteboardexample.R
+import im.zego.whiteboardexample.callback.IZegoWhiteboardReloadFinishListener
 import im.zego.whiteboardexample.sdk.ZegoSDKManager
 import im.zego.whiteboardexample.util.Logger
 import im.zego.whiteboardexample.util.SharedPreferencesUtil
@@ -37,6 +38,7 @@ class WhiteboardContainer : FrameLayout {
     private var scrollChangeListener: (Int, Int) -> Unit = { _, _ -> }
     private var whiteboardSelectListener: (Long) -> Unit = {}
     private var whiteboardClickListener: () -> Unit = {}
+    private var whiteboardReloadFinishListener: () -> Unit = {}
 
     private var abortGestureEvent: Boolean = false
 
@@ -169,13 +171,20 @@ class WhiteboardContainer : FrameLayout {
         
         result?.let {
             it.setWhiteboardScrollChangeListener(IZegoWhiteboardViewScrollListener { _, vertical ->
-                val currentPage = if (it.isDynamicPPT()) {
-                    it.calcDynamicPPTPage(vertical)
+                val currentPage = if (it.isDisplayedByWebView()) {
+                    it.calcWebViewPage(vertical)
                 } else {
                     it.getCurrentPage()
                 }
                 scrollChangeListener(currentPage, it.getPageCount())
             })
+            it.setReloadFinishListener(object :IZegoWhiteboardReloadFinishListener{
+                override fun onReloadFinish(viewHolder: ZegoWhiteboardViewHolder) {
+                    whiteboardReloadFinishListener.invoke()
+                }
+
+            })
+
             whiteboardSelectListener.invoke(it.currentWhiteboardID)
 
             children.forEach { child ->
@@ -231,6 +240,7 @@ class WhiteboardContainer : FrameLayout {
         val parentWidth: Float
         val parentHeight: Float
         val topHeight = dp2px(context, 98f)
+        val settingHeight = dp2px(context, 40f)
         val bottomHeight = dp2px(context, 20f)
         if (orientation == Configuration.ORIENTATION_PORTRAIT
         ) {
@@ -238,7 +248,8 @@ class WhiteboardContainer : FrameLayout {
             selfHeight = selfWidth / (wbAspectWidth.toFloat() / wbAspectHeight.toFloat())
 
             parentWidth = deviceWidth
-            parentHeight = (selfHeight + topHeight + bottomHeight)
+//            parentHeight = (selfHeight + topHeight + bottomHeight +settingHeight )
+            parentHeight = deviceHeight
         } else {
             selfHeight = (deviceHeight - topHeight - bottomHeight)
             selfWidth = selfHeight * wbAspectWidth / wbAspectHeight
@@ -275,7 +286,7 @@ class WhiteboardContainer : FrameLayout {
         val deviceWidth = dp2px(context, newConfig.screenWidthDp.toFloat())
         val deviceHeight = dp2px(context, newConfig.screenHeightDp.toFloat())
 
-        calcSize(newConfig.orientation, deviceWidth, deviceHeight)
+        calcSize(newConfig.orientation, deviceWidth, deviceHeight + getStatusBarHeight())
     }
 
     fun createPureWhiteboard(requestResult: (Int, ZegoWhiteboardViewHolder) -> Unit) {
@@ -289,7 +300,9 @@ class WhiteboardContainer : FrameLayout {
                 wbAspectWidth * 5, wbAspectHeight, 5, whiteboardName
             ) { errorCode ->
                 if (errorCode == 0) {
-                    addView(whiteboardViewHolder)
+                    addView(whiteboardViewHolder, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).also {
+                        it.gravity = Gravity.CENTER
+                    })
                 }
                 requestResult.invoke(errorCode, whiteboardViewHolder)
             }
@@ -317,7 +330,9 @@ class WhiteboardContainer : FrameLayout {
         } else {
             if (count < ZegoSDKManager.MAX_FILE_WB_COUNT) {
                 val viewHolder = ZegoWhiteboardViewHolder(context)
-                addView(viewHolder)
+                addView(viewHolder, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).also {
+                    it.gravity = Gravity.CENTER
+                })
                 viewHolder.createDocsAndWhiteBoardView(fileID, Size(width, height)) { errorCode ->
                     if (errorCode == 0) {
                         Logger.i(TAG, "viewHolder.currentWhiteboardID: " + viewHolder.currentWhiteboardID)
@@ -362,7 +377,11 @@ class WhiteboardContainer : FrameLayout {
             val newHolder = (holder == null)
             if (holder == null || fileType != ZegoDocsViewConstants.ZegoDocsViewFileTypeELS) {
                 holder = ZegoWhiteboardViewHolder(context)
-                addView(holder)
+                addView(
+                    holder,
+                    LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).also {
+                        it.gravity = Gravity.CENTER
+                    })
             }
             holder.onReceiveFileWhiteboard(Size(width, height), zegoWhiteboardView)
             { errorCode, _ ->
@@ -372,7 +391,12 @@ class WhiteboardContainer : FrameLayout {
             ZegoWhiteboardViewHolder(context).also { holder ->
                 holder.onReceivePureWhiteboardView(zegoWhiteboardView)
                 holder.visibility = View.GONE
-                addView(holder)
+                addView(
+                    holder,
+                    LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).also {
+                        it.gravity = Gravity.CENTER
+                    })
+
                 processResult(0, true, holder)
             }
         }
@@ -433,6 +457,11 @@ class WhiteboardContainer : FrameLayout {
         this.whiteboardClickListener = listener
     }
 
+    fun setWhiteboardReloadFinishListener(listener: () -> Unit){
+        this.whiteboardReloadFinishListener = listener
+    }
+
+
     fun getWhiteboardViewHolderList(): List<ZegoWhiteboardViewHolder> {
         return children.map { it as ZegoWhiteboardViewHolder }.toList()
     }
@@ -477,4 +506,11 @@ class WhiteboardContainer : FrameLayout {
         }
 
     }
+
+    fun getStatusBarHeight():Int
+    {
+        val resourceId: Int = context.resources.getIdentifier("status_bar_height", "dimen", "android")
+        return context.resources.getDimensionPixelSize(resourceId)
+    }
+
 }

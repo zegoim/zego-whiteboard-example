@@ -56,7 +56,11 @@ public class FileUtil {
                 return cursor.getString(column_index);
             }
         } catch (Exception e) {
-            Log.i(TAG, "getDataColumn fail uri:" + uri.toString() + " exception:" + e.toString());
+            if(uri != null) {
+                Log.i(TAG, "getDataColumn fail uri:" + uri.toString() + " exception:" + e.toString());
+            }else {
+                Log.i(TAG, "getDataColumn fail uri: uri is null" + " exception:" + e.toString());
+            }
         } finally {
             if (cursor != null)
                 cursor.close();
@@ -117,7 +121,10 @@ public class FileUtil {
                 } else if ("audio".equals(type)) {
                     contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
                 }
-
+                // 一加手机上是 "content://xxxxx"
+                if(contentUri == null){
+                    return null;
+                }
                 final String selection = "_id=?";
                 final String[] selectionArgs = new String[]{
                         split[1]

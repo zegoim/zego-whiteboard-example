@@ -2,6 +2,7 @@ package im.zego.whiteboardexample.sdk.docs
 
 import android.app.Application
 import android.os.Environment
+import im.zego.whiteboardexample.VersionConstants
 import im.zego.zegodocs.ZegoDocsViewConfig
 import im.zego.zegodocs.ZegoDocsViewManager
 import im.zego.whiteboardexample.constants.AppConstants
@@ -24,7 +25,7 @@ object DocsViewSDKManager {
      * 初始化文档服务
      */
     fun init(application: Application, sdkInitCallback: SDKInitCallback) {
-        Logger.i(TAG, "initDocSdk.... version:" + ZegoDocsViewManager.getInstance().version)
+        Logger.i(TAG, "initDocSdk.... currentVersion:${ZegoDocsViewManager.getInstance().version}, supportVersion:${VersionConstants.DOCS_SDK}")
 
         // 设置appID, appSign, 是否测试环境 isTestEnv
         val docsViewEnvTest = SharedPreferencesUtil.isDocsViewTestEnv()

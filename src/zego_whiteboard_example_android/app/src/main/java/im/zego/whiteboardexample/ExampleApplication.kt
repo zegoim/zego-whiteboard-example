@@ -1,13 +1,13 @@
 package im.zego.whiteboardexample
 
 import android.app.Application
+import android.widget.Toast
 import com.ytee.logutil.LogcatFileManager
 import im.zego.whiteboardexample.sdk.SDKInitCallback
 import im.zego.whiteboardexample.sdk.ZegoSDKManager
-import im.zego.whiteboardexample.util.CrashHandler
-import im.zego.whiteboardexample.util.Logger
-import im.zego.whiteboardexample.util.SharedPreferencesUtil
-import im.zego.whiteboardexample.util.ToastUtils
+import im.zego.whiteboardexample.util.*
+import im.zego.zegodocs.ZegoDocsViewManager
+import im.zego.zegowhiteboard.ZegoWhiteboardManager
 
 class ExampleApplication : Application() {
     private val TAG = "ExampleApplication"
@@ -25,6 +25,10 @@ class ExampleApplication : Application() {
                 Logger.i(TAG, "onInit() result: $success")
             }
         })
+
+        if (ZegoUtil.isAppTooOld(ZegoDocsViewManager.getInstance().version, VersionConstants.DOCS_SDK) || ZegoUtil.isAppTooOld(ZegoWhiteboardManager.getInstance().version, VersionConstants.WHITEBOARD_SDK)) {
+            ToastUtils.showCenterToast(R.string.app_version_warning, Toast.LENGTH_LONG)
+        }
     }
 
 }

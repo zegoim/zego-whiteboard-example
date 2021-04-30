@@ -70,7 +70,7 @@
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginEnd="8dp"
-                    android:text="上传日志"
+                    android:text="@string/setting_upload_log"
                     android:textSize="16dp" />
 
                 <TextView

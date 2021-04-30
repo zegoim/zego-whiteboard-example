@@ -99,4 +99,20 @@ public class ZegoUtil {
         context.startActivity(intent);
         android.os.Process.killProcess(android.os.Process.myPid());
     }
+
+    public static boolean isAppTooOld(String currentVersion, String supportVersion) {
+        return parseVersionCode(currentVersion) > parseVersionCode(supportVersion);
+    }
+
+    private static int parseVersionCode(String versionName) {
+        int[] versionCodes = new int[4];
+        String[] s = versionName.split("\\.");
+        for (int i = 0; i < s.length; i++) {
+            if (i > 3)
+                break;
+            versionCodes[i] = Integer.parseInt(s[i]);
+        }
+
+        return versionCodes[0] << 28 | versionCodes[1] << 24 | versionCodes[2] << 20 | versionCodes[3];
+    }
 }

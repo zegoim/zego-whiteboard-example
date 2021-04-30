@@ -33,12 +33,24 @@
     <string name="network_temp_broken_reconnect">网络异常，请重新加入...</string>
     <string name="open_draw">请先开启绘制功能</string>
 
+    <string name="menu">菜单</string>
+
     <!-- 主页中的右边选择区 -->
     <string name="draw">绘制</string>
     <string name="whiteboard">白板</string>
     <string name="docs">文件</string>
 
+    <string name="app_version_warning">提示：当前白板Example APP版本过低，\n可能无法兼容新版的文件或白板SDK，\n建议通过GitHub更新源码</string>
+
+    <string name="create_tips">创建</string>
+    <string name="setting_upload_log">上传日志</string>
     <string name="whiteboard_add">新增白板</string>
+    <string name="whiteboard_max_container">最大白板容器（%s*%s）</string>
+    <string name="whiteboard_current_container">当前白板容器（%s*%s）</string>
+    <string name="whiteboard_current_size">当前白板大小（%s*%s）</string>
+    <string name="resize_whiteboard_container">设置白板容器大小</string>
+    <string name="whiteboard_width">容器宽度</string>
+    <string name="whiteboard_height">容器高度</string>
     <string name="whiteboard_background">白板背景色</string>
 
     <string name="docs_upload_dynamic">上传动态文件</string>
@@ -48,19 +60,23 @@
     <string name="docs_upload_dynamic_fail">上传文件失败：%s</string>
     <string name="docs_upload_tip">上传文件：</string>
     <string name="docs_upload_static">上传静态文件</string>
+    <string name="docs_upload_H5">上传H5文件</string>
     <string name="docs_upload_cancel">取消上传</string>
     <string name="docs_upload_cancel_fail">取消上传文件失败：%s</string>
     <string name="docs_upload_cancel_success">取消上传文件成功</string>
     <string name="docs_cache">缓存</string>
     <string name="docs_cancel_cache">取消缓存</string>
     <string name="docs_query_cache">查询缓存</string>
-    <string name="docs_cache_file_id_hint">缓存文件 ID</string>
-    <string name="docs_cache_file_id_null">请输入缓存文件 ID</string>
+    <string name="docs_load_file_id">加载文件ID</string>
+    <string name="docs_clear_all_cache">清除所有缓存</string>
+    <string name="docs_cache_file_id_hint">文件 ID</string>
+    <string name="docs_cache_file_id_null">请输入文件 ID</string>
     <string name="docs_cache_tip">缓存文件：</string>
     <string name="docs_cache_fail">缓存文件 %s :失败: %s</string>
     <string name="docs_cancel_cache_success">取消缓存文件成功</string>
     <string name="docs_cancel_cache_fail">取消缓存文件失败：%s</string>
-    <string name="docs_query_cache_success">查询缓存文件成功 %s</string>
+    <string name="docs_query_cache_success">查询缓存文件完成 %s</string>
+    <string name="docs_load_file">加载文件 %s</string>
     <string name="docs_cache_exist">缓存文件存在</string>
     <string name="docs_cache_no_exist">缓存文件不存在</string>
     <string name="docs_query_cache_fail">查询缓存文件失败</string>

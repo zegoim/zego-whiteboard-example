@@ -1,6 +1,7 @@
 package im.zego.whiteboardexample.sdk.whiteboard
 
 import android.content.Context
+import im.zego.whiteboardexample.VersionConstants
 import im.zego.zegowhiteboard.ZegoWhiteboardConfig
 import im.zego.zegowhiteboard.ZegoWhiteboardManager
 import im.zego.zegowhiteboard.callback.IZegoWhiteboardGetListListener
@@ -22,7 +23,7 @@ object WhiteboardSDKManager {
     var initWhiteboardResult: Boolean? = null
 
     fun init(context: Context, sdkInitCallback: SDKInitCallback) {
-        Logger.i(TAG, "initWhiteboardSDK....,version:" + ZegoWhiteboardManager.getInstance().version)
+        Logger.i(TAG, "initWhiteboardSDK.... currentVersion:${ZegoWhiteboardManager.getInstance().version}, supportVersion:${VersionConstants.WHITEBOARD_SDK}")
 
         val config = ZegoWhiteboardConfig()
         // 设置日志存储路径

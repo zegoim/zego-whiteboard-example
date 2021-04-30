@@ -18,7 +18,23 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed">
+
+        <Button
+            android:id="@+id/main_menu"
+            android:layout_width="75dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/drawable_widget_bg"
+            android:text="@string/menu"
+            android:textSize="12dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@id/main_top_layout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <!-- 以下是顶部栏切白板，切页等控制 -->
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -27,8 +43,8 @@
             android:layout_height="98dp"
             android:background="@color/white"
             android:paddingTop="10dp"
-            app:layout_constraintBottom_toTopOf="@+id/container"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintBottom_toTopOf="@+id/v_container_top"
+            app:layout_constraintTop_toBottomOf="@id/main_menu">
 
             <!-- 白板/文件名称 -->
             <TextView
@@ -237,23 +253,39 @@
                 android:text="@string/class_title"
                 android:textColor="@color/text_black"
                 android:textSize="12dp"
-                app:layout_constraintStart_toEndOf="@id/main_top_step_layout"
                 app:layout_constraintBottom_toBottomOf="@id/main_top_exit_btn"
                 app:layout_constraintEnd_toStartOf="@id/main_top_exit_btn"
+                app:layout_constraintStart_toEndOf="@id/main_top_step_layout"
                 app:layout_constraintTop_toTopOf="@id/main_top_exit_btn" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
         <!--（以上是）切白板，切页等控制 -->
+
+        <View
+            android:id="@+id/v_container_top"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@id/container"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/main_top_layout" />
 
         <!-- viewHolder层叠在里面 -->
         <im.zego.whiteboardexample.widget.whiteboard.WhiteboardContainer
             android:id="@+id/container"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            app:layout_constraintBottom_toTopOf="@+id/view_bottom"
+            app:layout_constraintBottom_toTopOf="@+id/v_container_bottom"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/main_top_layout" />
+            app:layout_constraintTop_toBottomOf="@id/v_container_top" />
+
+        <View
+            android:id="@+id/v_container_bottom"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@id/view_bottom"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/container" />
 
         <View
             android:id="@+id/view_bottom"
@@ -363,12 +395,12 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
                             android:layout_marginHorizontal="5dp"
+                            android:layout_marginVertical="4dp"
                             android:text="@string/mode_none"
                             android:textSize="12dp"
-                            android:layout_marginVertical="4dp"
                             android:thumb="@drawable/switch_white_circle_selector"
-                            app:track="@drawable/switch_selector_green"
-                            app:switchTextAppearance="@style/SwitchCompat.Text" />
+                            app:switchTextAppearance="@style/SwitchCompat.Text"
+                            app:track="@drawable/switch_selector_green" />
 
 
                         <androidx.appcompat.widget.SwitchCompat
@@ -377,12 +409,12 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
                             android:layout_marginHorizontal="5dp"
+                            android:layout_marginVertical="4dp"
                             android:text="@string/mode_scroll"
                             android:textSize="12dp"
-                            android:layout_marginVertical="4dp"
                             android:thumb="@drawable/switch_white_circle_selector"
-                            app:track="@drawable/switch_selector_green"
-                            app:switchTextAppearance="@style/SwitchCompat.Text" />
+                            app:switchTextAppearance="@style/SwitchCompat.Text"
+                            app:track="@drawable/switch_selector_green" />
 
 
                         <androidx.appcompat.widget.SwitchCompat
@@ -391,12 +423,12 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
                             android:layout_marginHorizontal="5dp"
+                            android:layout_marginVertical="4dp"
                             android:text="@string/mode_draw"
                             android:textSize="12dp"
-                            android:layout_marginVertical="4dp"
                             android:thumb="@drawable/switch_white_circle_selector"
-                            app:track="@drawable/switch_selector_green"
-                            app:switchTextAppearance="@style/SwitchCompat.Text" />
+                            app:switchTextAppearance="@style/SwitchCompat.Text"
+                            app:track="@drawable/switch_selector_green" />
 
 
                         <androidx.appcompat.widget.SwitchCompat
@@ -405,12 +437,12 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
                             android:layout_marginHorizontal="5dp"
-                            android:text="@string/mode_scale"
                             android:layout_marginVertical="4dp"
+                            android:text="@string/mode_scale"
                             android:textSize="12dp"
                             android:thumb="@drawable/switch_white_circle_selector"
-                            app:track="@drawable/switch_selector_green"
-                            app:switchTextAppearance="@style/SwitchCompat.Text" />
+                            app:switchTextAppearance="@style/SwitchCompat.Text"
+                            app:track="@drawable/switch_selector_green" />
                     </LinearLayout>
 
                     <androidx.appcompat.widget.SwitchCompat
@@ -424,8 +456,8 @@
                         android:text="@string/draw_bold"
                         android:textSize="12dp"
                         android:thumb="@drawable/switch_white_circle_selector"
-                        app:track="@drawable/switch_selector_green"
-                        app:switchTextAppearance="@style/SwitchCompat.Text" />
+                        app:switchTextAppearance="@style/SwitchCompat.Text"
+                        app:track="@drawable/switch_selector_green" />
 
                     <androidx.appcompat.widget.SwitchCompat
                         android:id="@+id/text_style_italic"
@@ -438,9 +470,9 @@
                         android:text="@string/draw_italic"
                         android:textSize="12dp"
                         android:thumb="@drawable/switch_white_circle_selector"
-                        app:track="@drawable/switch_selector_green"
                         app:switchPadding="10dp"
-                        app:switchTextAppearance="@style/SwitchCompat.Text" />
+                        app:switchTextAppearance="@style/SwitchCompat.Text"
+                        app:track="@drawable/switch_selector_green" />
 
                     <TextView
                         android:id="@+id/draw_color_tip"
@@ -946,11 +978,55 @@
 
                 </RelativeLayout>
 
-                <RelativeLayout
+                <LinearLayout
                     android:id="@+id/whiteboard_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:orientation="vertical"
                     android:visibility="gone">
+
+                    <Button
+                        android:id="@+id/setting_upload_log"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:layout_marginVertical="10dp"
+                        android:background="@drawable/drawable_widget_bg"
+                        android:gravity="center"
+                        android:text="@string/setting_upload_log"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/max_whiteboard_container_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="10dp"
+                        android:text="@string/whiteboard_max_container"
+                        android:textColor="@color/text_black2" />
+
+                    <TextView
+                        android:id="@+id/current_whiteboard_container_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="10dp"
+                        android:text="@string/whiteboard_current_container"
+                        android:textColor="@color/text_black2" />
+
+                    <TextView
+                        android:id="@+id/current_whiteboard_size_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="10dp"
+                        android:text="@string/whiteboard_current_size"
+                        android:textColor="@color/text_black2" />
+
+                    <TextView
+                        android:id="@+id/create_tips_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="10dp"
+                        android:text="@string/create_tips"
+                        android:textColor="@color/text_black"
+                        android:textSize="16sp" />
 
                     <Button
                         android:id="@+id/add_whiteboard"
@@ -960,20 +1036,58 @@
                         android:background="@drawable/drawable_widget_bg"
                         android:gravity="center"
                         android:text="@string/whiteboard_add"
-                        android:textSize="12dp" />
+                        android:textSize="12sp" />
 
                     <TextView
-                        android:id="@+id/auth_whiteboard"
+                        android:id="@+id/resize_whiteboard_tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_below="@id/add_whiteboard" />
+                        android:paddingTop="10dp"
+                        android:text="@string/resize_whiteboard_container"
+                        android:textColor="@color/text_black"
+                        android:textSize="16sp" />
 
-                    <TextView
-                        android:id="@+id/auth_graph"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_below="@id/auth_whiteboard" />
-                </RelativeLayout>
+                        android:layout_marginTop="10dp">
+
+                        <EditText
+                            android:id="@+id/whiteboard_width_et"
+                            android:layout_width="0dp"
+                            android:layout_height="35dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/drawable_widget_bg"
+                            android:hint="@string/whiteboard_width"
+                            android:inputType="number"
+                            android:paddingHorizontal="10dp"
+                            android:textSize="12sp" />
+
+                        <EditText
+                            android:id="@+id/whiteboard_height_et"
+                            android:layout_width="0dp"
+                            android:layout_height="35dp"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/drawable_widget_bg"
+                            android:hint="@string/whiteboard_height"
+                            android:inputType="number"
+                            android:paddingHorizontal="10dp"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/resize_whiteboard_confirm_btn"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:background="@drawable/drawable_widget_bg"
+                        android:gravity="center"
+                        android:text="@string/draw_confirm"
+                        android:textSize="12sp" />
+                </LinearLayout>
 
                 <RelativeLayout
                     android:id="@+id/docs_layout"
@@ -1087,7 +1201,8 @@
                         android:background="@drawable/drawable_widget_bg"
                         android:gravity="center"
                         android:text="@string/docs_cancel_cache"
-                        android:textSize="12dp" />
+                        android:textSize="12dp"
+                        android:visibility="invisible" />
 
                     <Button
                         android:id="@+id/query_cache"
@@ -1102,6 +1217,67 @@
                         android:gravity="center"
                         android:text="@string/docs_query_cache"
                         android:textSize="12dp" />
+
+                    <Button
+                        android:id="@+id/load_file_id"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:layout_below="@id/cancel_cache"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:background="@drawable/drawable_widget_bg"
+                        android:gravity="center"
+                        android:text="@string/docs_load_file_id"
+                        android:textSize="12dp" />
+
+                    <Button
+                        android:id="@+id/clear_all_cache"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:layout_below="@id/cancel_cache"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:layout_toRightOf="@+id/cache_url_et"
+                        android:background="@drawable/drawable_widget_bg"
+                        android:gravity="center"
+                        android:text="@string/docs_clear_all_cache"
+                        android:textSize="12dp" />
+
+                    <EditText
+                        android:id="@+id/h5_width"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/load_file_id"
+                        android:hint="h5_width"
+                        android:textSize="12dp" />
+
+                    <EditText
+                        android:id="@+id/h5_height"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/h5_width"
+                        android:hint="h5_height"
+                        android:textSize="12dp" />
+
+                    <EditText
+                        android:id="@+id/h5_pageCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/h5_height"
+                        android:hint="h5_pageCount"
+                        android:textSize="12dp" />
+
+                    <Button
+                        android:id="@+id/upload_H5"
+                        android:layout_width="88dp"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/h5_pageCount"
+                        android:background="@drawable/drawable_widget_bg"
+                        android:gravity="center"
+                        android:text="@string/docs_upload_H5"
+                        android:textSize="12dp" />
+
 
                 </RelativeLayout>
 

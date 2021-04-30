@@ -1,15 +1,22 @@
 package im.zego.whiteboardexample.activity
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
+import android.text.InputFilter
+import android.text.Spanned
 import android.util.Log
+import android.util.Size
 import android.view.View
+import android.view.ViewGroup
 import android.view.Window
 import android.widget.Toast
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.GravityCompat
 import androidx.core.view.children
+import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,16 +24,12 @@ import im.zego.whiteboardexample.R
 import im.zego.whiteboardexample.adapter.ColorAdapter
 import im.zego.whiteboardexample.sdk.docs.CacheHelper
 import im.zego.whiteboardexample.sdk.docs.upload.UploadFileHelper
-import im.zego.whiteboardexample.sdk.docs.upload.UploadFileHelper.Companion.uploadFile
 import im.zego.whiteboardexample.sdk.docs.upload.UploadPicHelper
 import im.zego.whiteboardexample.sdk.rtc.IZegoRoomStateListener
 import im.zego.whiteboardexample.sdk.rtc.VideoSDKManager
 import im.zego.whiteboardexample.sdk.whiteboard.WhiteboardSDKManager
 import im.zego.whiteboardexample.tool.SimpleTextWatcher
-import im.zego.whiteboardexample.util.CONFERENCE_ID
-import im.zego.whiteboardexample.util.Logger
-import im.zego.whiteboardexample.util.ToastUtils
-import im.zego.whiteboardexample.util.ZegoViewAnimationUtils
+import im.zego.whiteboardexample.util.*
 import im.zego.whiteboardexample.widget.OnRecyclerViewItemTouchListener
 import im.zego.whiteboardexample.widget.dialog.LoadingDialog
 import im.zego.whiteboardexample.widget.dialog.ZegoDialog
@@ -35,6 +38,7 @@ import im.zego.whiteboardexample.widget.dialog.showLoadingDialog
 import im.zego.whiteboardexample.widget.popwindow.*
 import im.zego.whiteboardexample.widget.whiteboard.ZegoWhiteboardViewHolder
 import im.zego.zegodocs.ZegoDocsViewConstants
+import im.zego.zegodocs.ZegoDocsViewCustomH5Config
 import im.zego.zegowhiteboard.*
 import im.zego.zegowhiteboard.callback.IZegoWhiteboardManagerListener
 import kotlinx.android.synthetic.main.activity_main.*
@@ -118,6 +122,14 @@ class MainActivity : BaseActivity() {
         addWhiteboardViewListener()
         // 房间相关的监听
         setRoomListeners()
+
+
+
+        if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            setPortrait()
+        } else if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            setLandscape()
+        }
     }
 
     /**
@@ -143,13 +155,23 @@ class MainActivity : BaseActivity() {
                 }
             }
         }
-
+        container.setWhiteboardReloadFinishListener {
+            refreshUI()
+        }
         // 初始化右边绘制部分点击事件
         initRightDraw()
         // 初始化右边白板部分点击事件
         initRightWhiteboard()
         // 初始化右边文件部分点击事件
         initRightDocs()
+
+        main_menu.setOnClickListener {
+            if (main_end_layout.isVisible) {
+                main_end_layout.visibility = View.GONE
+            } else {
+                main_end_layout.visibility = View.VISIBLE
+            }
+        }
     }
 
     /**
@@ -217,7 +239,7 @@ class MainActivity : BaseActivity() {
                     SelectGraffitiToolsPopWindow(
                         this,
                         draw_graffiti_tools_tv.text.toString(),
-                        it.isDynamicPPT()
+                        it.isDisplayedByWebView()
                     )
                 selectGraffitiToolsPopWindow!!.setOnConfirmClickListener { str ->
                     draw_graffiti_tools_tv.text = str
@@ -490,7 +512,7 @@ class MainActivity : BaseActivity() {
         }
         // 删除选中图元
         draw_delete_selected_graphics_btn.setOnClickListener {
-            currentHolder?.deleteSelectedGraphics{ p0 ->
+            currentHolder?.deleteSelectedGraphics { p0 ->
                 if (p0 != 0) {
                     ToastUtils.showCenterToast("errorCode:$p0")
                 }
@@ -606,7 +628,7 @@ class MainActivity : BaseActivity() {
      * 返回当前控件的状态，设置为选中，并且取消选中其他控件
      */
     private fun unSelectOtherChild(it: String) {
-        currentHolder?.setDocsScaleEnable(it == getString(R.string.draw_graffiti_tools_click))
+        currentHolder?.setDocsScaleEnable(it != getString(R.string.draw_graffiti_tools_click))
         when (it) {
             getString(R.string.draw_graffiti_tools_text) -> {
                 currentHolder?.addTextEdit { p0 ->
@@ -637,6 +659,100 @@ class MainActivity : BaseActivity() {
                 }
             }
         }
+
+        refreshUI()
+        resize_whiteboard_confirm_btn.setOnClickListener {
+            var width = 0
+            var height = 0
+            try {
+                width = whiteboard_width_et.text.toString().toInt()
+                height = whiteboard_height_et.text.toString().toInt()
+            } catch (e: Exception) {
+            }
+
+            if (width <= 0 || height <= 0) {
+                ToastUtils.showCenterToast("参数非法，请重新输入")
+                return@setOnClickListener
+            }
+
+            currentHolder?.resizeLayout(Size(width, height))
+        }
+
+        setting_upload_log.setOnClickListener {
+            VideoSDKManager.uploadLog()
+        }
+    }
+
+    public fun refreshUI() {
+        max_whiteboard_container_tv.visibility = View.GONE
+        container.post {
+            max_whiteboard_container_tv.text = String.format(
+                resources.getString(R.string.whiteboard_max_container),
+                container.width,
+                container.height
+            )
+
+            currentHolder?.let {
+                if (it.currentWhiteboardSize == Size(0, 0)) {
+                    current_whiteboard_container_tv.text = String.format(
+                        resources.getString(R.string.whiteboard_current_container),
+                        container.width,
+                        container.height
+                    )
+                    current_whiteboard_size_tv.text = String.format(
+                        resources.getString(R.string.whiteboard_current_size),
+                        container.width,
+                        container.height
+                    )
+                } else {
+                    current_whiteboard_container_tv.text = String.format(
+                        resources.getString(R.string.whiteboard_current_container),
+                        it.width,
+                        it.height
+                    )
+                    current_whiteboard_size_tv.text = String.format(
+                        resources.getString(R.string.whiteboard_current_size),
+                        it.currentWhiteboardSize.width,
+                        it.currentWhiteboardSize.height
+                    )
+                }
+            }
+
+            whiteboard_width_et.setText("")
+            whiteboard_height_et.setText("")
+
+            whiteboard_width_et.filters =
+                arrayOf<InputFilter>(InputFilterMinMax(1, container.width))
+            whiteboard_height_et.filters =
+                arrayOf<InputFilter>(InputFilterMinMax(1, container.height))
+        }
+    }
+
+    inner class InputFilterMinMax(private val min: Int, private val max: Int) : InputFilter {
+        override fun filter(
+            source: CharSequence,
+            start: Int,
+            end: Int,
+            dest: Spanned,
+            dstart: Int,
+            dend: Int
+        ): CharSequence? {
+            try {
+                val input: Int =
+                    (dest.subSequence(0, dstart).toString() + source + dest.subSequence(
+                        dend,
+                        dest.length
+                    )).toInt()
+                if (isInRange(min, max, input))
+                    return null
+            } catch (nfe: NumberFormatException) {
+            }
+            return ""
+        }
+
+        private fun isInRange(a: Int, b: Int, c: Int): Boolean {
+            return if (b > a) c in a..b else c in b..a
+        }
     }
 
     /**
@@ -646,17 +762,14 @@ class MainActivity : BaseActivity() {
         // 缩略图按钮
         thumbnail.setOnClickListener {
             // 有缩略图才去显示
-            if (currentHolder != null && currentHolder!!.hasThumbUrl()) {
-                val newSelectedState = !thumbnail.isSelected
-                thumbnail.isSelected = newSelectedState
-                ZegoViewAnimationUtils.startRightViewAnimation(
-                    docs_preview_list_parent,
-                    newSelectedState
-                )
-                if (newSelectedState) {
+            if (currentHolder != null) {
+                if (currentHolder!!.getThumbnailUrlList().isNotEmpty()) {
+                    ZegoViewAnimationUtils.startRightViewAnimation(docs_preview_list_parent, true)
                     if (currentHolder != null) {
                         docs_preview_list.setSelectedPage(currentHolder!!.getCurrentPage() - 1)
                     }
+                } else {
+                    ToastUtils.showCenterToast("该文件没有缩略图")
                 }
             }
         }
@@ -672,19 +785,57 @@ class MainActivity : BaseActivity() {
                 }
             }
         }
+        docs_preview_list.setCloseBtnListener {
+            docs_preview_list_parent.visibility = View.GONE
+        }
         // 上传动态文件
         upload_dynamic.setOnClickListener {
             upload_state_tv.text = ""
-            uploadFile(this, ZegoDocsViewConstants.ZegoDocsViewRenderTypeDynamicPPTH5)
-            // 动态 PPT
-//            loadDocsFile("I9_9AXlII0hcA7jT")
-            // Excel
-//            loadDocsFile("95mZjwmxrp3IyzIS")
+            UploadFileHelper.uploadFile(
+                this,
+                ZegoDocsViewConstants.ZegoDocsViewRenderTypeDynamicPPTH5
+            )
         }
         // 上传静态文件
         upload_static.setOnClickListener {
             upload_state_tv.text = ""
-            uploadFile(this, ZegoDocsViewConstants.ZegoDocsViewRenderTypeVectorAndIMG)
+            UploadFileHelper.uploadFile(
+                this,
+                ZegoDocsViewConstants.ZegoDocsViewRenderTypeVectorAndIMG
+            )
+        }
+
+        h5_width.setText("960")
+        h5_height.setText("540")
+        h5_pageCount.setText("5")
+        upload_H5.setOnClickListener {
+            upload_state_tv.text = ""
+            val config = ZegoDocsViewCustomH5Config()
+
+            config.width = if (h5_width.text.isNullOrEmpty()) {
+                0
+            } else {
+                h5_width.text.toString().toInt()
+            }
+            config.height = if (h5_height.text.isNullOrEmpty()) {
+                0
+            } else {
+                h5_height.text.toString().toInt()
+            }
+            config.pageCount = if (h5_pageCount.text.isNullOrEmpty()) {
+                0
+            } else {
+                h5_pageCount.text.toString().toInt()
+            }
+
+            //zip里面缩略图的路径
+            if (config.pageCount != 0) {
+                config.thumbnailList = Array(config.pageCount) {
+                    "thumbnails/${it + 1}.jpeg"
+                }
+            }
+
+            UploadFileHelper.uploadH5File(this, config)
         }
         // 取消上传
         upload_cancel.setOnClickListener {
@@ -699,7 +850,10 @@ class MainActivity : BaseActivity() {
         }
 //        cache_url_et.setText("zc-WuRI15UJ5I4hf")
 //        cache_url_et.setText("I9_9AXlII0hcA7jT")
-        cache_url_et.setText("95mZjwmxrp3IyzIS")
+//        cache_url_et.setText("95mZjwmxrp3IyzIS")
+//        cache_url_et.setText("wfE6HPVaSNWY4a7r")
+//        cache_url_et.setText("_Q_s9NfXFqOy_K9X")
+        cache_url_et.setText("dTV7GNb1Ke99fg58")
         // 缓存
         cache_btn.setOnClickListener {
             val fileId = cache_url_et.text.toString()
@@ -707,7 +861,7 @@ class MainActivity : BaseActivity() {
                 ToastUtils.showCenterToast(getString(R.string.docs_cache_file_id_null))
                 return@setOnClickListener
             }
-
+            cancel_cache.visibility = View.VISIBLE
             CacheHelper.cacheFile(
                 this,
                 fileId
@@ -718,12 +872,16 @@ class MainActivity : BaseActivity() {
                 )
 
                 if (errorCode != 0) {
+                    cancel_cache.visibility = View.INVISIBLE
                     cache_state_tv.text = getString(
                         R.string.docs_cache_fail,
                         fileId,
                         errorCode.toString()
                     )
                 } else {
+                    if (uploadPercent == 100f) {
+                        cancel_cache.visibility = View.INVISIBLE
+                    }
                     cache_state_tv.text =
                         getString(R.string.docs_cache_success, fileId, uploadPercent.toString())
                 }
@@ -732,12 +890,14 @@ class MainActivity : BaseActivity() {
 
         cancel_cache.setOnClickListener {
             CacheHelper.cancelCache(this) { errorCode: Int ->
+
                 if (errorCode != 0) {
                     cache_state_tv.text = getString(
                         R.string.docs_cancel_cache_fail,
                         errorCode.toString()
                     )
                 } else {
+                    cancel_cache.visibility = View.INVISIBLE
                     cache_state_tv.text = getString(R.string.docs_cancel_cache_success)
                 }
             }
@@ -764,6 +924,36 @@ class MainActivity : BaseActivity() {
                 }
             }
         }
+
+        load_file_id.setOnClickListener {
+            val fileId = cache_url_et.text.toString()
+            if (fileId.isNullOrBlank()) {
+                ToastUtils.showCenterToast(getString(R.string.docs_cache_file_id_null))
+                return@setOnClickListener
+            }
+            CacheHelper.queryFileCached(this, fileId) { errorCode: Int, exist: Boolean ->
+                if (errorCode != 0) {
+                    cache_state_tv.text = getString(R.string.docs_query_cache_fail)
+                } else {
+                    val existname = if (exist) {
+                        loadDocsFile(fileId)
+                        getString(R.string.docs_cache_exist)
+                    } else {
+                        loadDocsFile(fileId)
+                        getString(
+                            R.string.docs_cache_no_exist
+                        )
+                    };
+                    cache_state_tv.text = getString(R.string.docs_load_file, existname)
+                }
+            }
+        }
+
+        clear_all_cache.setOnClickListener {
+            CacheHelper.clearAllCached(this@MainActivity)
+            cache_state_tv.text = getString(R.string.docs_clear_all_cache)
+        }
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -772,7 +962,7 @@ class MainActivity : BaseActivity() {
             TAG,
             "onActivityResult() called with: requestCode = [$requestCode], resultCode = [$resultCode]"
         )
-        if (requestCode == UploadFileHelper.REQUEST_CODE_UPLOAD) {
+        if (requestCode == UploadFileHelper.REQUEST_CODE_UPLOAD_FILE || requestCode == UploadFileHelper.REQUEST_CODE_UPLOAD_H5) {
             // 上传文件回调
             UploadFileHelper.onActivityResult(
                 this,
@@ -802,7 +992,6 @@ class MainActivity : BaseActivity() {
                         }
                     }
                 }
-                null
             }
         } else if (requestCode == UploadPicHelper.REQUEST_CODE_FOR_CHOOSE_PICTURE) {
             UploadPicHelper.handleActivityResult(this, requestCode, resultCode, data) { filePath ->
@@ -1207,10 +1396,10 @@ class MainActivity : BaseActivity() {
             setChildCountChangedListener { count: Int ->
                 if (count == 0) {
                     main_top_whiteboard_name.text = ""
-                    main_top_page_layout.visibility = View.INVISIBLE
-                    main_top_sheet_name.visibility = View.INVISIBLE
-                    main_top_step_layout.visibility = View.INVISIBLE
-                    main_top_jump_page_layout.visibility = View.INVISIBLE
+                    main_top_page_layout.visibility = View.GONE
+                    main_top_sheet_name.visibility = View.GONE
+                    main_top_step_layout.visibility = View.GONE
+                    main_top_jump_page_layout.visibility = View.GONE
                     currentHolder = null
                 }
             }
@@ -1251,38 +1440,43 @@ class MainActivity : BaseActivity() {
     }
 
     private fun onWhiteboardHolderSelected(holder: ZegoWhiteboardViewHolder) {
-        Log.d(TAG, "onWhiteboardHolderSelected() called with: holder = $holder,currentHolder:$currentHolder")
+        Log.d(
+            TAG,
+            "onWhiteboardHolderSelected() called with: holder = $holder,currentHolder:$currentHolder"
+        )
         val holderChanged = currentHolder != holder
-        // onResume 触发的重复设置不再更新
+        // onResume 触发的重复设置不再更新，主要是控件的状态不要重置为默认状态。
         currentHolder = holder
+        refreshUI()
 
-        if(holderChanged){
+        main_top_whiteboard_name.text = holder.getCurrentWhiteboardName()
+
+        if (holder.isPureWhiteboard() || holder.isDocsViewLoadSuccessed()) {
+            main_page_index.text = "%s/%s".format(
+                holder.getCurrentPage().toString(),
+                holder.getPageCount().toString()
+            )
+        } else {
+            main_page_index.text = ""
+        }
+
+        Logger.i(TAG, "holder.isExcel():${holder.isExcel()}")
+        if (holder.isExcel()) {
+            main_top_sheet_name.text = holder.getCurrentWhiteboardModel().fileInfo.fileName
+        }
+
+        main_top_sheet_name.visibility = if (holder.isExcel()) View.VISIBLE else View.GONE
+        main_top_jump_page_layout.visibility =
+            if (holder.isExcel()) View.GONE else View.VISIBLE
+        main_top_page_layout.visibility = if (holder.isExcel()) View.GONE else View.VISIBLE
+        main_top_step_layout.visibility =
+            if (holder.isDisplayedByWebView()) View.VISIBLE else View.GONE
+
+        if (holderChanged) {
             mode_none.isChecked = false
             mode_scale.isChecked = true
             mode_scroll.isChecked = false
             mode_draw.isChecked = true
-            main_top_whiteboard_name.text = holder.getCurrentWhiteboardName()
-
-            if (holder.isPureWhiteboard() || holder.isDocsViewLoadSuccessed()) {
-                main_page_index.text = "%s/%s".format(
-                    holder.getCurrentPage().toString(),
-                    holder.getPageCount().toString()
-                )
-            } else {
-                main_page_index.text = ""
-            }
-
-            Logger.i(TAG, "holder.isExcel():${holder.isExcel()}")
-            if (holder.isExcel()) {
-                main_top_sheet_name.text = holder.getCurrentWhiteboardModel().fileInfo.fileName
-            }
-
-            main_top_sheet_name.visibility = if (holder.isExcel()) View.VISIBLE else View.INVISIBLE
-            main_top_jump_page_layout.visibility =
-                if (holder.isExcel()) View.INVISIBLE else View.VISIBLE
-            main_top_page_layout.visibility = if (holder.isExcel()) View.INVISIBLE else View.VISIBLE
-            main_top_step_layout.visibility =
-                if (holder.isDynamicPPT()) View.VISIBLE else View.INVISIBLE
 
             selectDefaultChild()
             holder.setOperationMode(SelectOpModePopWindow.DRAW_SCALE)
@@ -1300,11 +1494,16 @@ class MainActivity : BaseActivity() {
                             draw_custom_image_tv.text = it.mSelectImage.imageName
                         }
                         ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicImageSizeLimit -> {
-                            Toast.makeText(this, "${errorCode}: 图片大小不能超过500k，请重新选择", Toast.LENGTH_SHORT)
+                            Toast.makeText(
+                                this,
+                                "${errorCode}: 图片大小不能超过500k，请重新选择",
+                                Toast.LENGTH_SHORT
+                            )
                                 .show()
                         }
                         ZegoWhiteboardConstants.ZegoWhiteboardViewErrorGraphicImageTypeNotSupport -> {
-                            Toast.makeText(this, "${errorCode}: 图片格式暂不支持", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "${errorCode}: 图片格式暂不支持", Toast.LENGTH_SHORT)
+                                .show()
                         }
                         else -> {
                             Toast.makeText(
@@ -1354,9 +1553,8 @@ class MainActivity : BaseActivity() {
      * 3、删除白板
      */
     private fun updatePreviewRelations() {
-        if (currentHolder != null && currentHolder!!.hasThumbUrl()) {
+        if (currentHolder != null && currentHolder!!.getThumbnailUrlList().isNotEmpty()) {
             // 有缩略图，显示预览按钮
-            thumbnail.isSelected = false
             docs_preview_list.setThumbnailUrlList(currentHolder!!.getThumbnailUrlList())
         } else {
             // 没有缩略图,不显示预览按钮
@@ -1421,6 +1619,9 @@ class MainActivity : BaseActivity() {
                             holderList.forEach {
                                 it.setDocsViewAuthInfo(whiteboardAuthInfo)
                             }
+                            currentHolder?.let {
+                                onWhiteboardHolderSelected(it)
+                            }
                             Logger.i(
                                 TAG,
                                 "process Enter List finished,resultCode = $resultCode,holderList:${holderList.size}"
@@ -1449,4 +1650,101 @@ class MainActivity : BaseActivity() {
             it.visibility = if (it == drawerChild) View.VISIBLE else View.GONE
         }
     }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (this.getResources()
+                .getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE
+        ) {
+            setLandscape()
+        } else if (this.getResources()
+                .getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT
+        ) {
+            setPortrait()
+        }
+    }
+
+    fun setLandscape() {
+        main_menu.visibility = View.GONE
+        main_end_layout.visibility = View.VISIBLE
+
+        var mainWhiteboardLayoutParams: ConstraintLayout.LayoutParams =
+            ConstraintLayout.LayoutParams(0, ConstraintLayout.LayoutParams.MATCH_PARENT)
+        mainWhiteboardLayoutParams.bottomToBottom = 0
+        mainWhiteboardLayoutParams.endToStart = R.id.main_end_layout
+        mainWhiteboardLayoutParams.horizontalBias = 0.5f
+        mainWhiteboardLayoutParams.horizontalChainStyle = 2
+        mainWhiteboardLayoutParams.startToStart = 0
+        mainWhiteboardLayoutParams.topToTop = 0
+        main_whiteboard_layout.layoutParams = mainWhiteboardLayoutParams
+
+        var mainEndLayoutParams: ConstraintLayout.LayoutParams = ConstraintLayout.LayoutParams(
+            dp2px(this, 200F).toInt(),
+            ConstraintLayout.LayoutParams.MATCH_PARENT
+        )
+        mainEndLayoutParams.startToEnd = R.id.main_whiteboard_layout
+        mainEndLayoutParams.endToEnd = 0
+        mainEndLayoutParams.topToTop = 0
+        mainEndLayoutParams.bottomToBottom = 0
+        main_end_layout.layoutParams = mainEndLayoutParams
+
+        var mainTopLayoutParams: ConstraintLayout.LayoutParams = ConstraintLayout.LayoutParams(
+            ConstraintLayout.LayoutParams.MATCH_PARENT,
+            dp2px(this, 98F).toInt()
+        )
+        mainTopLayoutParams.bottomToTop = R.id.v_container_top
+        mainTopLayoutParams.topToBottom = R.id.main_menu
+        mainTopLayoutParams.leftToLeft = 0
+        main_top_layout.layoutParams = mainTopLayoutParams
+
+        currentHolder?.resizeLayout(
+            Size(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        )
+    }
+
+    fun setPortrait() {
+        main_menu.visibility = View.VISIBLE
+        main_end_layout.visibility = View.GONE
+
+        var mainWhiteboardLayoutParams: ConstraintLayout.LayoutParams =
+            ConstraintLayout.LayoutParams(0, ConstraintLayout.LayoutParams.MATCH_PARENT)
+        mainWhiteboardLayoutParams.bottomToBottom = 0
+        mainWhiteboardLayoutParams.endToEnd = 0
+        mainWhiteboardLayoutParams.verticalBias = 0f
+        mainWhiteboardLayoutParams.verticalChainStyle = 2
+        mainWhiteboardLayoutParams.startToStart = 0
+        mainWhiteboardLayoutParams.topToTop = 0
+        main_whiteboard_layout.layoutParams = mainWhiteboardLayoutParams
+
+        var mainEndLayoutParams: ConstraintLayout.LayoutParams = ConstraintLayout.LayoutParams(
+            dp2px(this, 200F).toInt(),
+            ConstraintLayout.LayoutParams.MATCH_PARENT
+        )
+        mainEndLayoutParams.rightToRight = 0
+        mainEndLayoutParams.topToTop = 0
+        mainEndLayoutParams.bottomToBottom = 0
+
+        main_end_layout.layoutParams = mainEndLayoutParams
+
+        var mainTopLayoutParams: ConstraintLayout.LayoutParams = ConstraintLayout.LayoutParams(
+            ConstraintLayout.LayoutParams.MATCH_PARENT,
+            dp2px(this, 98F).toInt()
+        )
+        mainTopLayoutParams.bottomToTop = R.id.v_container_top
+        mainTopLayoutParams.topToBottom = R.id.main_menu
+        mainTopLayoutParams.leftToLeft = 0
+        main_top_layout.layoutParams = mainTopLayoutParams
+
+        currentHolder?.resizeLayout(
+            Size(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        )
+
+    }
+
 }
