@@ -20,7 +20,6 @@
 		8631A66B25EE235B00B1C6E8 /* ZegoSettingPage.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8631A60F25EE235B00B1C6E8 /* ZegoSettingPage.plist */; };
 		8631A66C25EE235B00B1C6E8 /* ZegoSelecteSheetManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 8631A61025EE235B00B1C6E8 /* ZegoSelecteSheetManager.m */; };
 		8631A66D25EE235B00B1C6E8 /* ZegoFilePreviewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 8631A61325EE235B00B1C6E8 /* ZegoFilePreviewManager.m */; };
-		8631A66E25EE235B00B1C6E8 /* ZegoPickerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 8631A61625EE235B00B1C6E8 /* ZegoPickerView.m */; };
 		8631A66F25EE235B00B1C6E8 /* ZegoOperationPannelView.m in Sources */ = {isa = PBXBuildFile; fileRef = 8631A61A25EE235B00B1C6E8 /* ZegoOperationPannelView.m */; };
 		8631A67025EE235B00B1C6E8 /* ZegoSettingFunctionPannelTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 8631A61C25EE235B00B1C6E8 /* ZegoSettingFunctionPannelTableViewCell.m */; };
 		8631A67125EE235B00B1C6E8 /* ZegoSettingTextTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 8631A61D25EE235B00B1C6E8 /* ZegoSettingTextTableViewCell.m */; };
@@ -80,7 +79,6 @@
 		8631A61225EE235B00B1C6E8 /* ZegoCommonCellModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZegoCommonCellModel.h; sourceTree = "<group>"; };
 		8631A61325EE235B00B1C6E8 /* ZegoFilePreviewManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZegoFilePreviewManager.m; sourceTree = "<group>"; };
 		8631A61425EE235B00B1C6E8 /* ZegoSelecteSheetManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZegoSelecteSheetManager.h; sourceTree = "<group>"; };
-		8631A61625EE235B00B1C6E8 /* ZegoPickerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZegoPickerView.m; sourceTree = "<group>"; };
 		8631A61725EE235B00B1C6E8 /* ZegoTopBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZegoTopBarView.h; sourceTree = "<group>"; };
 		8631A61825EE235B00B1C6E8 /* ZegoFunctionPannelView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZegoFunctionPannelView.h; sourceTree = "<group>"; };
 		8631A61925EE235B00B1C6E8 /* ZegoFileSelectTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZegoFileSelectTableViewCell.h; sourceTree = "<group>"; };
@@ -93,7 +91,6 @@
 		8631A62025EE235B00B1C6E8 /* ZegoFunctionUnitCollectionViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZegoFunctionUnitCollectionViewCell.m; sourceTree = "<group>"; };
 		8631A62125EE235B00B1C6E8 /* ZegoSettingPickerTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZegoSettingPickerTableViewCell.h; sourceTree = "<group>"; };
 		8631A62225EE235B00B1C6E8 /* ZegoTopBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZegoTopBarView.m; sourceTree = "<group>"; };
-		8631A62325EE235B00B1C6E8 /* ZegoPickerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZegoPickerView.h; sourceTree = "<group>"; };
 		8631A62425EE235B00B1C6E8 /* ZegoFileSelectTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZegoFileSelectTableViewCell.m; sourceTree = "<group>"; };
 		8631A62525EE235B00B1C6E8 /* ZegoFunctionPannelView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZegoFunctionPannelView.m; sourceTree = "<group>"; };
 		8631A62725EE235B00B1C6E8 /* ZegoFilePreviewCollectionViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZegoFilePreviewCollectionViewCell.m; sourceTree = "<group>"; };
@@ -109,7 +106,6 @@
 		8631A63125EE235B00B1C6E8 /* ZegoSettingPickerTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZegoSettingPickerTableViewCell.m; sourceTree = "<group>"; };
 		8631A63225EE235B00B1C6E8 /* ZegoFunctionUnitCollectionViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZegoFunctionUnitCollectionViewCell.h; sourceTree = "<group>"; };
 		8631A63325EE235B00B1C6E8 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
-		8631A63425EE235B00B1C6E8 /* ZegoFileSelectView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZegoFileSelectView.h; sourceTree = "<group>"; };
 		8631A63625EE235B00B1C6E8 /* SourceHanSansSC-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SourceHanSansSC-Regular.otf"; sourceTree = "<group>"; };
 		8631A63725EE235B00B1C6E8 /* SourceHanSansSC-Bold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SourceHanSansSC-Bold.otf"; sourceTree = "<group>"; };
 		8631A63825EE235B00B1C6E8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -145,14 +141,6 @@
 		8631A66125EE235B00B1C6E8 /* SceneDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
 		8635307A25FCA61400FEBE5A /* ZegoToast.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZegoToast.h; sourceTree = "<group>"; };
 		8635307B25FCA61400FEBE5A /* ZegoToast.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZegoToast.m; sourceTree = "<group>"; };
-		86675FD02601E884006AAE54 /* libZegoDocsView.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; path = libZegoDocsView.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		86675FD42601EBB4006AAE54 /* libZegoDocsView.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; path = libZegoDocsView.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		86675FD82601F7D8006AAE54 /* ZegoWhiteboardView.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ZegoWhiteboardView.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		8685E82C25943B3400F7A767 /* libZegoWhiteboardView.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libZegoWhiteboardView.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		86AF142926047BC000522E45 /* ZegoWhiteboardView.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ZegoWhiteboardView.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		86E7FEB425E3D4B200BB1CCC /* ZegoWhiteboardView.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ZegoWhiteboardView.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		86F0798325E77D5600A97958 /* ZegoWhiteboardView.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ZegoWhiteboardView.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		86F0798725E7CD5400A97958 /* ZegoWhiteboardView.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ZegoWhiteboardView.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0B1A45238C5907280187299 /* Pods-ZegoWhiteboardExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZegoWhiteboardExample.debug.xcconfig"; path = "Target Support Files/Pods-ZegoWhiteboardExample/Pods-ZegoWhiteboardExample.debug.xcconfig"; sourceTree = "<group>"; };
 		FE46A5A8E7F477F63EA96B16 /* Pods-ZegoWhiteboardExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZegoWhiteboardExample.release.xcconfig"; path = "Target Support Files/Pods-ZegoWhiteboardExample/Pods-ZegoWhiteboardExample.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -201,37 +189,87 @@
 		75C5F3917D3413404AC747B4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				86AF142926047BC000522E45 /* ZegoWhiteboardView.framework */,
-				86675FD82601F7D8006AAE54 /* ZegoWhiteboardView.framework */,
-				86675FD42601EBB4006AAE54 /* libZegoDocsView.dylib */,
-				86675FD02601E884006AAE54 /* libZegoDocsView.dylib */,
-				86F0798725E7CD5400A97958 /* ZegoWhiteboardView.framework */,
-				86F0798325E77D5600A97958 /* ZegoWhiteboardView.framework */,
-				86E7FEB425E3D4B200BB1CCC /* ZegoWhiteboardView.framework */,
-				8685E82C25943B3400F7A767 /* libZegoWhiteboardView.a */,
 				47190EF2C0FB0F80A499DE95 /* libPods-ZegoWhiteboardExample.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		862B25FA262D6E5000DA46F7 /* Mainboard */ = {
+			isa = PBXGroup;
+			children = (
+				8631A61B25EE235B00B1C6E8 /* ZegoBoardContainerView.h */,
+				8631A62F25EE235B00B1C6E8 /* ZegoBoardContainerView.m */,
+			);
+			path = Mainboard;
+			sourceTree = "<group>";
+		};
+		862B25FB262D6E5800DA46F7 /* Pannel */ = {
+			isa = PBXGroup;
+			children = (
+				8631A61825EE235B00B1C6E8 /* ZegoFunctionPannelView.h */,
+				8631A62525EE235B00B1C6E8 /* ZegoFunctionPannelView.m */,
+				8631A63025EE235B00B1C6E8 /* ZegoOperationPannelView.h */,
+				8631A61A25EE235B00B1C6E8 /* ZegoOperationPannelView.m */,
+				862B25FC262D6E6400DA46F7 /* Cells */,
+			);
+			path = Pannel;
+			sourceTree = "<group>";
+		};
+		862B25FC262D6E6400DA46F7 /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				8631A63225EE235B00B1C6E8 /* ZegoFunctionUnitCollectionViewCell.h */,
+				8631A62025EE235B00B1C6E8 /* ZegoFunctionUnitCollectionViewCell.m */,
+				8631A62E25EE235B00B1C6E8 /* ZegoSettingFunctionPannelTableViewCell.h */,
+				8631A61C25EE235B00B1C6E8 /* ZegoSettingFunctionPannelTableViewCell.m */,
+				8631A62125EE235B00B1C6E8 /* ZegoSettingPickerTableViewCell.h */,
+				8631A63125EE235B00B1C6E8 /* ZegoSettingPickerTableViewCell.m */,
+				8631A62B25EE235B00B1C6E8 /* ZegoSettingSwitchTableViewCell.h */,
+				8631A61F25EE235B00B1C6E8 /* ZegoSettingSwitchTableViewCell.m */,
+				8631A62D25EE235B00B1C6E8 /* ZegoSettingTextTableViewCell.h */,
+				8631A61D25EE235B00B1C6E8 /* ZegoSettingTextTableViewCell.m */,
+			);
+			path = Cells;
+			sourceTree = "<group>";
+		};
+		862B25FD262D6E7A00DA46F7 /* TopBar */ = {
+			isa = PBXGroup;
+			children = (
+				8631A61925EE235B00B1C6E8 /* ZegoFileSelectTableViewCell.h */,
+				8631A62425EE235B00B1C6E8 /* ZegoFileSelectTableViewCell.m */,
+				8631A61E25EE235B00B1C6E8 /* ZegoFileSelectView.h */,
+				8631A62C25EE235B00B1C6E8 /* ZegoFileSelectView.m */,
+				8631A61725EE235B00B1C6E8 /* ZegoTopBarView.h */,
+				8631A62225EE235B00B1C6E8 /* ZegoTopBarView.m */,
+			);
+			path = TopBar;
+			sourceTree = "<group>";
+		};
+		862B25FE262D6F1B00DA46F7 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				8631A65B25EE235B00B1C6E8 /* Info.plist */,
+				8631A65625EE235B00B1C6E8 /* Global.pch */,
+				8631A63325EE235B00B1C6E8 /* AppDelegate.h */,
+				8631A65A25EE235B00B1C6E8 /* AppDelegate.m */,
+				8631A63825EE235B00B1C6E8 /* Assets.xcassets */,
+				8631A65925EE235B00B1C6E8 /* main.m */,
+				8631A66125EE235B00B1C6E8 /* SceneDelegate.h */,
+				8631A65525EE235B00B1C6E8 /* SceneDelegate.m */,
+				8631A65725EE235B00B1C6E8 /* LaunchScreen.storyboard */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
 		8631A5FD25EE235B00B1C6E8 /* ZegoWhiteboardExample */ = {
 			isa = PBXGroup;
 			children = (
-				8631A5FE25EE235B00B1C6E8 /* UI */,
-				8631A63325EE235B00B1C6E8 /* AppDelegate.h */,
-				8631A63425EE235B00B1C6E8 /* ZegoFileSelectView.h */,
-				8631A63525EE235B00B1C6E8 /* Resources */,
-				8631A63825EE235B00B1C6E8 /* Assets.xcassets */,
-				8631A63925EE235B00B1C6E8 /* Logic */,
+				862B25FE262D6F1B00DA46F7 /* App */,
 				8631A64925EE235B00B1C6E8 /* Foundation */,
-				8631A65525EE235B00B1C6E8 /* SceneDelegate.m */,
-				8631A65625EE235B00B1C6E8 /* Global.pch */,
-				8631A65725EE235B00B1C6E8 /* LaunchScreen.storyboard */,
-				8631A65925EE235B00B1C6E8 /* main.m */,
-				8631A65A25EE235B00B1C6E8 /* AppDelegate.m */,
-				8631A65B25EE235B00B1C6E8 /* Info.plist */,
+				8631A63925EE235B00B1C6E8 /* Logic */,
+				8631A63525EE235B00B1C6E8 /* Resources */,
 				8631A65C25EE235B00B1C6E8 /* Tool */,
-				8631A66125EE235B00B1C6E8 /* SceneDelegate.h */,
+				8631A5FE25EE235B00B1C6E8 /* UI */,
 			);
 			path = ZegoWhiteboardExample;
 			sourceTree = "<group>";
@@ -262,15 +300,15 @@
 		8631A60625EE235B00B1C6E8 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				8631A60725EE235B00B1C6E8 /* ZegoOperationPannelModel.m */,
+				8631A60A25EE235B00B1C6E8 /* Plists */,
+				8631A61225EE235B00B1C6E8 /* ZegoCommonCellModel.h */,
 				8631A60825EE235B00B1C6E8 /* ZegoCommonCellModel.m */,
 				8631A60925EE235B00B1C6E8 /* ZegoFilePreviewManager.h */,
-				8631A60A25EE235B00B1C6E8 /* Plists */,
-				8631A61025EE235B00B1C6E8 /* ZegoSelecteSheetManager.m */,
-				8631A61125EE235B00B1C6E8 /* ZegoOperationPannelModel.h */,
-				8631A61225EE235B00B1C6E8 /* ZegoCommonCellModel.h */,
 				8631A61325EE235B00B1C6E8 /* ZegoFilePreviewManager.m */,
+				8631A61125EE235B00B1C6E8 /* ZegoOperationPannelModel.h */,
+				8631A60725EE235B00B1C6E8 /* ZegoOperationPannelModel.m */,
 				8631A61425EE235B00B1C6E8 /* ZegoSelecteSheetManager.h */,
+				8631A61025EE235B00B1C6E8 /* ZegoSelecteSheetManager.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -290,31 +328,10 @@
 		8631A61525EE235B00B1C6E8 /* View */ = {
 			isa = PBXGroup;
 			children = (
-				8631A61625EE235B00B1C6E8 /* ZegoPickerView.m */,
-				8631A61725EE235B00B1C6E8 /* ZegoTopBarView.h */,
-				8631A61825EE235B00B1C6E8 /* ZegoFunctionPannelView.h */,
-				8631A61925EE235B00B1C6E8 /* ZegoFileSelectTableViewCell.h */,
-				8631A61A25EE235B00B1C6E8 /* ZegoOperationPannelView.m */,
-				8631A61B25EE235B00B1C6E8 /* ZegoBoardContainerView.h */,
-				8631A61C25EE235B00B1C6E8 /* ZegoSettingFunctionPannelTableViewCell.m */,
-				8631A61D25EE235B00B1C6E8 /* ZegoSettingTextTableViewCell.m */,
-				8631A61E25EE235B00B1C6E8 /* ZegoFileSelectView.h */,
-				8631A61F25EE235B00B1C6E8 /* ZegoSettingSwitchTableViewCell.m */,
-				8631A62025EE235B00B1C6E8 /* ZegoFunctionUnitCollectionViewCell.m */,
-				8631A62125EE235B00B1C6E8 /* ZegoSettingPickerTableViewCell.h */,
-				8631A62225EE235B00B1C6E8 /* ZegoTopBarView.m */,
-				8631A62325EE235B00B1C6E8 /* ZegoPickerView.h */,
-				8631A62425EE235B00B1C6E8 /* ZegoFileSelectTableViewCell.m */,
-				8631A62525EE235B00B1C6E8 /* ZegoFunctionPannelView.m */,
+				862B25FA262D6E5000DA46F7 /* Mainboard */,
+				862B25FD262D6E7A00DA46F7 /* TopBar */,
+				862B25FB262D6E5800DA46F7 /* Pannel */,
 				8631A62625EE235B00B1C6E8 /* Preview */,
-				8631A62B25EE235B00B1C6E8 /* ZegoSettingSwitchTableViewCell.h */,
-				8631A62C25EE235B00B1C6E8 /* ZegoFileSelectView.m */,
-				8631A62D25EE235B00B1C6E8 /* ZegoSettingTextTableViewCell.h */,
-				8631A62E25EE235B00B1C6E8 /* ZegoSettingFunctionPannelTableViewCell.h */,
-				8631A62F25EE235B00B1C6E8 /* ZegoBoardContainerView.m */,
-				8631A63025EE235B00B1C6E8 /* ZegoOperationPannelView.h */,
-				8631A63125EE235B00B1C6E8 /* ZegoSettingPickerTableViewCell.m */,
-				8631A63225EE235B00B1C6E8 /* ZegoFunctionUnitCollectionViewCell.h */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -528,7 +545,6 @@
 				8631A68625EE235B00B1C6E8 /* ZGAppSignHelper.m in Sources */,
 				8631A68425EE235B00B1C6E8 /* ZegoBoardOperationManager.m in Sources */,
 				8631A69125EE235B00B1C6E8 /* NSString+FormatValidator.m in Sources */,
-				8631A66E25EE235B00B1C6E8 /* ZegoPickerView.m in Sources */,
 				8631A68E25EE235B00B1C6E8 /* main.m in Sources */,
 				8631A67F25EE235B00B1C6E8 /* ZegoLiveRoomSDKManager.m in Sources */,
 				8631A67825EE235B00B1C6E8 /* ZegoFilePreviewView.m in Sources */,
@@ -700,7 +716,8 @@
 				DEVELOPMENT_TEAM = B82BHJ5H89;
 				ENABLE_BITCODE = NO;
 				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = YES;
-				INFOPLIST_FILE = ZegoWhiteboardExample/Info.plist;
+				GCC_PREFIX_HEADER = "$(PROJECT_DIR)/ZegoWhiteboardExample/App/Global.pch";
+				INFOPLIST_FILE = ZegoWhiteboardExample/App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -723,7 +740,8 @@
 				DEVELOPMENT_TEAM = B82BHJ5H89;
 				ENABLE_BITCODE = NO;
 				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = YES;
-				INFOPLIST_FILE = ZegoWhiteboardExample/Info.plist;
+				GCC_PREFIX_HEADER = "$(PROJECT_DIR)/ZegoWhiteboardExample/App/Global.pch";
+				INFOPLIST_FILE = ZegoWhiteboardExample/App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

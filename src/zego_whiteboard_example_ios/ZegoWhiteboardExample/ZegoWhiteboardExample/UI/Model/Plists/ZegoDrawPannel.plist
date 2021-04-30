@@ -129,16 +129,162 @@
 	<dict>
 		<key>title</key>
 		<string>颜色</string>
+		<key>value</key>
+		<integer>0</integer>
 		<key>tag</key>
 		<string></string>
 		<key>type</key>
-		<integer>2</integer>
+		<integer>3</integer>
 		<key>placeholder</key>
-		<string>0x000000</string>
+		<string></string>
 		<key>eventNumber</key>
 		<real>10004</real>
 		<key>options</key>
-		<array/>
+		<array>
+			<dict>
+				<key>title</key>
+				<string>黑色</string>
+				<key>value</key>
+				<string>#000000</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>灰色</string>
+				<key>value</key>
+				<string>#b3b3b3</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>淡黑</string>
+				<key>value</key>
+				<string>#333333</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>白色</string>
+				<key>value</key>
+				<string>#ffffff</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>红色</string>
+				<key>value</key>
+				<string>#f54326</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>橙色</string>
+				<key>value</key>
+				<string>#fc7802</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>黄色</string>
+				<key>value</key>
+				<string>#fbe600</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>绿色</string>
+				<key>value</key>
+				<string>#41bb54</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>青色</string>
+				<key>value</key>
+				<string>#00eae7</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>灰色</string>
+				<key>value</key>
+				<string>#b3b3b3</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>蓝色</string>
+				<key>value</key>
+				<string>#4c9efe</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>粉红色</string>
+				<key>value</key>
+				<string>#fa7d7d</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>紫色</string>
+				<key>value</key>
+				<string>#825fd0</string>
+			</dict>
+		</array>
+	</dict>
+	<dict>
+		<key>title</key>
+		<string>系统颜色</string>
+		<key>value</key>
+		<integer>0</integer>
+		<key>tag</key>
+		<string></string>
+		<key>type</key>
+		<integer>3</integer>
+		<key>placeholder</key>
+		<string></string>
+		<key>eventNumber</key>
+		<real>10019</real>
+		<key>options</key>
+		<array>
+			<dict>
+				<key>title</key>
+				<string>黑色</string>
+				<key>value</key>
+				<string>black</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>灰色</string>
+				<key>value</key>
+				<string>gray</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>白色</string>
+				<key>value</key>
+				<string>white</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>红色</string>
+				<key>value</key>
+				<string>red</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>橙色</string>
+				<key>value</key>
+				<string>orange</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>黄色</string>
+				<key>value</key>
+				<string>yellow</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>绿色</string>
+				<key>value</key>
+				<string>green</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>蓝色</string>
+				<key>value</key>
+				<string>blue</string>
+			</dict>
+		</array>
 	</dict>
 	<dict>
 		<key>title</key>
@@ -196,12 +342,6 @@
 		<real>10006</real>
 		<key>options</key>
 		<array>
-			<dict>
-				<key>title</key>
-				<string>48</string>
-				<key>value</key>
-				<integer>48</integer>
-			</dict>
 			<dict>
 				<key>title</key>
 				<string>4</string>
@@ -328,7 +468,7 @@
 		<key>title</key>
 		<string>选择图形</string>
 		<key>value</key>
-		<integer>-1</integer>
+		<integer>4</integer>
 		<key>tag</key>
 		<string></string>
 		<key>type</key>
@@ -375,7 +515,7 @@
 		<key>title</key>
 		<string>背景模式</string>
 		<key>value</key>
-		<integer>-1</integer>
+		<integer>4</integer>
 		<key>tag</key>
 		<string></string>
 		<key>type</key>
@@ -383,7 +523,7 @@
 		<key>placeholder</key>
 		<string>背景图片显示模式</string>
 		<key>eventNumber</key>
-		<integer>10015</integer>
+		<real>10015</real>
 		<key>options</key>
 		<array>
 			<dict>
@@ -461,15 +601,26 @@
 	</dict>
 	<dict>
 		<key>title</key>
-		<string>本地背景</string>
+		<string>背景图</string>
 		<key>tag</key>
 		<string></string>
 		<key>type</key>
-		<integer>2</integer>
+		<integer>4</integer>
 		<key>placeholder</key>
 		<string></string>
 		<key>eventNumber</key>
 		<real>10017</real>
+		<key>options</key>
+		<array>
+			<dict>
+				<key>title</key>
+				<string>本地背景</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>取消背景</string>
+			</dict>
+		</array>
 	</dict>
 	<dict>
 		<key>title</key>
@@ -491,20 +642,6 @@
 				<string></string>
 			</dict>
 		</array>
-	</dict>
-	<dict>
-		<key>title</key>
-		<string>取消背景</string>
-		<key>tag</key>
-		<string></string>
-		<key>type</key>
-		<integer>2</integer>
-		<key>placeholder</key>
-		<string></string>
-		<key>eventNumber</key>
-		<real>10019</real>
-		<key>options</key>
-		<array/>
 	</dict>
 	<dict>
 		<key>title</key>
@@ -538,14 +675,6 @@
 			<dict>
 				<key>title</key>
 				<string>删除选中</string>
-			</dict>
-			<dict>
-				<key>title</key>
-				<string>减小frame</string>
-			</dict>
-			<dict>
-				<key>title</key>
-				<string>增加frame</string>
 			</dict>
 		</array>
 	</dict>
@@ -600,11 +729,16 @@
 		<key>tag</key>
 		<string></string>
 		<key>type</key>
-		<integer>2</integer>
+		<integer>4</integer>
 		<key>eventNumber</key>
 		<integer>10014</integer>
 		<key>options</key>
-		<array/>
+		<array>
+			<dict>
+				<key>title</key>
+				<string>上传日志</string>
+			</dict>
+		</array>
 	</dict>
 </array>
 </plist>

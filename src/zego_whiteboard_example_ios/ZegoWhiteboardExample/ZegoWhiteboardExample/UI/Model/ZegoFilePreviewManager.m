@@ -31,6 +31,8 @@
         self.coverView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, kScreenHeight)];
         [self.coverView addGestureRecognizer:tap];
         [self reset];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(deviceRotate) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
     }
     return self;
 }
@@ -70,14 +72,21 @@
     [self.previewView setPreviewPageCount:pageCount];
 }
 
+- (void)deviceRotate {
+    if (_isShow) {
+        [self.coverView setFrame:CGRectMake(0, 0, kScreenWidth, kScreenHeight)];
+        [self.previewView setFrame:CGRectMake(kScreenWidth - 200, 0, 200, kScreenHeight)];
+    }
+}
+
 - (void)showPreviewWithPage:(NSInteger)pageCount {
     if (!_isShow) {
         _isShow = YES;
         [[UIApplication sharedApplication].keyWindow addSubview:self.coverView];
         [self setCurrentPageCount:pageCount];
         [UIView animateWithDuration:0.5 animations:^{
-            CGRect currentFrame = self.previewView.frame;
-            self.previewView.frame = CGRectOffset(currentFrame, -currentFrame.size.width, 0);
+            [self.coverView setFrame:CGRectMake(0, 0, kScreenWidth, kScreenHeight)];
+            [self.previewView setFrame:CGRectMake(kScreenWidth - 200, 0, 200, kScreenHeight)];
         } completion:nil];
     }
 }
@@ -86,8 +95,7 @@
     if (_isShow) {
         _isShow = NO;
         [UIView animateWithDuration:0.5 animations:^{
-            CGRect currentFrame = self.previewView.frame;
-            self.previewView.frame = CGRectOffset(currentFrame, currentFrame.size.width, 0);
+            [self.previewView setFrame:CGRectMake(kScreenWidth, 0, 200, kScreenHeight)];
         } completion:nil];
         [self.coverView removeFromSuperview];
     }

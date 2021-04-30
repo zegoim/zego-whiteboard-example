@@ -76,7 +76,8 @@
     [self.versionLabel setFont:[UIFont systemFontOfSize:10]];
     NSDictionary *info = [[NSBundle mainBundle] infoDictionary];
     NSString *appVersion = [info objectForKey:@"CFBundleShortVersionString"];
-    NSString *versionInfo = [NSString stringWithFormat:@"Demo版本: %@",appVersion];
+    NSString *appBuildVersion = [info objectForKey:@"CFBundleVersion"];
+    NSString *versionInfo = [NSString stringWithFormat:@"Demo版本: %@.%@",appVersion,appBuildVersion];
     self.versionLabel.text = versionInfo;
     
     self.whiteboardVersionLabel = [[UILabel alloc] init];

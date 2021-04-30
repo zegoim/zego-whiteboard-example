@@ -17,6 +17,8 @@
 
 @property (nonatomic, strong) NSArray *pannelDataArray;
 @property (nonatomic, strong) NSArray *pannelViewArray;
+
+@property (nonatomic, assign) NSUInteger pannelIdx;
 @end
 @implementation ZegoFunctionPannelView
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -94,7 +96,7 @@
         [temp addObject:model.title];
     }
     self.pannelSC = [[UISegmentedControl alloc] initWithItems:temp.copy];
-    [self.pannelSC addTarget:self action:@selector(didClickPanenelSegment:) forControlEvents:UIControlEventValueChanged];
+    [self.pannelSC addTarget:self action:@selector(didClickPannelSegment:) forControlEvents:UIControlEventValueChanged];
     [self addSubview:self.pannelSC];
     self.pannelSC.selectedSegmentIndex = 0;
     self.pannelSC.tintColor = kThemeColorBlue;
@@ -133,9 +135,14 @@
     [self setupUI];
 }
 
-- (void)didClickPanenelSegment:(UISegmentedControl *)sender {
+- (void)didClickPannelSegment:(UISegmentedControl *)sender {
+    [self setPannelIdx:sender.selectedSegmentIndex];
+}
+
+- (void)setPannelIdx:(NSUInteger)pannelIdx {
+    _pannelIdx = pannelIdx;
     CGFloat screenWidth = self.scrollView.bounds.size.width;
-    self.scrollView.contentOffset = CGPointMake(screenWidth * sender.selectedSegmentIndex, 0);
+    self.scrollView.contentOffset = CGPointMake(screenWidth * pannelIdx, 0);
 }
 
 - (void)layoutSubviews {
@@ -168,6 +175,7 @@
         }];
         previousView = view;
     }
+    self.pannelIdx = self.pannelIdx;
 }
 
 - (void)dealloc {

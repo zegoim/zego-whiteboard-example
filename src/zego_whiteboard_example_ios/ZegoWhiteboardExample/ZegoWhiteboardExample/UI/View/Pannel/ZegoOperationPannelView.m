@@ -67,6 +67,11 @@
     NSMutableArray *temp = [NSMutableArray array];
     for (NSDictionary *dic in pannelContentArray) {
         ZegoCommonCellModel *unitModel = [ZegoCommonCellModel yy_modelWithDictionary:dic];
+        if (unitModel.eventNumber == ZegoOperationEventFlagTypeCustomH5Thumbnails) {
+            unitModel.value = @"thumbnails/1.jpeg;thumbnails/2.jpeg;thumbnails/3.jpeg;thumbnails/4.jpeg;thumbnails/5.jpeg";
+        } else if(unitModel.eventNumber == ZegoOperationEventFlagTypeStepAutoPaging) {
+            unitModel.value = @1;
+        }
         [temp addObject:unitModel];
     }
     self.fileDataArray = temp.copy;

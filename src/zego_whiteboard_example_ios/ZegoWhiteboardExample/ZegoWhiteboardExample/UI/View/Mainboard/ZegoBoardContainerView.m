@@ -15,6 +15,8 @@
 @property (nonatomic, strong) NSMutableArray *whiteboardViewArray;
 @property (nonatomic, strong) NSMutableArray *docsViewArray;
 @property (nonatomic, strong) UILabel *tipLabel;
+@property (nonatomic, strong) UILabel *sizeLabel;
+@property (nonatomic, assign) BOOL isFrameManuallyChanged;
 
 
 @end
@@ -25,16 +27,30 @@
         
         self.whiteboardViewArray = [NSMutableArray array];
         self.docsViewArray = [NSMutableArray array];
-        self.tipLabel = [[UILabel alloc] init];
-        [self addSubview:self.tipLabel];
-        self.tipLabel.textColor = kThemeColorPink;
-        self.tipLabel.numberOfLines = 0;
+        
+        [self configureSubviews];
         
         [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(addImage:) name:@"addImage" object:nil];
         [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(setBackgroundImage:) name:@"setBackgroundImage" object:nil];
         
     }
     return self;
+}
+
+- (void)configureSubviews {
+    self.tipLabel = [[UILabel alloc] init];
+    [self addSubview:self.tipLabel];
+    self.tipLabel.textColor = kThemeColorPink;
+    self.tipLabel.numberOfLines = 0;
+    [self.tipLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.center.equalTo(self);
+    }];
+    
+    self.sizeLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 150, 30)];
+    [self addSubview:self.sizeLabel];
+    self.sizeLabel.textColor = UIColor.systemRedColor;
+    self.sizeLabel.numberOfLines = 0;
+    self.sizeLabel.font = [UIFont systemFontOfSize:10];
 }
 
 - (void)addImage:(NSNotification *)noti {
@@ -62,20 +78,6 @@
     NSString *path = dict[@"file"];
     NSNumber *mode = dict[@"mode"];
     
-//    ZegoProgessHUD *hudView = [[ZegoProgessHUD alloc] initWithTitle:@"加载背景图片..." cancelBlock:nil];
-//    [self.currentWhiteboardView setBackgroundImageWithPath:path mode:mode.unsignedIntegerValue complete:^(int errorcode, float progress) {
-//        if (errorcode == 0) {
-//            [hudView updateProgress:progress];
-//            if (progress == 1) {
-//                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-//                    [ZegoProgessHUD showTipMessage:@"加载完成"];
-//                });
-//            }
-//        }else {
-//            [ZegoProgessHUD dismiss];
-//            [ZegoToast toastWithError:errorcode];
-//        }
-//    }];
     [ZegoToast toastWithMessage:@"正在加载"];
     [self.currentWhiteboardView setBackgroundImageWithPath:path mode:mode.unsignedIntegerValue complete:^(int errorcode) {
         if (errorcode == 0) {
@@ -88,9 +90,7 @@
 
 #pragma mark - public
 
-- (void)addWhiteboardView:(ZegoWhiteboardView *)whiteboardView {
-    if (!whiteboardView) return;
-    //从显示区域移除当前白板和文件视图
+- (void)removeCurrentWhiteboardViewAndDocsView {
     if (self.currentWhiteboardView) {
         [self.currentWhiteboardView removeLaser];
         [self.currentWhiteboardView removeFromSuperview];
@@ -102,6 +102,12 @@
         self.currentDocsView.delegate = nil;
         self.currentDocsView = nil;
     }
+}
+
+- (void)addWhiteboardView:(ZegoWhiteboardView *)whiteboardView {
+    if (!whiteboardView) return;
+    //从显示区域移除当前白板和文件视图
+    [self removeCurrentWhiteboardViewAndDocsView];
     
     //查找本地是否已经存在 此白板，如果不存在则不需要添加到列表中
     if ([self fetchWhiteboardView:whiteboardView.whiteboardModel.whiteboardID]) {
@@ -109,49 +115,49 @@
         self.currentDocsView = [self fetchDocsViewWithID:whiteboardView.whiteboardModel.whiteboardID];
         [self.currentDocsView setOperationAuth:self.authInfo];
         [self addSubview:self.currentDocsView];
-        [self addSubview:self.currentWhiteboardView];
-        self.currentWhiteboardView.whiteboardViewDelegate = self;
+        [self addSubview:whiteboardView];
+        whiteboardView.whiteboardViewDelegate = self;
         self.currentDocsView.delegate = self;
-        [self.currentWhiteboardView setWhiteboardOperationMode:ZegoWhiteboardOperationModeDraw|ZegoWhiteboardOperationModeZoom];
+        [whiteboardView setWhiteboardOperationMode:ZegoWhiteboardOperationModeDraw|ZegoWhiteboardOperationModeZoom];
         [self whiteboardLoadFinished];
     } else {
         self.currentWhiteboardView = whiteboardView;
         [self.whiteboardViewArray addObject:whiteboardView];
         self.currentWhiteboardView.whiteboardViewDelegate = self;
-        __weak typeof(self) weakSelf = self;
         //加载文件视图
         [self loadDocsViewWithComplement:^{
-            
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            [strongSelf.currentWhiteboardView setWhiteboardOperationMode:ZegoWhiteboardOperationModeDraw|ZegoWhiteboardOperationModeZoom];
-            ZegoWhiteboardViewModel *data = strongSelf.currentWhiteboardView.whiteboardModel;
-            strongSelf.currentWhiteboardView.backgroundColor = [UIColor whiteColor];
+            [self.currentWhiteboardView setWhiteboardOperationMode:ZegoWhiteboardOperationModeDraw|ZegoWhiteboardOperationModeZoom];
+            ZegoWhiteboardViewModel *whiteboardModel = self.currentWhiteboardView.whiteboardModel;
+            self.currentWhiteboardView.backgroundColor = [UIColor whiteColor];
+            //文件视图需要展示在白板视图下方，所以要在文件视图装载完成后再添加白板视图
+            [self addSubview:whiteboardView];
             // 是由 设定的白板宽高比，根据给定的父视图 计算出白板视图的实际frame
-            if (strongSelf.currentDocsView) {
-                CGSize visibleSize = strongSelf.currentDocsView.visibleSize;
+            if (self.currentDocsView) {
+                CGSize visibleSize = self.currentDocsView.visibleSize;
                 CGFloat width = self.frame.size.width;
                 CGFloat height = self.frame.size.height;
                 
                 CGRect frame = CGRectMake((width - visibleSize.width) / 2.0, (height - visibleSize.height) / 2.0, visibleSize.width, visibleSize.height);
-                strongSelf.currentWhiteboardView.frame = frame;
-                strongSelf.currentWhiteboardView.contentSize = strongSelf.currentDocsView.contentSize;
-                strongSelf.currentWhiteboardView.backgroundColor = [UIColor clearColor];
+                whiteboardView.frame = frame;
+                whiteboardView.contentSize = self.currentDocsView.contentSize;
+                whiteboardView.backgroundColor = [UIColor clearColor];
             } else {
-                strongSelf.currentWhiteboardView.frame = [strongSelf aspectToFitScreen:data.aspectWidth * 1.0 / data.aspectHeight];
-                strongSelf.currentWhiteboardView.contentSize = CGSizeMake(strongSelf.currentWhiteboardView.frame.size.width * data.pageCount, strongSelf.currentWhiteboardView.frame.size.height);
+                whiteboardView.frame = [self rectToAspectFitContainer];
+//                [self setPureWhiteboardConstraints];
             }
-            //文件视图需要展示在白板视图下方，所以要在文件视图装载完成后再添加白板视图
-            [strongSelf addSubview:whiteboardView];
-            strongSelf.currentWhiteboardView.layer.borderWidth = 1;
-            strongSelf.currentWhiteboardView.layer.borderColor = [UIColor blackColor].CGColor;
-            [strongSelf whiteboardLoadFinished];
+            
+            whiteboardView.layer.borderWidth = 1;
+            whiteboardView.layer.borderColor = [UIColor blackColor].CGColor;
+            [self whiteboardLoadFinished];
         }];
     }
 }
 
 - (void)whiteboardLoadFinished {
+    [self bringSubviewToFront:self.sizeLabel];
     //将文件及白板视图传递给 操作中心单例
-    [[ZegoBoardOperationManager shareManager] setupCurrentWhiteboardView:self.currentWhiteboardView docsView: self.currentDocsView];
+    [[ZegoBoardOperationManager shareManager]
+     setupCurrentWhiteboardView:self.currentWhiteboardView docsView: self.currentDocsView];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         //处理加载完成回调
         if ([self.delegate respondsToSelector:@selector(onLoadFileFinish:docsView:currentPage:)]) {
@@ -208,30 +214,32 @@
     if (self.currentWhiteboardView.whiteboardModel.fileInfo.fileID.length > 0) {
         [ZegoProgessHUD showIndicatorHUDText:@"正在加载文件中"];
         ZegoDocsView * docsView = [[ZegoDocsView alloc] initWithFrame:self.bounds];
-        __weak typeof(self) weakSelf = self;
         docsView.delegate = self;
         self.currentDocsView = docsView;
         [self.currentDocsView setOperationAuth:self.authInfo];
         [self.docsViewArray addObject:docsView];
+        
+        __weak ZegoDocsView *weakDocsView = docsView;
+        __weak typeof(self) weakSelf = self;
         [docsView loadFileWithFileID:self.currentWhiteboardView.whiteboardModel.fileInfo.fileID authKey:@"" completionBlock:^(ZegoDocsViewError errorCode) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (errorCode == ZegoDocsViewSuccess) {
-                docsView.associatedWhiteboardID = strongSelf.currentWhiteboardView.whiteboardModel.whiteboardID;
-                if (docsView && docsView.pageCount > 0) {
-                    CGSize visibleSize = docsView.visibleSize;
-                    CGFloat width = strongSelf.frame.size.width;
-                    CGFloat height = strongSelf.frame.size.height;
-                    
-                    CGRect frame = CGRectMake((width - visibleSize.width) / 2.0, (height - visibleSize.height) / 2.0, visibleSize.width, visibleSize.height);
-                    docsView.frame = frame;
-                    if (strongSelf.currentDocsView == docsView) {
-                        [strongSelf insertSubview:docsView aboveSubview:strongSelf.currentWhiteboardView];
+                weakDocsView.associatedWhiteboardID = strongSelf.currentWhiteboardView.whiteboardModel.whiteboardID;
+                if (weakDocsView && weakDocsView.pageCount > 0) {
+                    if (strongSelf.currentDocsView == weakDocsView) {
+                        [strongSelf insertSubview:weakDocsView aboveSubview:strongSelf.currentWhiteboardView];
                     }
                 }
                 //如果登陆房间存在ppt同步信息需要执行同步动画方法
-                if (docsView && strongSelf.currentWhiteboardView.whiteboardModel.h5_extra) {
+                if (self.currentWhiteboardView.whiteboardModel.pptStep > 0 && self.currentWhiteboardView.whiteboardModel.verticalScrollPercent == 0) {
+                    [weakDocsView flipPage:1 step:self.currentWhiteboardView.whiteboardModel.pptStep completionBlock:^(BOOL isScrollSuccess) {
+                                            
+                    }];
+                }
+                
+                if (weakDocsView && strongSelf.currentWhiteboardView.whiteboardModel.h5_extra) {
                     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                        [docsView playAnimation:strongSelf.currentWhiteboardView.whiteboardModel.h5_extra];
+                        [weakDocsView playAnimation:strongSelf.currentWhiteboardView.whiteboardModel.h5_extra];
                     });
                 }
                 [ZegoProgessHUD dismiss];
@@ -250,26 +258,91 @@
     }
 }
 
-- (CGRect)aspectToFitScreen:(CGFloat)aspect {
+- (void)setPureWhiteboardConstraints {
+    CGSize aspectSize = [ZegoBoardServiceManager shareManager].whiteboardAspectSize;
+    CGFloat ratio = aspectSize.width / aspectSize.height;
+    // 保持白板比例居中显示
+    [self.currentWhiteboardView mas_remakeConstraints:^(MASConstraintMaker *make) {
+        make.width.equalTo(self.currentWhiteboardView.mas_height).multipliedBy(ratio).priority(1000);
+        make.center.equalTo(self).priority(1000);
+        make.edges.lessThanOrEqualTo(self).priority(999);
+        make.edges.equalTo(self).priority(998);
+    }];
+}
+
+- (CGRect)rectToAspectFitContainer {
     CGFloat width = self.frame.size.width;
     CGFloat height = self.frame.size.height;
+    CGSize aspectSize = [ZegoBoardServiceManager shareManager].whiteboardAspectSize;
+    CGFloat aspectWidth = aspectSize.width;
+    CGFloat aspectHeight = aspectSize.height;
     
-    if (width / height > 16 / 9.0) {
-        CGFloat viewWidth = 16 * height / 9.0;
+    if (width / height > aspectWidth / aspectHeight) {
+        CGFloat viewWidth = aspectWidth * height / aspectHeight;
         return CGRectMake((width - viewWidth) * 0.5, 0, viewWidth, height);
     } else {
-        CGFloat viewHeight = 9 * width / 16.0;
-        return  CGRectMake(0, (height - viewHeight) * 0.5, width, viewHeight);
+        CGFloat viewHeight = aspectHeight * width / aspectWidth;
+        return CGRectMake(0, (height - viewHeight) * 0.5, width, viewHeight);
     }
+}
+
+- (void)layoutWhiteboardView:(ZegoWhiteboardView *)whiteboardView docsView:(ZegoDocsView *)docsView {
+    if (self.isFrameManuallyChanged) {
+        self.isFrameManuallyChanged = NO;
+        return;
+    }
+    ZegoWhiteboardViewModel *whiteboardModel = whiteboardView.whiteboardModel;
+    if (docsView) {
+        [self layoutWhiteboardView:whiteboardView withDocsView:docsView frame:[self rectToAspectFitContainer]];
+    } else {
+        whiteboardView.frame = [self rectToAspectFitContainer];
+//        [self setPureWhiteboardConstraints];
+    }
+}
+
+- (void)setWhiteboardAndDocsToInitFrame {
+    [self layoutWhiteboardView:self.currentWhiteboardView docsView:self.currentDocsView];
+}
+
+- (void)layoutWhiteboardView:(ZegoWhiteboardView *)whiteboardView withDocsView:(ZegoDocsView *)docsView frame:(CGRect)docsViewFrame {
+    docsView.frame = docsViewFrame;
+    [docsView layoutIfNeeded];  //更新 visibleSize
+    CGSize visibleSize = docsView.visibleSize;
+    whiteboardView.frame = [self frameWithSize:visibleSize docsViewFrame:docsViewFrame];
+    whiteboardView.contentSize = docsView.contentSize;
+}
+// 根据 docsView 的 frame 计算白板的 frame
+- (CGRect)frameWithSize:(CGSize)visibleSize docsViewFrame:(CGRect)frame {
+    CGFloat x = frame.origin.x + (frame.size.width - visibleSize.width) / 2;
+    CGFloat y = frame.origin.y + (frame.size.height - visibleSize.height) / 2;
+    return CGRectMake(x, y, visibleSize.width, visibleSize.height);
+}
+
+- (void)manualSetFrame:(CGRect)frame {
+    self.isFrameManuallyChanged = YES;
+    if (self.currentWhiteboardView.whiteboardModel.fileInfo.fileID.length > 0) {
+        [self layoutWhiteboardView:self.currentWhiteboardView withDocsView:self.currentDocsView frame:frame];
+    }else {
+        self.currentWhiteboardView.frame = frame;
+    }
+    
+    [self setNeedsLayout];
 }
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    [self.tipLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.center.equalTo(self);
-    }];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self updateSizeLabel];
+    });
     self.tipLabel.text = [NSString stringWithFormat:@"未加载白板及文件\n W:%.0f * H:%.0f",self.bounds.size.width,self.bounds.size.height];
+    [self setWhiteboardAndDocsToInitFrame];
+}
 
+- (void)updateSizeLabel {
+    NSString *str = [NSString stringWithFormat:@"白板容器W:%.2f H:%.2f", self.currentWhiteboardView.frame.size.width, self.currentWhiteboardView.frame.size.height];
+    str = [str stringByAppendingFormat:@"\n文件容器W:%.2f H:%.2f", self.currentDocsView.frame.size.width, self.currentDocsView.frame.size.height];
+    self.sizeLabel.text = str;
 }
 
 #pragma mark - ZegoWhiteboardViewDelegate
@@ -280,13 +353,17 @@
     
     if (self.currentDocsView) {
         //判断是否是动态PPT,动态PPT 与静态PPT 是不同的加载方式，所以需要区别处理
-        if (self.currentWhiteboardView.whiteboardModel.fileInfo.fileType == ZegoDocsViewFileTypeDynamicPPTH5) {
+        if (self.currentWhiteboardView.whiteboardModel.fileInfo.fileType == ZegoDocsViewFileTypeDynamicPPTH5
+            || self.currentWhiteboardView.whiteboardModel.fileInfo.fileType == ZegoDocsViewFileTypeCustomH5) {
             if (self.currentWhiteboardView.whiteboardModel.pptStep < 1) {
                 return;
             }
             CGFloat yPercent = self.currentWhiteboardView.contentOffset.y / self.currentWhiteboardView.contentSize.height;
             NSInteger pageNo = round(yPercent * self.currentDocsView.pageCount) + 1;
             //同步文件视图内容
+            if ([UIApplication sharedApplication].applicationState != UIApplicationStateActive) {
+                return;
+            }
             [self.currentDocsView flipPage:pageNo step:MAX(self.currentWhiteboardView.whiteboardModel.pptStep, 1) completionBlock:^(BOOL isScrollSuccess) {
                 
             }];
@@ -295,7 +372,7 @@
             NSInteger currentPage = pageNo;
             if ([self.delegate respondsToSelector:@selector(onScrollWithCurrentPage:totalPage:)]) {
 
-                [self.delegate onScrollWithCurrentPage:currentPage totalPage:currentPage?:kWhiteboarPageCount];
+                [self.delegate onScrollWithCurrentPage:currentPage totalPage:self.currentDocsView.pageCount?:kWhiteboardPageCount];
             }
             
         } else {
@@ -307,7 +384,7 @@
             NSInteger currentPage = [self getCurrentPage];
             if ([self.delegate respondsToSelector:@selector(onScrollWithCurrentPage:totalPage:)]) {
 
-                [self.delegate onScrollWithCurrentPage:currentPage totalPage:(self.currentDocsView.pageCount)?:kWhiteboarPageCount];
+                [self.delegate onScrollWithCurrentPage:currentPage totalPage:(self.currentDocsView.pageCount)?:kWhiteboardPageCount];
             }
         }
          
@@ -316,7 +393,7 @@
         NSInteger currentPage = [self getCurrentPage];
         if ([self.delegate respondsToSelector:@selector(onScrollWithCurrentPage:totalPage:)]) {
 
-            [self.delegate onScrollWithCurrentPage:currentPage totalPage:(self.currentDocsView.pageCount)?:kWhiteboarPageCount];
+            [self.delegate onScrollWithCurrentPage:currentPage totalPage:(self.currentDocsView.pageCount)?:kWhiteboardPageCount];
         }
     }
     
@@ -339,7 +416,7 @@
     if (self.currentDocsView) {
         currentPage = self.currentDocsView.currentPage;
     } else {
-        currentPage = (NSInteger)(self.currentWhiteboardView.whiteboardModel.horizontalScrollPercent * kWhiteboarPageCount) + 1;
+        currentPage = (NSInteger)(self.currentWhiteboardView.whiteboardModel.horizontalScrollPercent * kWhiteboardPageCount) + 1;
     }
     return currentPage;
 }
@@ -380,7 +457,7 @@
      1. 需要查看页数是否需要更新
      2. 页数更新后, 需要移动白板 view 的 offset
      */
-    if (self.currentDocsView.fileType != ZegoDocsViewFileTypeDynamicPPTH5) return;
+    if (self.currentDocsView.fileType != ZegoDocsViewFileTypeDynamicPPTH5 && self.currentDocsView.fileType != ZegoDocsViewFileTypeCustomH5) return;
     if (self.currentDocsView.currentPage <= self.currentDocsView.pageCount) {
         NSInteger pageNum = MAX((self.currentDocsView.currentPage - 1), 0);
         CGFloat verticalPercent = (CGFloat)pageNum / self.currentDocsView.pageCount;

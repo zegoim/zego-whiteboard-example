@@ -46,18 +46,24 @@ typedef NS_ENUM(NSUInteger, ZegoOperationEventFlagType) {
     ZegoOperationEventFlagTypeUploadLog                    = 10014,
     ZegoOperationEventFlagTypeBackgroundMode                = 10015,
     ZegoOperationEventFlagTypePresetBackground                = 10016,
-    ZegoOperationEventFlagTypeLocalBackground                = 10017,
+    ZegoOperationEventFlagTypeBackground                      = 10017,
     ZegoOperationEventFlagTypeOnlineBackground                = 10018,
-    ZegoOperationEventFlagTypeCleanBackground                = 10019,
+    ZegoOperationEventFlagTypeSystemColor                     = 10019,
     
     ZegoOperationEventFlagTypeWhiteboardAdd                  = 20001,
     ZegoOperationEventFlagTypeWhiteboardClearCache           = 20002,
+    ZegoOperationEventFlagTypeWhiteboardFrameChange          = 20003,
+    ZegoOperationEventFlagTypeWhiteboardFrameSetting         = 20004,
     
     ZegoOperationEventFlagTypeDocsUpload                     = 30001,
     ZegoOperationEventFlagTypeDocsCacheFile                  = 30003,
     ZegoOperationEventFlagTypeDocsQueryCache                 = 30004,
     ZegoOperationEventFlagTypePreview                        = 30005,
     ZegoOperationEventFlagTypeStepAutoPaging                 = 30006,
+    ZegoOperationEventFlagTypeOpenFile                       = 30007,
+    ZegoOperationEventFlagTypeCustomH5Size                   = 30008,
+    ZegoOperationEventFlagTypeCustomH5Thumbnails             = 30009,
+
 };
 
 /*

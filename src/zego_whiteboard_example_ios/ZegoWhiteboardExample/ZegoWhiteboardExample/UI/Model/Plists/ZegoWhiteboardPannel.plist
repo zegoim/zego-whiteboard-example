@@ -22,11 +22,69 @@
 		<key>tag</key>
 		<string></string>
 		<key>type</key>
-		<integer>2</integer>
+		<integer>4</integer>
 		<key>placeholder</key>
 		<string></string>
 		<key>eventNumber</key>
 		<real>20002</real>
+		<key>options</key>
+		<array>
+			<dict>
+				<key>title</key>
+				<string>清除缓存</string>
+			</dict>
+		</array>
+	</dict>
+	<dict>
+		<key>title</key>
+		<string>纯白板尺寸变更</string>
+		<key>tag</key>
+		<string></string>
+		<key>type</key>
+		<integer>4</integer>
+		<key>placeholder</key>
+		<string></string>
+		<key>eventNumber</key>
+		<real>20003</real>
+		<key>options</key>
+		<array>
+			<dict>
+				<key>title</key>
+				<string>等比增加</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>等比减少</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>+宽度</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>-宽度</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>+高度</string>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>-高度</string>
+			</dict>
+		</array>
+	</dict>
+	<dict>
+		<key>title</key>
+		<string>设置白板宽高</string>
+		<key>tag</key>
+		<string></string>
+		<key>type</key>
+		<integer>2</integer>
+		<key>placeholder</key>
+		<string>Width.Height</string>
+		<key>eventNumber</key>
+		<real>20004</real>
 		<key>options</key>
 		<array/>
 	</dict>

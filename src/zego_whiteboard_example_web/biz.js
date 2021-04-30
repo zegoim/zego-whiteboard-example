@@ -18,10 +18,8 @@ var zegoWhiteboard,
   myFile, // 上传文档对象
   _seq = 0;
 
-if(!appID){
-  alert('请在demo_config.js文件中填写你的appID！')
-  window.location.href = './login.html'
-}
+var resizeTicking = false;
+
 var imageErrorTipsMap = {
   3000002: '参数错误',
   3000005: '下载失败',
@@ -33,8 +31,7 @@ var imageErrorTipsMap = {
 // 获取token
 $.ajaxSettings.async = false;
 $.get(
-  tokenUrl,
-  {
+  tokenUrl, {
     app_id: appID,
     id_name: idName
   },
@@ -87,13 +84,23 @@ function listen() {
     $('#idNames').html('房间所有用户ID：' + userIDList.toString());
   });
   zegoWhiteboard.on('whiteboardAuthChange', (data) => {
-    $('#userViewAuth').html(`白板：${data.scale ? '缩放' : ''},${data.scroll ? '翻页' : ''}`);
+    $('#userViewAuth').html(
+      `白板权限：<span class="badge badge-primary mr-2">${
+        data.scale ? '缩放' : ''
+      }</span><span class="badge badge-info mr-2">${data.scroll ? '翻页' : ''}</span>`
+    );
   });
   zegoWhiteboard.on('whiteboardGraphicAuthChange', (data) => {
     $('#userGraphicAuth').html(
-      `图元：${data.create ? '创建' : ''},${data.clear ? '清空' : ''},${data.update ? '编辑' : ''},${
+      `图元权限：<span class="badge badge-success mr-2">${
+        data.create ? '创建' : ''
+      }</span><span class="badge badge-danger mr-2">${
+        data.clear ? '清空' : ''
+      }</span><span class="badge badge-primary mr-2">${
+        data.update ? '编辑' : ''
+      }</span><span class="badge badge-info mr-2">${
         data.move ? '移动' : ''
-      },${data.delete ? '擦除' : ''}`
+      }</span><span class="badge badge-secondary mr-2">${data.delete ? '擦除' : ''}</span>`
     );
   });
   zegoWhiteboard.on('error', (e) => {
@@ -116,7 +123,12 @@ function listen() {
       updateRemoteView();
     }
   });
-  zegoWhiteboard.on('viewScroll', ({ id, horizontalPercent, verticalPercent, page }) => {
+  zegoWhiteboard.on('viewScroll', ({
+    id,
+    horizontalPercent,
+    verticalPercent,
+    page
+  }) => {
     console.log('on viewScroll', id, horizontalPercent, verticalPercent, page);
     $('#curPage').html(page);
   });
@@ -149,6 +161,7 @@ function listen() {
     $('#totalPage').html(res.pageCount);
   });
 }
+
 function createUserID() {
   var userID = sessionStorage.getItem('zegouid') || 'web' + new Date().getTime();
   sessionStorage.setItem('zegouid', userID);
@@ -159,7 +172,9 @@ async function init() {
   // 互动白板
   zegoWhiteboard = new ZegoExpressEngine(appID, server);
 
-  zegoWhiteboard.setLogConfig({ logLevel: 1 });
+  zegoWhiteboard.setLogConfig({
+    logLevel: 1
+  });
   zegoWhiteboard.setDebugVerbose(false);
   // 文件转码
   console.log('isDocTestEnv', isDocTestEnv);
@@ -188,10 +203,8 @@ async function init() {
   zegoEnv.font_family == 1 ? '' : (document.getElementById(parentId).style.fontFamily = 'ZgFont');
 
   updateNetOption();
-  onKeydownHandle();
-  resetParentWidthHeight();
-  console.log('互动白板 sdk 版本:', zegoWhiteboard.getVersion());
-  console.log('文件转码 sdk 版本:', zegoDocs.getVersion());
+  onDocumentEventHandle();
+  console.log('互动白板 sdk 版本:' + zegoWhiteboard.getVersion(), '文件转码 sdk 版本:' + zegoDocs.getVersion());
 }
 // 离开房间
 function leaveRoom() {
@@ -227,12 +240,10 @@ function openRoom(idName, roomID, token) {
     try {
       await zegoWhiteboard.loginRoom(
         roomID,
-        token,
-        {
+        token, {
           userID: idName,
           userName: 'nick' + idName
-        },
-        {
+        }, {
           maxMemberCount: 10,
           userUpdate: true
         }
@@ -288,7 +299,9 @@ $(document).ready(function () {
     const totalPage = zegoWhiteboardView.getPageCount();
     if (currentPage <= 1 || totalPage <= 1) return;
     const percent = (currentPage - 2) / totalPage;
-    const { direction } = zegoWhiteboardView.getCurrentScrollPercent();
+    const {
+      direction
+    } = zegoWhiteboardView.getCurrentScrollPercent();
     if (direction === 1) {
       zegoWhiteboardView.scroll(percent, 0);
     } else {
@@ -301,7 +314,9 @@ $(document).ready(function () {
     const totalPage = zegoWhiteboardView.getPageCount();
     if (currentPage >= totalPage || totalPage <= 1) return;
     const percent = currentPage / totalPage;
-    const { direction } = zegoWhiteboardView.getCurrentScrollPercent();
+    const {
+      direction
+    } = zegoWhiteboardView.getCurrentScrollPercent();
     if (direction === 1) {
       zegoWhiteboardView.scroll(percent, 0);
     } else {
@@ -324,15 +339,8 @@ $(document).ready(function () {
   // 跳转指定页
   $('#flipPage').keypress(function (e) {
     var page = $('#flipPage').val();
-    if (e.which == 13 && page >= 1) {
-      const totalPage = zegoWhiteboardView.getPageCount();
-      const percent = (page - 1) / totalPage;
-      const { direction } = zegoWhiteboardView.getCurrentScrollPercent();
-      if (direction === 1) {
-        zegoWhiteboardView.scroll(percent, 0);
-      } else {
-        zegoWhiteboardView.scroll(0, percent);
-      }
+    if (e.which == 13) {
+      flipPage();
     }
   });
 
@@ -359,7 +367,7 @@ $(document).ready(function () {
 
   $('#setBackgroundColor').click(function () {
     const color = $('#backgroundColor').val();
-    zegoWhiteboardView.setBackgroundColor(color);
+    zegoWhiteboardView && zegoWhiteboardView.setBackgroundColor(color);
   });
 
   $('#addtext').click(function () {
@@ -443,17 +451,25 @@ async function getViewList() {
 
 // sheet列表
 function getAllSheet(res) {
-  const { sheets, fileID } = res;
+  const {
+    sheets,
+    fileID
+  } = res;
   const excelSheetHtml = sheets.map((sheet, ind) => {
     return '<option value=' + fileID + ',' + sheet + '>' + sheet + '</option>';
   });
-  $('#excelView').html('<option>--</option>' + excelSheetHtml.join(''));
+  $('#excelView').html(
+    '<option value="" disabled selected style="display: none">sheet列表</option>' + excelSheetHtml.join('')
+  );
   $('#excelView').val(fileID + ',' + res.fileName);
 }
 
 // 创建其余的白板sheet
 async function createRestSheetWb(res) {
-  const { sheets, fileID } = res;
+  const {
+    sheets,
+    fileID
+  } = res;
   for (const sheetName of sheets) {
     const ind = sheets.indexOf(sheetName);
     if (ind > 0) {
@@ -478,6 +494,7 @@ async function createRestSheetWb(res) {
 }
 
 function updateRemoteView() {
+  console.log('updateRemoteView');
   if (zegoWhiteboardViewList.length) {
     const optionsList = [];
     let noReatIds = {}; // 不重复的fileId列表
@@ -495,7 +512,9 @@ function updateRemoteView() {
         optionsList.push('<option value=' + id + '>' + id + '-' + wbViewItem.getName() + '</option>');
       }
     });
-    $('#remoteView').html('<option>--</option>' + optionsList.join(''));
+    $('#remoteView').html(
+      '<option value="" disabled selected style="display: none">文件/白板列表</option>' + optionsList.join('')
+    );
     if (zegoWhiteboardView) {
       $('#remoteView').val(zegoWhiteboardView.getID());
     }
@@ -507,7 +526,15 @@ function updateRemoteView() {
 /**
  * @desc: 加载远程白板
  */
+
+var lastwhiteboardIDIsFile = false;
 async function selectRemoteView(whiteboardID) {
+  console.log('change file or wb', lastwhiteboardIDIsFile);
+
+  // 切换白板时，判断即将被切换的白板是否是文件白板，如果是，则暂停该文件白板的音视频播放
+  console.log('zegoDocsView', zegoDocsView);
+  lastwhiteboardIDIsFile && zegoDocsView && zegoDocsView.stopPlay();
+
   var id = whiteboardID ? whiteboardID : $('#remoteView').val();
   initSheetList();
   if (id) {
@@ -520,7 +547,9 @@ async function selectRemoteView(whiteboardID) {
     }
 
     var fileInfo = zegoWhiteboardView.getFileInfo();
+
     if (fileInfo) {
+      lastwhiteboardIDIsFile = true;
       console.warn('fileInfo', fileInfo);
       fileID = fileInfo.fileID;
       isRemote = true;
@@ -528,7 +557,8 @@ async function selectRemoteView(whiteboardID) {
       zegoDocsView.loadFile(fileInfo.fileID, fileInfo.authKey);
       console.log('docsview selectRemoteView', fileInfo.fileName, id);
     } else {
-      zegoDocsView = null;
+      lastwhiteboardIDIsFile = false;
+      // zegoDocsView = null;
       await zegoWhiteboard.attachView(zegoWhiteboardView, parentId);
       setOperationModeState();
     }
@@ -599,17 +629,19 @@ function uploadStaticHandle() {
     return;
   }
   zegoDocs
-    .uploadFile(myFile, 3, { _seq: ++_seq })
-    .then(async (uploadResult) => {
+    .uploadFile(myFile, 3, {
+      _seq: ++_seq
+    })
+    .then(async (res) => {
       toast('上传成功');
       myFile = null;
-      console.log('uploadResult', uploadResult);
-      createFileView(uploadResult.fileID);
+      console.log('uploadResult', res);
+      createFileView(res);
       $('#staticFile').val('');
     })
     .catch((error) => {
       console.log(error);
-      if (error.message) toast(`文件上传失败，${error.message}。`);
+      if (error.code) toast(`文件上传失败，${error.code}: ${error.message}。`);
       $('#staticFile').val('');
     });
 }
@@ -626,15 +658,17 @@ function uploadDynamicHandle() {
     return;
   }
   zegoDocs
-    .uploadFile(myFile, 6, { _seq: ++_seq })
-    .then(async (uploadResult) => {
+    .uploadFile(myFile, 6, {
+      _seq: ++_seq
+    })
+    .then(async (res) => {
       toast('上传成功');
-      createFileView(uploadResult.fileID);
+      createFileView(res);
       $('#dynamicFile').val('');
     })
     .catch((error) => {
       console.log(error);
-      if (error.message) toast(`文件上传失败，${error.message}。`);
+      if (error.code) toast(`文件上传失败，，${error.code}: ${error.message}。`);
       $('#dynamicFile').val('');
     });
 }
@@ -713,14 +747,13 @@ async function createFileWBView(res) {
 
 function initSheetList() {
   // 初始化sheet列表
-  $('#excelView').html('<option>--</option>');
+  $('#excelView').html('<option value="" disabled selected style="display: none">sheet列表</option>');
 }
 
 //取消上传
 async function cancelUpload() {
-  var fn = zegoDocs.cancelUpload || zegoDocs.cancelUploadFile;
-  var res = await fn.call(zegoDocs, fileHash);
-  if (res.code === 0) toast('取消上传操作成功');
+  var res = await zegoDocs.cancelUploadFile(fileHash);
+  if (res === true) toast('取消上传操作成功');
   $('#staticFile').val('');
   $('#dynamicFile').val('');
 }
@@ -736,7 +769,7 @@ function getThumbnailUrlList() {
   }
   const type = zegoDocsView.getFileType();
   // 仅支持PDF，PPT，动态PPT 文件格式
-  const supportType = [1, 8, 512];
+  const supportType = [1, 8, 512, 4096];
   if (supportType.includes(type)) {
     var thumbnailUrlList = zegoDocsView.getThumbnailUrlList();
     if (thumbnailUrlList.length > 0) {
@@ -747,7 +780,7 @@ function getThumbnailUrlList() {
       $('.thumbnail').show();
     }
   } else {
-    toast('获取缩略图仅支持PDF，PPT，动态PPT 文件格式');
+    toast('获取缩略图仅支持“PDF，PPT，动态PPT，H5”文件格式');
   }
 }
 
@@ -757,6 +790,7 @@ function closeThumbnail() {
 
 // 添加图片-本地
 var myLocalIMG;
+
 function uploadLocalIMG() {
   myLocalIMG = event.target.files[0];
 }
@@ -810,7 +844,10 @@ function addImage(type) {
 function updateNetImgList(res) {
   var tempImgName = res.replace(/(.*\/)*([^.]+).*/gi, '$2');
   console.warn(res.replace(/(.*\/)*([^.]+).*/gi, '$2'));
-  netImgUrlList.unshift({ id: res, name: tempImgName });
+  netImgUrlList.unshift({
+    id: res,
+    name: tempImgName
+  });
 }
 // 更新 自定义图片、白板背景图 下拉框数据
 function updateNetOption() {
@@ -843,7 +880,7 @@ function toast(message) {
   $('#error_msg').html(message);
 }
 
-function onKeydownHandle() {
+function onDocumentEventHandle() {
   window.addEventListener('keydown', (event) => {
     var e = event || window.event || arguments.callee.caller.arguments[0];
     if (!e) return;
@@ -856,20 +893,37 @@ function onKeydownHandle() {
         break;
     }
   });
-}
-
-function resetParentWidthHeight() {
-  const dom = document.getElementById(parentId);
-  let w = dom.parentNode.clientWidth - 32;
-  w = Math.min(w, 1067);
-  h = Math.ceil((w * 9) / 16);
-  dom.style.cssText += `width:${w}px;height:${h}px;`;
+  // 白板大小自适应
+  function onResize() {
+    if (!resizeTicking) {
+      resizeTicking = true;
+      setTimeout(() => {
+        const dom = document.getElementById(parentId);
+        const {
+          clientWidth,
+          clientHeight
+        } = dom.parentNode;
+        let width = clientWidth;
+        let height = ((9 * width) / 16) | 0;
+        if (height > clientHeight) {
+          height = clientHeight;
+          width = ((clientHeight * 16) / 9) | 0;
+        }
+        reloadView(width, height, dom);
+        resizeTicking = false;
+      }, 1000);
+    }
+  }
+  window.addEventListener('resize', onResize);
+  onResize();
 }
 
 async function saveImage() {
   const wbname = zegoWhiteboardView.getName();
   const wbPageIndex = zegoWhiteboardView.getCurrentPage();
-  const data = await zegoWhiteboardView.snapshot({ userData: '11' });
+  const data = await zegoWhiteboardView.snapshot({
+    userData: '11'
+  });
   let filename = `${wbname}`;
   const save_link = document.createElementNS('http://www.w3.org/1999/xhtml', 'a');
   save_link.href = data.image;
@@ -882,6 +936,7 @@ async function saveImage() {
 }
 // 添加背景图片-本地
 var myLocalBGIMG;
+
 function uploadLocalBGIMG() {
   myLocalBGIMG = event.target.files[0];
 }
@@ -909,5 +964,105 @@ function setWhiteboardBg(type) {
 }
 
 function clearBackgroundImage() {
-  zegoWhiteboardView.clearBackgroundImage();
+  zegoWhiteboardView && zegoWhiteboardView.clearBackgroundImage();
+}
+
+function reloadView(width, height, dom) {
+  width = width || +$('#parentWidth').val();
+  height = height || +$('#parentHeight').val();
+  if (!width || !height || width < 1 || height < 1) return toast('请输入有效的宽高值');
+
+  dom = dom || document.getElementById(parentId);
+  dom.style.cssText += `width:${width}px;height:${height}px;`;
+  $('#parentWidthHeight').html(`容器宽高：${width},${height}`);
+
+  if (zegoWhiteboardView) {
+    // 动画100ms
+    setTimeout(function () {
+      zegoWhiteboardView.reloadView();
+      $('#parentWidth').val('');
+      $('#parentHeight').val('');
+    }, 120);
+  }
+}
+
+function preloadH5() {
+  const fileID = $('#h5fileID').val();
+  fileID && zegoDocs.cacheFile(fileID);
+}
+
+function triggerFullscreen() {
+  const dom = document.getElementById(parentId);
+  if (document.fullscreen) {
+    document.exitFullscreen();
+  } else {
+    dom.requestFullscreen();
+  }
+}
+
+function showMenu() {
+  $('.operation-container').toggle();
+}
+
+function flipPage() {
+  var page = $('#flipPage').val();
+  if (page >= 1) {
+    const totalPage = zegoWhiteboardView.getPageCount();
+    const percent = (page - 1) / totalPage;
+    const {
+      direction
+    } = zegoWhiteboardView.getCurrentScrollPercent();
+    if (direction === 1) {
+      zegoWhiteboardView.scroll(percent, 0);
+    } else {
+      zegoWhiteboardView.scroll(0, percent);
+    }
+  }
+}
+
+function flipPageNum() {
+  flipPage();
+}
+
+// 上传H5课件
+function uploadH5Handle(type) {
+  console.warn('上传H5课件', type);
+  var h5Width = Math.max(+$('#h5Width').val(), 0);
+  var h5Height = Math.max(+$('#h5Height').val(), 0);
+  var h5PageCount = Math.max(+$('#h5PageCount').val(), 0);
+  var h5ThumbnailList = $('#h5ThumbnailList').val().split(',');
+  type = type || '';
+  myFile = event.target.files[0];
+  if (!zegoDocs) {
+    toast('请先初始化');
+    return;
+  }
+  if (!myFile) {
+    toast('请先选择文件');
+    return;
+  }
+  if (!(h5Width && h5Height && h5PageCount)) {
+    toast('h5课件参数有误');
+    return;
+  }
+  const config = {
+    width: h5Width,
+    height: h5Height,
+    pageCount: h5PageCount
+  };
+  if (type == 1 && !h5ThumbnailList) {
+    toast('h5课件缩略图参数有误');
+    return;
+  } else {
+    config.thumbnailList = h5ThumbnailList;
+  }
+  zegoDocs
+    .uploadH5File(myFile, config, function (res) {
+      console.log('uploadH5File', res);
+    })
+    .then(function (res) {
+      document.getElementById('fileID').value = res;
+      console.log('uploadH5File', res);
+    });
+  $('#h5file' + type).val('');
 }

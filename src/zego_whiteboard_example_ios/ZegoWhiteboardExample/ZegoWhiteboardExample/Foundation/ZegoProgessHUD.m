@@ -95,6 +95,7 @@
 
 - (void)updateProgress:(CGFloat)progress {
     self.hudView.progress = progress;
+    self.hudView.label.text = [NSString stringWithFormat:@"下载进度 %ld%%",(long)(progress * 100)];
 }
 
 - (void)didClickCancel:(UIButton *)sender {

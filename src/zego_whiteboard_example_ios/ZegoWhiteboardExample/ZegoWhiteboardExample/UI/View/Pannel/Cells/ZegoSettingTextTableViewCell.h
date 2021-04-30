@@ -14,6 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) UITextField *inputTF;
 @property (nonatomic, strong) UILabel *titleLabel;
 
+- (void)clearText;
+
 @end
 
 @interface ZegoSettingTextTableViewCell : UITableViewCell

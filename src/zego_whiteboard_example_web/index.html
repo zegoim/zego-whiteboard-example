@@ -1,484 +1,501 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>互动白板</title>
-    <link rel="stylesheet" href="./lib/bootstrap.min.css" />
-    <link rel="stylesheet" href="./style.css" />
-  </head>
 
-  <body>
-    <div class="position-fixed p-3 error-toast">
-      <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true" data-delay="2000">
-        <div class="toast-body" id="error_msg"></div>
-      </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="renderer" content="webkit">
+  <title>互动白板</title>
+  <link rel="stylesheet" href="./lib/bootstrap.min.css" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+  <div class="position-fixed p-3 error-toast">
+    <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true" data-delay="2000">
+      <div class="toast-body" id="error_msg"></div>
     </div>
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-md-9 themed-grid-col main-container">
-          <div class="row top-bar">
-            <div class="col-md-3 themed-grid-col mt-3">
-              <p>房间：<span id="roomid">--</span>&emsp;<span id="curPage"></span> / <span id="totalPage"></span></p>
-              <p>名称：<span id="filename"></span></p>
-            </div>
-            <div class="col-md-3 themed-grid-col mt-3">
-              <label for="remoteView">白板列表：</label>
-              <div class="row">
-                <select
-                  class="form-control form-control-sm"
-                  style="width: 160px"
-                  id="remoteView"
-                  onchange="selectRemoteView()"
-                ></select>
+  </div>
+
+  <button type="button" class="btn btn-outline-info btn-sm menu-btn" onclick="showMenu()">菜单</button>
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-8 themed-grid-col main-container">
+        <form>
+          <div class="form-row top-bar mt-3">
+            <div class="col-sm mb-2">
+              <div class="form-control form-control-sm room-id">
+                房间：
+                <span class="badge badge-pill badge-info" id="roomid"> - </span>
               </div>
             </div>
-            <div class="col-md-2 themed-grid-col mt-3">
-              <label for="excelView">表格列表：</label>
-              <div class="row">
-                <select
-                  class="form-control form-control-sm"
-                  style="width: 160px"
-                  id="excelView"
-                  onchange="selectExcel(event)"
-                ></select>
+            <div class="col-sm mb-2">
+              <select class="form-control form-control-sm" style="width: 160px" id="remoteView"
+                onchange="selectRemoteView()"></select>
+            </div>
+            <div class="col-sm mb-2">
+              <select class="form-control form-control-sm" style="width: 160px" id="excelView"
+                onchange="selectExcel(event)"></select>
+            </div>
+            <div class="col-sm mb-2">
+              <nav aria-label="Page navigation example">
+                <ul class="pagination">
+                  <li class="page-item" id="previousPage">
+                    <a class="page-link" href="#" aria-label="Previous">
+                      <span aria-hidden="true">&laquo;</span>
+                    </a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link whiteboard-page" href="#">
+                      <span id="curPage"></span> / <span id="totalPage"></span>
+                    </a>
+                  </li>
+                  <li class="page-item" id="nextPage">
+                    <a class="page-link" href="#" aria-label="Next">
+                      <span aria-hidden="true">&raquo;</span>
+                    </a>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+            <div class="col-sm mb-2">
+              <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-info btn-sm" id="previousStep">上步</button>
+                <button type="button" class="btn btn-info btn-sm" id="nextStep">下步</button>
               </div>
             </div>
-            <div class="col-md-3 themed-grid-col mt-3">
-              <div class="btn-group btn-group-sm" role="group" aria-label="Third group">
-                <button type="button" class="btn btn-primary" id="previousPage">上页</button>
-                <button type="button" class="btn btn-primary" id="nextPage">下页</button>
-              </div>
-              <div class="btn-group btn-group-sm" role="group" aria-label="Third group">
-                <button type="button" class="btn btn-primary" id="previousStep">上步</button>
-                <button type="button" class="btn btn-primary" id="nextStep">下步</button>
-              </div>
+            <div class="col-sm mb-2">
               <div class="input-group">
-                <div class="input-group-prepend">
-                  <span class="input-group-text">跳转</span>
-                </div>
-                <input type="text" class="form-control" aria-label="跳转" id="flipPage" />
-                <div class="input-group-append">
-                  <span class="input-group-text">页</span>
+                <div class="custom-file">
+                  <input type="text" class="form-control form-control-sm" aria-label="跳转" id="flipPage"
+                    placeholder="跳转" />
+                  <div class="input-group-append">
+                    <button class="btn btn-outline-secondary btn-sm" type="button" onclick="flipPageNum()">页</button>
+                  </div>
                 </div>
               </div>
             </div>
-            <div class="col-md-1 themed-grid-col mt-1" style="display: flex;">
-              <button type="button" class="btn btn-primary btn-sm" id="leaveRoom" style="margin: auto;">退房</button>
+            <div class="col-sm mb-2">
+              <button type="button" class="btn btn-info btn-sm" id="leaveRoom" style="margin: auto;">退房</button>
             </div>
           </div>
-          <div class="pb-3">
-            <div class="row" style="margin-top: 1%">
-              <div class="col-sm">
-                <div id="mywhiteboard" class="whiteboard-area"></div>
-              </div>
-            </div>
-            <p style="text-align: center;"><span id="userViewAuth"></span>&ensp;<span id="userGraphicAuth"></span></p>
-            <p id="idNames"></p>
-          </div>
+        </form>
+        <div class="whiteboard-box">
+          <div id="mywhiteboard" class="whiteboard-area"></div>
         </div>
-        <div class="col-md-3 themed-grid-col operation-container">
-          <nav>
-            <div class="nav nav-tabs" id="nav-tab" role="tablist">
-              <a
-                class="nav-link active"
-                id="nav-home-tab"
-                data-toggle="tab"
-                href="#nav-home"
-                role="tab"
-                aria-controls="nav-home"
-                aria-selected="true"
-                >绘制</a
-              >
-              <a
-                class="nav-link"
-                id="nav-profile-tab"
-                data-toggle="tab"
-                href="#nav-profile"
-                role="tab"
-                aria-controls="nav-profile"
-                aria-selected="false"
-                >白板</a
-              >
-              <a
-                class="nav-link"
-                id="nav-contact-tab"
-                data-toggle="tab"
-                href="#nav-contact"
-                role="tab"
-                aria-controls="nav-contact"
-                aria-selected="false"
-                >文件</a
-              >
-            </div>
-          </nav>
-          <div class="tab-content" id="nav-tabContent">
-            <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
-              <form>
-                <div class="form-group" style="display: flex;">
-                  <div class="form-check" style="flex: 1;">
-                    <input class="form-check-input" type="checkbox" id="disableOperatio" />
-                    <label class="form-check-label" for="disableOperatio">勿操作</label>
-                  </div>
-                  <div class="form-check" style="flex: 1;">
-                    <input class="form-check-input" type="checkbox" id="enableOperatioScroll" />
-                    <label class="form-check-label" for="enableOperatioScroll">滚动</label>
-                  </div>
-                  <div class="form-check" style="flex: 1;">
-                    <input class="form-check-input" type="checkbox" id="enableOperatioDraw" />
-                    <label class="form-check-label" for="enableOperatioDraw">绘制</label>
-                  </div>
-                  <div class="form-check" style="flex: 1;">
-                    <input class="form-check-input" type="checkbox" id="enableOperatioZoom" />
-                    <label class="form-check-label" for="enableOperatioZoom">缩放</label>
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label for="inputEmail3" class="col-sm-4 col-form-label">缩放</label>
-                  <div class="col-sm-8">
-                    <div class="input-group">
-                      <input type="text" class="form-control" id="zoom" />
-                      <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="button" onclick="setZoom()">确定</button>
-                      </div>
+      </div>
+      <div class="col-sm-4 themed-grid-col operation-container">
+        <nav class="operation-container-nav">
+          <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <a class="nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab"
+              aria-controls="nav-home" aria-selected="true">绘制</a>
+            <a class="nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab"
+              aria-controls="nav-profile" aria-selected="false">白板</a>
+            <a class="nav-link" id="nav-contact-tab" data-toggle="tab" href="#nav-contact" role="tab"
+              aria-controls="nav-contact" aria-selected="false">文件</a>
+          </div>
+        </nav>
+        <!-- 绘制面板 -->
+        <div class="tab-content tab-content-box" id="nav-tabContent">
+          <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+            <div class="card border-light">
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                  <div class="form-group" style="display: flex;">
+                    <div class="form-check form-check-inline" style="flex: 1;">
+                      <input class="form-check-input" type="checkbox" id="disableOperatio" />
+                      <label class="form-check-label" for="disableOperatio">勿操作</label>
+                    </div>
+                    <div class="form-check form-check-inline" style="flex: 1;">
+                      <input class="form-check-input" type="checkbox" id="enableOperatioScroll" />
+                      <label class="form-check-label" for="enableOperatioScroll">滚动</label>
+                    </div>
+                    <div class="form-check form-check-inline" style="flex: 1;">
+                      <input class="form-check-input" type="checkbox" id="enableOperatioDraw" />
+                      <label class="form-check-label" for="enableOperatioDraw">绘制</label>
+                    </div>
+                    <div class="form-check form-check-inline" style="flex: 1;">
+                      <input class="form-check-input" type="checkbox" id="enableOperatioZoom" />
+                      <label class="form-check-label" for="enableOperatioZoom">缩放</label>
                     </div>
                   </div>
-                </div>
-                <div class="form-group row">
-                  <label for="inputEmail3" class="col-sm-4 col-form-label">涂鸦工具</label>
-                  <div class="col-sm-8">
-                    <select class="form-control" id="tooltype">
-                      <option value="1">画笔</option>
-                      <option value="32">选择</option>
-                      <option value="64">橡皮擦</option>
-                      <option value="256">点击</option>
-                      <option value="drag">拖拽</option>
-                      <option value="128">激光笔</option>
-                      <option value="2">文本</option>
-                      <option value="8">矩形</option>
-                      <option value="16">椭圆</option>
-                      <option value="4">直线</option>
-                      <option value="512">自定义图形</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <div class="col-sm-4">字体</div>
-                  <div class="col-sm-8">
-                    <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="checkbox" id="bold" onchange="setFontBold()" />
-                      <label class="form-check-label" for="bold">粗体</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="checkbox" id="italic" onchange="setFontItalic()" />
-                      <label class="form-check-label" for="italic">斜体</label>
-                    </div>
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label for="inputEmail3" class="col-sm-4 col-form-label">颜色</label>
-                  <div class="col-sm-8">
-                    <div class="input-group">
-                      <input type="text" class="form-control" id="brushColor" />
-                      <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="button" id="setBrushColor">确定</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label for="inputEmail3" class="col-sm-4 col-form-label">字号大小</label>
-                  <div class="col-sm-8">
-                    <select class="form-control" id="textsize">
-                      <option>18</option>
-                      <option>24</option>
-                      <option>36</option>
-                      <option>48</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label for="inputEmail3" class="col-sm-4 col-form-label">画笔粗细</label>
-                  <div class="col-sm-8">
-                    <select class="form-control" id="brushsize">
-                      <option>6</option>
-                      <option>18</option>
-                      <option>24</option>
-                      <option>36</option>
-                      <option>48</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="form-group row drawBox">
-                  <label for="inputEmail3" class="col-sm-4 col-form-label">清除工具</label>
-                  <div class="btn-toolbar col-sm-8" role="toolbar" aria-label="Toolbar with button groups">
-                    <div class="btn-group btn-group-sm mt-2 mr-2">
-                      <button type="button" class="btn btn-primary" id="clearCurrentPage">清空当前页</button>
-                    </div>
-                    <div class="btn-group btn-group-sm mt-2">
-                      <button type="button" class="btn btn-primary" onclick="deleteSelectedGraphics()">选中删除</button>
-                    </div>
-                    <div class="btn-group btn-group-sm mt-2">
-                      <button type="button" class="btn btn-primary" id="undo">撤销</button>
-                      <button type="button" class="btn btn-primary" id="redo">重做</button>
-                    </div>
-                    <div class="btn-group btn-group-sm mt-2 mr-2">
-                      <button type="button" class="btn btn-danger" id="clear">清空所有页</button>
-                    </div>
-                    <div class="btn-group btn-group-sm mt-2">
-                      <button type="button" class="btn btn-primary" onclick="saveImage()">白板快照</button>
-                    </div>
-                  </div>
-                </div>
-                <div class="drawBox">
+                </li>
+                <li class="list-group-item">
                   <div class="form-group row">
-                    <label for="inputEmail3" class="col-sm-4 col-form-label">网络图片</label>
+                    <label for="inputEmail3" class="col-sm-4 col-form-label">涂鸦工具</label>
+                    <div class="col-sm-8">
+                      <select class="form-control form-control-sm" id="tooltype">
+                        <option value="1">画笔</option>
+                        <option value="32">选择</option>
+                        <option value="64">橡皮擦</option>
+                        <option value="256">点击</option>
+                        <option value="drag">拖拽</option>
+                        <option value="128">激光笔</option>
+                        <option value="2">文本</option>
+                        <option value="8">矩形</option>
+                        <option value="16">椭圆</option>
+                        <option value="4">直线</option>
+                        <option value="512">自定义图形</option>
+                      </select>
+                    </div>
+                  </div>
+                </li>
+                <li class="list-group-item">
+                  <div class="form-group row">
+                    <div class="col-sm-4">字体</div>
+                    <div class="col-sm-8">
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="bold" onchange="setFontBold()" />
+                        <label class="form-check-label" for="bold">粗体</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="italic" onchange="setFontItalic()" />
+                        <label class="form-check-label" for="italic">斜体</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group row">
+                    <label for="inputEmail3" class="col-sm-4 col-form-label">颜色</label>
                     <div class="col-sm-8">
                       <div class="input-group">
-                        <input type="text" class="form-control" id="localImg" placeholder="图片url" />
-                      </div>
-                    </div>
-                  </div>
-                  <div class="form-group row">
-                    <label for="inputEmail3" class="col-sm-4 col-form-label">上传图片</label>
-                    <div class="col-sm-8">
-                      <input class="form-control-file" onchange="uploadLocalIMG(event)" id="uploadFile" type="file" />
-                    </div>
-                  </div>
-                  <div class="form-group row">
-                    <label class="col-sm-4 col-form-label">图片坐标</label>
-                    <div class="col-sm-8">
-                      <div class="input-group mb-2 mr-sm-2">
-                        <div class="input-group-prepend">
-                          <div class="input-group-text">x</div>
+                        <input type="text" class="form-control form-control-sm" id="brushColor" />
+                        <div class="input-group-append">
+                          <button class="btn btn-outline-secondary btn-sm" type="button" id="setBrushColor">确定</button>
                         </div>
-                        <input type="text" class="form-control" id="imgpositionX" placeholder="如 10" />
-                      </div>
-                      <div class="input-group mb-2 mr-sm-2">
-                        <div class="input-group-prepend">
-                          <div class="input-group-text">y</div>
-                        </div>
-                        <input type="text" class="form-control" id="imgpositionY" placeholder="如 10" />
-                      </div>
-                      <div class="input-group">
-                        <button class="btn btn-outline-secondary" type="button" onclick="addImage(0)">确定</button>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div class="form-group row drawBox">
-                  <label for="inputEmail3" class="col-sm-4 col-form-label">自定义图形</label>
-                  <div class="col-sm-8">
-                    <div class="input-group mb-2 mr-sm-2">
-                      <select class="form-control" id="netImgSelect"></select>
-                    </div>
-                    <div class="input-group">
-                      <input type="text" class="form-control" id="netImg" placeholder="图片url" />
-                      <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="button" onclick="addImage(1)">确定</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="form-group row drawBox">
-                  <label class="col-sm-4 col-form-label">传入文本</label>
-                  <div class="col-sm-8">
-                    <div class="input-group mb-2 mr-sm-2">
-                      <div class="input-group-prepend">
-                        <div class="input-group-text">x</div>
-                      </div>
-                      <input type="text" class="form-control" id="addtext_x" placeholder="如 10" />
-                    </div>
-                    <div class="input-group mb-2 mr-sm-2">
-                      <div class="input-group-prepend">
-                        <div class="input-group-text">y</div>
-                      </div>
-                      <input type="text" class="form-control" id="addtext_y" placeholder="如 10" />
-                    </div>
-                    <div class="input-group">
-                      <input type="text" class="form-control" id="addtext_val" />
-                      <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="button" id="addtext">确定</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="drawBox">
                   <div class="form-group row">
-                    <label for="inputEmail3" class="col-sm-4 col-form-label">白板背景图</label>
+                    <label for="inputEmail3" class="col-sm-4 col-form-label">字号大小</label>
                     <div class="col-sm-8">
-                      <select class="form-control" id="whiteboardBgImgModelSelect">
-                        <option value="" disabled selected style="display: none">渲染类型</option>
-                        <option value="0">左对齐</option>
-                        <option value="1">右对齐</optin>
-                        <option value="2">下对齐</option>
-                        <option value="3">上对齐</option>
-                        <option value="4">居中</option>
+                      <select class="form-control form-control-sm" id="textsize">
+                        <option>18</option>
+                        <option>24</option>
+                        <option>36</option>
+                        <option>48</option>
                       </select>
                     </div>
                   </div>
                   <div class="form-group row">
-                    <label for="inputEmail3" class="col-sm-4 col-form-label">网络图片</label>
+                    <label for="inputEmail3" class="col-sm-4 col-form-label">画笔粗细</label>
                     <div class="col-sm-8">
-                      <div class="input-group">
-                        <div class="input-group mb-2 mr-sm-2">
-                          <select class="form-control" id="whiteboardBgImgUrlSelect"></select>
-                        </div>
-                        <input type="text" class="form-control" id="whiteboardBgImg" placeholder="图片url" />
-                        <div class="input-group-append">
-                          <button class="btn btn-outline-secondary" type="button" onclick="setWhiteboardBg(1)">
-                            确定
-                          </button>
-                        </div>
-                      </div>
+                      <select class="form-control form-control-sm" id="brushsize">
+                        <option>6</option>
+                        <option>18</option>
+                        <option>24</option>
+                        <option>36</option>
+                        <option>48</option>
+                      </select>
                     </div>
                   </div>
+                </li>
+                <li class="list-group-item">
+                  <!-- 清除操作 -->
                   <div class="form-group row">
-                    <label for="inputEmail3" class="col-sm-4 col-form-label">本地上传</label>
+                    <label for="inputEmail3" class="col-sm-4 col-form-label">清除工具</label>
+                    <div class="btn-toolbar col-sm-8" role="toolbar" aria-label="Toolbar with button groups">
+                      <div class="btn-group btn-group-sm mt-2 mr-2">
+                        <button type="button" class="btn btn-sm btn-info" id="clearCurrentPage">清空当前页</button>
+                      </div>
+                      <div class="btn-group btn-group-sm mt-2 mr-2">
+                        <button type="button" class="btn btn-sm btn-info"
+                          onclick="deleteSelectedGraphics()">选中删除</button>
+                      </div>
+                      <div class="btn-group btn-group-sm mt-2 mr-2">
+                        <button type="button" class="btn btn-sm btn-info" id="undo">撤销</button>
+                        <button type="button" class="btn btn-sm btn-info" id="redo">重做</button>
+                      </div>
+                      <div class="btn-group btn-group-sm mt-2">
+                        <button type="button" class="btn btn-sm btn-danger" id="clear">清空所有页</button>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <li class="list-group-item">
+                  <!-- 复制文本 -->
+                  <div class="form-group row">
+                    <label class="col-sm-4 col-form-label">传入文本</label>
                     <div class="col-sm-8">
+                      <div class="input-group mb-2">
+                        <input type="text" class="form-control form-control-sm" id="addtext_x" placeholder="坐标x" />
+                        <input type="text" class="form-control form-control-sm" id="addtext_y" placeholder="坐标y" />
+                      </div>
                       <div class="input-group">
-                        <input class="form-control-file" type="file" onchange="uploadLocalBGIMG(event)" />
+                        <input type="text" class="form-control form-control-sm" id="addtext_val" placeholder="输入文本" />
                         <div class="input-group-append">
-                          <button class="btn btn-outline-secondary" type="button" onclick="setWhiteboardBg(2)">
-                            确定
+                          <button class="btn btn-outline-secondary btn-sm" type="button" id="addtext">确定</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <li class="list-group-item">
+                  <!-- 自定义图形 -->
+                  <div class="form-group row">
+                    <label for="inputEmail3" class="col-sm-4 col-form-label">自定义图形</label>
+                    <div class="col-sm-8">
+                      <div class="input-group mb-2 mr-sm-2">
+                        <select class="form-control form-control-sm" id="netImgSelect"></select>
+                      </div>
+                      <div class="input-group">
+                        <input type="text" class="form-control form-control-sm" id="netImg" placeholder="图片url" />
+                        <div class="input-group-append">
+                          <button class="btn btn-outline-secondary btn-sm" type="button"
+                            onclick="addImage(1)">确定</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <li class="list-group-item">
+                  <!-- 插入图片 -->
+                  <div>
+                    <div class="form-group row">
+                      <label class="col-sm-4 col-form-label">插入图片</label>
+                      <div class="col-sm-8">
+                        <div class="input-group">
+                          <input type="text" class="form-control form-control-sm" id="imgpositionX" placeholder="坐标x" />
+                          <input type="text" class="form-control form-control-sm" id="imgpositionY" placeholder="坐标y" />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="inputEmail3" class="col-sm-4 col-form-label">1. 网络图片</label>
+                      <div class="col-sm-8">
+                        <div class="input-group">
+                          <input type="text" class="form-control form-control-sm" id="localImg" placeholder="图片url" />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="inputEmail3" class="col-sm-4 col-form-label">2. 本地上传</label>
+                      <div class="col-sm-8">
+                        <input class="form-control-file" onchange="uploadLocalIMG(event)" id="uploadFile" type="file" />
+                        <div class="btn-group btn-group-sm mt-2 mr-2">
+                          <button class="btn btn-info" type="button" onclick="addImage(0)">确定</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <li class="list-group-item">
+                  <!-- 背景图 -->
+                  <div>
+                    <div class="form-group row">
+                      <label for="inputEmail3" class="col-sm-4 col-form-label">背景色</label>
+                      <div class="col-sm-8">
+                        <div class="input-group">
+                          <input type="text" class="form-control form-control-sm" id="backgroundColor" />
+                          <div class="input-group-append">
+                            <button class="btn btn-outline-secondary btn-sm" type="button"
+                              id="setBackgroundColor">确定</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="inputEmail3" class="col-sm-4 col-form-label">背景图</label>
+                      <div class="col-sm-8">
+                        <select class="form-control form-control-sm" id="whiteboardBgImgModelSelect">
+                          <option value="" disabled selected style="display: none">渲染类型</option>
+                          <option value="0">左对齐</option>
+                          <option value="1">右对齐</optin>
+                          <option value="2">下对齐</option>
+                          <option value="3">上对齐</option>
+                          <option value="4">居中</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="inputEmail3" class="col-sm-4 col-form-label">1. 网络图片</label>
+                      <div class="col-sm-8">
+                        <div class="input-group">
+                          <div class="input-group mb-2 mr-sm-2">
+                            <select class="form-control form-control-sm" id="whiteboardBgImgUrlSelect"></select>
+                          </div>
+                          <input type="text" class="form-control form-control-sm" id="whiteboardBgImg"
+                            placeholder="图片url" />
+                          <div class="input-group-append">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="setWhiteboardBg(1)">
+                              确定
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="inputEmail3" class="col-sm-4 col-form-label">2. 本地上传</label>
+                      <div class="col-sm-8">
+                        <input class="form-control-file" onchange="uploadLocalBGIMG(event)" type="file" />
+                        <div class="btn-group btn-group-sm mt-2 mr-2">
+                          <button class="btn btn-info" type="button" onclick="setWhiteboardBg(2)">确定</button>
+                        </div>
+                        <div class="btn-group btn-group-sm mt-2 mr-2" role="group" aria-label="Second group">
+                          <button type="button" class="btn btn-danger btn-sm" onclick="clearBackgroundImage()">
+                            清空背景图
                           </button>
                         </div>
                       </div>
-                      <div class="btn-group btn-group-sm mt-2 mr-2" role="group" aria-label="Second group">
-                        <button type="button" class="btn btn-danger" onclick="clearBackgroundImage()">
-                          清空背景图
-                        </button>
-                      </div>
                     </div>
                   </div>
-                </div>
-              </form>
+                </li>
+              </ul>
             </div>
-            <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
-              <form>
-                <div class="form-group row">
-                  <div class="col-sm-4">创建</div>
-                  <div class="col-sm-8">
-                    <div class="form-check">
-                      <button type="button" class="btn btn-primary btn-sm" id="createView">新增白板</button>
-                    </div>
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label for="inputEmail3" class="col-sm-4 col-form-label">信令延迟</label>
-                  <div class="col-sm-8">
-                    <div class="input-group">
-                      <input type="text" class="form-control" id="deferredRenderingTime" />
-                      <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="button" onclick="setDeferredRenderingTime()">
-                          确定
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label for="inputEmail3" class="col-sm-4 col-form-label">背景颜色</label>
-                  <div class="col-sm-8">
-                    <div class="input-group">
-                      <input type="text" class="form-control" id="backgroundColor" />
-                      <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="button" id="setBackgroundColor">确定</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label for="inputEmail3" class="col-sm-4 col-form-label">操作</label>
-                  <div class="col-sm-8">
-                    <button type="button" class="btn btn-primary btn-sm" onclick="getViewList()">获取白板列表</button>
-                    <button type="button" class="btn btn-danger btn-sm" onclick="destroyView()">销毁当前白板</button>
-                    <button type="button" class="btn btn-danger btn-sm" onclick="destroyAllView()">销毁全部白板</button>
-                  </div>
-                </div>
-              </form>
-            </div>
-            <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
-              <form>
-                <div class="form-group row">
-                  <label for="inputEmail3" class="col-sm-4 col-form-label">文件ID</label>
-                  <div class="col-sm-8">
-                    <div class="input-group">
-                      <input type="text" class="form-control" id="fileID" />
-                      <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="button" onclick="createFileView()">确定</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <div class="col-sm-4">静态文件</div>
-                  <div class="col-sm-8">
-                    <div class="form-group">
-                      <input
-                        class="form-control-file"
-                        onchange="uploadStaticHandle(event)"
-                        type="file"
-                        id="staticFile"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <div class="col-sm-4">动态文件</div>
-                  <div class="col-sm-8">
-                    <div class="form-group">
-                      <input
-                        class="form-control-file"
-                        onchange="uploadDynamicHandle(event)"
-                        type="file"
-                        id="dynamicFile"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <div class="col-sm-4">文件</div>
-                  <div class="col-sm-8">
-                    <div class="form-check">
-                      <button type="button" class="btn btn-primary btn-sm" onclick="cancelUpload()">取消上传</button>
-                    </div>
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <div class="col-sm-4">缩略图</div>
-                  <div class="col-sm-8">
-                    <div class="form-check">
-                      <button
-                        type="button"
-                        class="btn btn-primary btn-sm"
-                        data-toggle="collapse"
-                        data-target="#collapseExample"
-                        aria-expanded="false"
-                        aria-controls="collapseExample"
-                        onclick="getThumbnailUrlList()"
-                      >
-                        获取缩略图
+          </div>
+          <!-- 白板面板 -->
+          <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+            <form>
+              <div class="form-group row">
+                <label for="inputEmail3" class="col-sm-4 col-form-label">信令延迟</label>
+                <div class="col-sm-8">
+                  <div class="input-group">
+                    <input type="text" class="form-control form-control-sm" id="deferredRenderingTime" />
+                    <div class="input-group-append">
+                      <button class="btn btn-outline-secondary btn-sm" type="button"
+                        onclick="setDeferredRenderingTime()">
+                        确定
                       </button>
                     </div>
                   </div>
                 </div>
-              </form>
-            </div>
-            <div class="thumbnail">
-              <span onclick="closeThumbnail()" class="close-thumbnail">X</span>
-              <div id="thumbnail-list"></div>
-            </div>
+              </div>
+              <div class="form-group row">
+                <label for="inputEmail3" class="col-sm-4 col-form-label">缩放</label>
+                <div class="col-sm-8">
+                  <div class="input-group">
+                    <input type="text" class="form-control form-control-sm" id="zoom" />
+                    <div class="input-group-append">
+                      <button class="btn btn-outline-secondary btn-sm" type="button" onclick="setZoom()">确定</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="inputEmail3" class="col-sm-4 col-form-label">自适应</label>
+                <div class="col-sm-8">
+                  <div class="input-group">
+                    <input type="text" class="form-control form-control-sm" id="parentWidth" placeholder="容器宽" />
+                    <input type="text" class="form-control form-control-sm" id="parentHeight" placeholder="容器高" />
+                    <div class="input-group-append">
+                      <button class="btn btn-outline-secondary btn-sm" type="button" onclick="reloadView()">确定</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row form-check">
+                <button type="button" class="btn btn-info btn-sm mt-2 mr-2" onclick="triggerFullscreen()">白板全屏</button>
+                <button type="button" class="btn btn-info btn-sm mt-2 mr-2" onclick="saveImage()">白板快照</button>
+                <button type="button" class="btn btn-info btn-sm mt-2 mr-2" id="createView">新增白板</button>
+                <button type="button" class="btn btn-info btn-sm mt-2 mr-2" onclick="getViewList()">获取白板列表</button>
+                <button type="button" class="btn btn-danger btn-sm mt-2 mr-2" onclick="destroyView()">销毁当前白板</button>
+                <button type="button" class="btn btn-danger btn-sm mt-2 mr-2" onclick="destroyAllView()">销毁全部白板</button>
+
+              </div>
+              <div class="form-group row">
+                <div class="card text-left" style="width: 100%;">
+                  <div class="card-body">
+                    <p class="card-text">
+                      <span id="userViewAuth"></span>&emsp;&emsp;<span id="parentWidthHeight"></span>
+                      <br>
+                      <span id="userGraphicAuth"></span>
+                    </p>
+                    <p id="idNames"></p>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <!--文件面板 -->
+          <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
+            <form>
+              <div class="form-group row">
+                <label for="inputEmail3" class="col-sm-4 col-form-label">文件ID</label>
+                <div class="col-sm-8">
+                  <div class="input-group">
+                    <input type="text" class="form-control form-control-sm" id="fileID" />
+                    <div class="input-group-append">
+                      <button class="btn btn-outline-secondary btn-sm" type="button"
+                        onclick="createFileView()">创建</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-sm-4">静态文件</div>
+                <div class="col-sm-8">
+                  <div class="form-group">
+                    <input class="form-control-file" onchange="uploadStaticHandle(event)" type="file" id="staticFile" />
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-sm-4">动态文件</div>
+                <div class="col-sm-8">
+                  <div class="form-group">
+                    <input class="form-control-file" onchange="uploadDynamicHandle(event)" type="file"
+                      id="dynamicFile" />
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-sm-4">H5课件</div>
+                <div class="col-sm-8">
+                  <div class="input-group">
+                    <input type="text" class="form-control form-control-sm" id="h5Width" placeholder="宽" />
+                    <input type="text" class="form-control form-control-sm" id="h5Height" placeholder="高" />
+                    <input type="text" class="form-control form-control-sm" id="h5PageCount" placeholder="页数" />
+                  </div>
+                  <div class="form-group">
+                    <input class="form-control-file" onchange="uploadH5Handle()" type="file" id="h5File" />
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-sm-4">H5缩略图课件</div>
+                <div class="col-sm-8">
+                  <div class="form-group">
+                    <input type="text" class="form-control form-control-sm" id="h5ThumbnailList" placeholder="缩略图数组"
+                      value="thumbnails/1.jpeg,thumbnails/2.jpeg,thumbnails/3.jpeg,thumbnails/4.jpeg,thumbnails/5.jpeg,thumbnails/6.jpeg,thumbnails/7.jpeg" />
+                    <input class="form-control-file" onchange="uploadH5Handle(1)" type="file" id="h5File1" />
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="inputEmail3" class="col-sm-4 col-form-label">动态PPT文件ID</label>
+                <div class="col-sm-8">
+                  <div class="input-group">
+                    <input type="text" class="form-control form-control-sm" id="h5fileID" />
+                    <div class="input-group-append">
+                      <button class="btn btn-outline-secondary btn-sm" type="button" onclick="preloadH5()">预加载</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row form-check">
+                <button type="button" class="btn btn-info btn-sm" onclick="cancelUpload()">取消上传</button>
+                <button type="button" class="btn btn-info btn-sm" data-toggle="collapse" data-target="#collapseExample"
+                  aria-expanded="false" aria-controls="collapseExample" onclick="getThumbnailUrlList()">
+                  获取缩略图
+                </button>
+              </div>
+            </form>
+          </div>
+          <div class="thumbnail">
+            <span onclick="closeThumbnail()" class="close-thumbnail">关闭</span>
+            <div id="thumbnail-list"></div>
           </div>
         </div>
       </div>
     </div>
-  </body>
-  <script src="./lib/jquery-3.3.1.min.js"></script>
-  <script src="./lib//bootstrap.min.js"></script>
-  <script src="./ZegoExpressWhiteboardWeb.js"></script>
-  <script src="./ZegoExpressDocsWeb.js"></script>
-  <script src="./demo_config.js"></script>
-  <script src="./biz.js"></script>
+  </div>
+</body>
+<script src="./lib/jquery-3.3.1.min.js"></script>
+<script src="./lib//bootstrap.min.js"></script>
+<script src="./ZegoExpressWhiteboardWeb.js"></script>
+<script src="./ZegoExpressDocsWeb.js"></script>
+<script src="./demo_config.js"></script>
+<script src="./biz.js"></script>
 </html>

@@ -82,12 +82,15 @@
                 ZegoCellOptionModel *model = self.model.options[i];
                 ZegoSettingTextView *view = self.inputArray[i];
                 model.value = view.inputTF.text;
+                [view clearText];
             }
         } else {
             ZegoSettingTextView *view = self.inputArray.firstObject;
             self.model.value = view.inputTF.text;
             self.model.placeholder = self.model.value;
+            [view clearText];
         }
+        
         [self.delegate onSettingCellValueChange:self.model];
     }
 }
@@ -185,6 +188,10 @@
         make.top.bottom.equalTo(self.titleLabel);
         make.right.equalTo(self);
     }];
+}
+
+- (void)clearText {
+    self.inputTF.text = @"";
 }
 
 - (void)dealloc {

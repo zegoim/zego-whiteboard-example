@@ -17,6 +17,7 @@
 @property (nonatomic, strong) ZegoFunctionPannelView *functionPannelView;
 @property (nonatomic, strong) ZegoTopBarView *topBarView;
 @property (nonatomic, strong) ZegoFileSelectView *fileSelectView;
+@property (nonatomic, strong) UIButton *menuBtn;
 @property (nonatomic, strong) NSDictionary *authInfo;
 
 
@@ -61,9 +62,6 @@
     [self.view addSubview:self.topBarView];
     self.topBarView.delegate = self;
     
-    //右侧白板及文件操作视图
-    self.functionPannelView = [[ZegoFunctionPannelView alloc] init];
-    [self.view addSubview:self.functionPannelView];
     
     //展示画板视图
     self.boardContainerView = [[ZegoBoardContainerView alloc] init];
@@ -74,37 +72,119 @@
     
     self.fileSelectView = [[ZegoFileSelectView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, kScreenHeight)];
     self.fileSelectView.delegate = self;
+    
+    self.menuBtn = [[UIButton alloc] init];
+    [self.menuBtn setTitle:@"菜单" forState:UIControlStateNormal];
+    [self.menuBtn setBackgroundColor:UIColor.clearColor];
+    [self.menuBtn setTitleColor:UIColor.systemBlueColor forState:UIControlStateNormal];
+    [self.menuBtn addTarget:self action:@selector(onClickMenuBtn) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:self.menuBtn];
+    
+    //右侧白板及文件操作视图
+    self.functionPannelView = [[ZegoFunctionPannelView alloc] init];
+    self.functionPannelView.hidden = YES;
+    [self.view addSubview:self.functionPannelView];
+}
+
+- (void)onClickMenuBtn {
+    self.functionPannelView.hidden = !self.functionPannelView.hidden;
 }
 
 - (void)viewWillLayoutSubviews {
     [super viewWillLayoutSubviews];
-    [self.topBarView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(self.view);
-        make.right.equalTo(self.functionPannelView.mas_left);
-        make.height.mas_equalTo(55);
-        if (@available(iOS 11.0, *)) {
-            make.left.equalTo(self.view).offset(self.view.safeAreaInsets.left);
-        } else {
-            make.left.equalTo(self.view);
-        }
-    }];
     
-    [self.boardContainerView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.leading.trailing.equalTo(self.topBarView);
-        make.top.equalTo(self.topBarView.mas_bottom);
-        make.bottom.equalTo(self.view);
-    }];
-    
-    [self.functionPannelView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(self.topBarView);
-        make.width.mas_equalTo(kFunctionPannelViewWidth);
-        make.bottom.equalTo(self.view);
-        if (@available(iOS 11.0, *)) {
-            make.right.equalTo(self.view).offset(-(self.view.safeAreaInsets.right));
-        } else {
+    if (kZegoIsDevicePortrait) {
+        // 竖屏
+        
+        [self.topBarView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.width.mas_equalTo(kScreenWidth - 50);
+            make.height.mas_equalTo(55);
+            if (@available(iOS 11.0, *)) {
+                make.left.equalTo(self.view).offset(self.view.safeAreaInsets.left);
+                make.top.equalTo(self.view).offset(self.view.safeAreaInsets.top);
+            } else {
+                make.left.equalTo(self.view);
+                make.top.equalTo(self.view);
+            }
+        }];
+        
+        [self.menuBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.left.equalTo(self.topBarView.mas_right);
             make.right.equalTo(self.view);
-        }
-    }];
+//            make.width.mas_equalTo(50);
+            if (@available(iOS 11.0, *)) {
+                make.top.equalTo(self.view).offset(self.view.safeAreaInsets.top);
+            } else {
+                make.top.equalTo(self.view);
+            }
+        }];
+        
+        [self.boardContainerView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.left.right.equalTo(self.view);
+            make.top.equalTo(self.topBarView.mas_bottom);
+            make.bottom.equalTo(self.view);
+        }];
+        
+        [self.functionPannelView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.top.equalTo(self.topBarView.mas_bottom);
+            make.width.mas_equalTo(kFunctionPannelViewWidth);
+            make.bottom.equalTo(self.view);
+            make.right.equalTo(self.view);
+        }];
+        
+        [self.fileSelectView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.width.mas_equalTo(kScreenWidth);
+            make.height.mas_equalTo(kScreenHeight);
+        }];
+        
+        self.menuBtn.hidden = NO;
+        self.functionPannelView.hidden = YES;
+        
+    }else {
+        
+        [self.topBarView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.top.equalTo(self.view);
+            make.right.equalTo(self.functionPannelView.mas_left);
+            make.height.mas_equalTo(55);
+            if (@available(iOS 11.0, *)) {
+                make.left.equalTo(self.view).offset(self.view.safeAreaInsets.left);
+            } else {
+                make.left.equalTo(self.view);
+            }
+        }];
+        
+        [self.boardContainerView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.leading.trailing.equalTo(self.topBarView);
+            make.top.equalTo(self.topBarView.mas_bottom);
+            make.bottom.equalTo(self.view);
+        }];
+        
+        [self.functionPannelView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.top.equalTo(self.topBarView);
+            make.width.mas_equalTo(kFunctionPannelViewWidth);
+            make.bottom.equalTo(self.view);
+            if (@available(iOS 11.0, *)) {
+                make.right.equalTo(self.view).offset(-(self.view.safeAreaInsets.right));
+            } else {
+                make.right.equalTo(self.view);
+            }
+        }];
+        
+        [self.menuBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
+                    
+        }];
+        
+        [self.fileSelectView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.width.mas_equalTo(kScreenWidth);
+            make.height.mas_equalTo(kScreenHeight);
+        }];
+        
+        self.menuBtn.hidden = YES;
+        self.functionPannelView.hidden = NO;
+    }
+    
+    self.functionPannelView.layer.borderColor = UIColor.systemBlueColor.CGColor;
+    self.functionPannelView.layer.borderWidth = 1;
 }
 
 #pragma mark - ZegoBoardServiceDelegate
@@ -113,7 +193,7 @@
 - (void)insertWhiteboardIntoList:(ZegoWhiteboardView *)whiteboardView {
     NSMutableArray *temp = [NSMutableArray arrayWithArray:[ZegoBoardServiceManager shareManager].whiteboardViewList];
     [temp addObject:whiteboardView];
-    [[ZegoBoardServiceManager shareManager] setupWhiteboardViewList:temp.copy];
+    [[ZegoBoardServiceManager shareManager] setWhiteboardViewList:temp.copy];
     self.fileSelectView.fileList = [ZegoBoardServiceManager shareManager].whiteboardViewList;
     DLog(@"insertWhiteboardIntoList，whiteboardListCount：%lu",(unsigned long)temp.count);
 }
@@ -148,14 +228,14 @@
     if (errorCode == 0) {
         if (whiteboardList.count == 0) {
             ZegoWhiteboardViewModel *model = [[ZegoWhiteboardViewModel alloc] init];
-            model.aspectWidth = 16.0 * kWhiteboarPageCount;
+            model.aspectWidth = 16.0 * kWhiteboardPageCount;
             model.aspectHeight = 9.0;
-            model.pageCount = kWhiteboarPageCount;
+            model.pageCount = kWhiteboardPageCount;
             model.name = [NSString stringWithFormat:@"%@的白板",[ZegoLocalEnvManager shareManager].userName];
             [[ZegoBoardServiceManager shareManager] createWhiteboardWithModel:model fileID:@""];
             
         }
-        [[ZegoBoardServiceManager shareManager] setupWhiteboardViewList:whiteboardList];
+        [[ZegoBoardServiceManager shareManager] setWhiteboardViewList:whiteboardList];
     }
 }
 
@@ -203,15 +283,15 @@
 #pragma mark - ZegoRoomSeviceClientDelegate
 
 - (void)onReconnect:(int)errorCode roomID:(NSString *)roomID {
-    [ZegoProgessHUD showTipMessage:@"重连成功"];
+//    [ZegoProgessHUD showTipMessage:@"重连成功"];
 }
 
 - (void)onTempBroken:(int)errorCode roomID:(NSString *)roomID {
-    [ZegoProgessHUD showIndicatorHUDText:@"临时断开，正在重连"];
+//    [ZegoProgessHUD showIndicatorHUDText:@"临时断开，正在重连"];
 }
 
 - (void)onDisconnect:(int)errorCode roomID:(NSString *)roomID {
-    [ZegoProgessHUD showTipMessage:@"网络断开，请重新登录"];
+//    [ZegoProgessHUD showTipMessage:@"网络断开，请重新登录"];
 }
 
 - (void)onLoginRoom:(int)errorCode {
@@ -225,6 +305,11 @@
 #pragma mark - ZegoBoardContainerViewDelegate
 //文件加载完成回调
 - (void)onLoadFileFinish:(ZegoWhiteboardView *)whiteboardView docsView:(ZegoDocsView *)docsView currentPage:(NSInteger)currentPage {
+    if (docsView) {
+        [[ZegoBoardOperationManager shareManager] setWhiteboardInitialFrame:docsView.frame];
+    }else {    
+        [[ZegoBoardOperationManager shareManager] setWhiteboardInitialFrame:whiteboardView.frame];
+    }
     [self.functionPannelView reset];
     [self.topBarView setupBboardName:whiteboardView.whiteboardModel.name];
     if (docsView.pageCount) {
@@ -232,7 +317,7 @@
     } else if (whiteboardView.whiteboardModel.pageCount) {
         [self.topBarView setupCurrentPage:currentPage totalCount:whiteboardView.whiteboardModel.pageCount];
     } else {
-        [self.topBarView setupCurrentPage:currentPage totalCount:kWhiteboarPageCount];
+        [self.topBarView setupCurrentPage:currentPage totalCount:kWhiteboardPageCount];
     }
     DLog(@"fileLoadFinish，whiteboardViewID:%llu docsViewFileName:%@",whiteboardView.whiteboardModel.whiteboardID,docsView.fileName);
 }
@@ -272,7 +357,8 @@
     ZegoWhiteboardView *view = [ZegoBoardServiceManager shareManager].whiteboardViewList[index];
     NSMutableArray *temp = [NSMutableArray arrayWithArray:[ZegoBoardServiceManager shareManager].whiteboardViewList];
     [temp removeObjectAtIndex:index];
-    [[ZegoBoardServiceManager shareManager] setupWhiteboardViewList:temp.copy];
+//    [[ZegoBoardServiceManager shareManager] setupWhiteboardViewList:temp.copy];
+    [[ZegoBoardServiceManager shareManager] setWhiteboardViewList:temp.copy];
     //本地白板移除
     [self.boardContainerView removeWhiteboardWithID:view.whiteboardModel.whiteboardID];
     DLog(@"LocalWhiteboardRemoveFinish, index:%ld whiteboardView：%@",(long)index,view);

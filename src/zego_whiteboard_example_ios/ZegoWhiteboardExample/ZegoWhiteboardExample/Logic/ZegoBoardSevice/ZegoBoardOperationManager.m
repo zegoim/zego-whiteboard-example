@@ -48,6 +48,9 @@
     [self setupToolType:ZegoWhiteboardViewToolPen];
     [self setupDrawLineWidth:4];
     [self setupCustomText:@"文本"];
+    [self setCustomImageGraphicWithURLString:@"https://storage.zego.im/goclass/star.svg" complete:^(int error) {
+        
+    }];
     DLog(@"BoardOperation>>> localInitOperationManagerParameter---end");
 }
 
@@ -70,7 +73,9 @@
     }
     if (type == ZegoWhiteboardViewToolClick) {
         self.currentWhiteboardView.userInteractionEnabled = NO;
+        [self.currentDocsView setScaleEnable:NO];
     } else {
+        [self.currentDocsView setScaleEnable:YES];
         self.currentWhiteboardView.userInteractionEnabled = YES;
     }
     
@@ -139,6 +144,7 @@
 }
 
 - (void)addNewWhiteboardWithName:(NSString *)wbName fileID:(NSString *)fileID {
+    [ZegoBoardServiceManager shareManager].whiteboardAspectSize = CGSizeMake(16, 9);
     [[ZegoBoardServiceManager shareManager] addNewWhiteboardWithName:wbName fileID:fileID];
     DLog(@"BoardOperation>>> sysaddNewWhiteboardWithFileExcute");
 }
@@ -155,6 +161,65 @@
             [ZegoToast toastWithError:errorcode];
         }
     }];
+}
+
+- (void)setWhiteboardDeltaSize:(CGSize)size {
+    if (CGSizeEqualToSize(size, CGSizeZero)) {
+        if (self.currentDocsView) {
+            self.currentDocsView.frame = self.whiteboardInitialFrame;
+        }else {
+            // 重置为正常的 size
+            self.currentWhiteboardView.frame = self.whiteboardInitialFrame;
+        }
+        return;
+    }
+    CGRect frame = self.currentWhiteboardView.frame;    //应该使用最初定下来的 frame
+    if (self.currentDocsView) {
+        frame = self.currentDocsView.frame;
+    }
+    
+    UIView *containerView = [ZegoBoardServiceManager shareManager].boardContainnerView;
+    CGFloat width = frame.size.width + size.width;
+    CGFloat height = frame.size.height + size.height;
+    CGFloat x = (containerView.frame.size.width - width) / 2;
+    CGFloat y = (containerView.frame.size.height - height) / 2;
+    CGRect newFrame = CGRectMake(x,
+                                 y,
+                                 frame.size.width + size.width,
+                                 frame.size.height + size.height);
+    
+    [[ZegoBoardServiceManager shareManager].boardContainnerView manualSetFrame:newFrame];
+}
+
+- (void)setWhiteboardSizeWithString:(NSString *)sizeInfo {
+    BOOL fail = NO;
+    if (!sizeInfo) {
+        fail = YES;
+    }
+    NSArray *sizeArr = [sizeInfo componentsSeparatedByString:@"."];
+    if (sizeArr.count != 2) {
+        fail = YES;
+    }
+    CGFloat width = [sizeArr.firstObject floatValue];
+    CGFloat height = [sizeArr.lastObject floatValue];
+    if (!(width > 0 && height > 0)) {
+        fail = YES;
+    }
+    if (fail) {
+        [ZegoToast toastWithError:-1];
+        return;
+    }
+    CGRect frame = self.currentWhiteboardView.frame;
+    // 居中显示
+    UIView *containerView = [ZegoBoardServiceManager shareManager].boardContainnerView;
+    CGFloat x = (containerView.frame.size.width - width) / 2;
+    CGFloat y = (containerView.frame.size.height - height) / 2;
+//    CGRect newFrame = CGRectMake(frame.origin.x,
+//                                 frame.origin.y,
+//                                 width,
+//                                 height);
+    CGRect newFrame = CGRectMake(x, y, width, height);
+    [[ZegoBoardServiceManager shareManager].boardContainnerView manualSetFrame:newFrame];
 }
 
 - (void)removeBoardWithID:(ZegoWhiteboardID)whiteboardID {
@@ -217,6 +282,12 @@
 }
 
 - (void)playAnimationWithInfo:(NSString *)info {
+    if ([UIApplication sharedApplication].applicationState != UIApplicationStateActive) {
+        DLog(@"-[ZegoDocsView stopPlayAnimation] app在后台, 不播放音视频");
+        [self.currentDocsView stopPlay:0];
+        return;
+    }
+    DLog(@"-[ZegoDocsView playAnimation] app在前台, 继续播放音视频");
     [self.currentDocsView playAnimation:info];
     DLog(@"BoardOperation>>> playAnimationWithInfo");
 }
@@ -271,12 +342,13 @@
             [ZegoToast toastWithError:ZegoWhiteboardViewErrorNoAuthScroll];
             return;
         }
+        [self.currentDocsView stopPlay:0];
         if (self.currentDocsView.currentPage + 1 <= self.currentDocsView.pageCount) {
             [self scrollToPage:self.currentDocsView.currentPage + 1 pptStep:1 completionBlock:complementBlock];
         }
     } else {
 
-        CGFloat currentPage = (xPercent + (1.0 / kWhiteboarPageCount));
+        CGFloat currentPage = (xPercent + (1.0 / kWhiteboardPageCount));
         if (currentPage > 1.0) {
             return;
         }
@@ -302,10 +374,11 @@
             return;
         }
         if (self.currentDocsView.currentPage - 1 >= 1) {
+            [self.currentDocsView stopPlay:0];
             [self scrollToPage:self.currentDocsView.currentPage - 1 pptStep:1 completionBlock:complementBlock];
         }
     } else {
-        CGFloat pageNo = xPercent  - (1.0 / kWhiteboarPageCount);
+        CGFloat pageNo = xPercent  - (1.0 / kWhiteboardPageCount);
         pageNo = MAX(pageNo, 0);
         [self.currentWhiteboardView scrollToHorizontalPercent:pageNo verticalPercent:0 pptStep:0  completionBlock:^(ZegoWhiteboardViewError error_code, float horizontalPercent, float verticalPercent, unsigned int pptStep) {
             if (complementBlock) {
@@ -390,6 +463,10 @@
     [navVC popViewControllerAnimated:YES];
 }
 
+- (void)setWhiteboardInitialFrame:(CGRect)frame {
+    _whiteboardInitialFrame = frame;
+}
+
 - (void)reset {
     DLog(@"BoardOperation>>> reset");
     self.currentDocsView = nil;
@@ -418,8 +495,8 @@
             }];
         }];
     } else {
-        if (page > 0 && page <= kWhiteboarPageCount) {
-            CGFloat pagePrecent = (1.0 / kWhiteboarPageCount) * (page - 1);
+        if (page > 0 && page <= kWhiteboardPageCount) {
+            CGFloat pagePrecent = (1.0 / kWhiteboardPageCount) * (page - 1);
             [weakSelf.currentWhiteboardView scrollToHorizontalPercent:pagePrecent verticalPercent:0 completionBlock:^(ZegoWhiteboardViewError error_code, float horizontalPercent, float verticalPercent, unsigned int pptStep) {
                 if (completionBlock) {
                     completionBlock(error_code == 0);
@@ -459,7 +536,7 @@
 }
 
 - (BOOL)isDynamicPPT {
-    BOOL result = self.currentDocsView.fileType == ZegoDocsViewFileTypeDynamicPPTH5;
+    BOOL result = (self.currentDocsView.fileType == ZegoDocsViewFileTypeDynamicPPTH5 || self.currentDocsView.fileType == ZegoDocsViewFileTypeCustomH5);
     DLog(@"BoardOperation>>> isDynamicPPT:%@",result?@"YES":@"NO");
     return result;
 }

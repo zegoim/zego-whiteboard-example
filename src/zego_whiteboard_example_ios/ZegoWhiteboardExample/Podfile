@@ -11,7 +11,7 @@ target 'ZegoWhiteboardExample' do
   pod 'YYWebImage'
   pod 'Toast', '~> 4.0.0'
   
-  pod 'ZegoDocsView/Basic_zh'
   pod 'ZegoWhiteboardView/Express'
+  pod 'ZegoDocsView/Basic_zh'
 end
 

@@ -45,6 +45,10 @@
 				<key>title</key>
 				<string>清除缓存</string>
 			</dict>
+			<dict>
+				<key>title</key>
+				<string>上传h5课件</string>
+			</dict>
 		</array>
 	</dict>
 	<dict>
@@ -77,6 +81,20 @@
 	</dict>
 	<dict>
 		<key>title</key>
+		<string>打开文件</string>
+		<key>tag</key>
+		<string></string>
+		<key>type</key>
+		<integer>2</integer>
+		<key>placeholder</key>
+		<string>文件id</string>
+		<key>eventNumber</key>
+		<real>30007</real>
+		<key>options</key>
+		<array/>
+	</dict>
+	<dict>
+		<key>title</key>
 		<string>缩略图</string>
 		<key>tag</key>
 		<string></string>
@@ -97,6 +115,34 @@
 				<string>展示</string>
 			</dict>
 		</array>
+	</dict>
+	<dict>
+		<key>title</key>
+		<string>自定义H5宽高页数</string>
+		<key>tag</key>
+		<string></string>
+		<key>type</key>
+		<integer>2</integer>
+		<key>placeholder</key>
+		<string>课件宽高 w.h.p</string>
+		<key>eventNumber</key>
+		<real>30008</real>
+		<key>options</key>
+		<array/>
+	</dict>
+	<dict>
+		<key>title</key>
+		<string>自定义H5缩略图</string>
+		<key>tag</key>
+		<string></string>
+		<key>type</key>
+		<integer>2</integer>
+		<key>placeholder</key>
+		<string>缩略图路径多个以;分割</string>
+		<key>eventNumber</key>
+		<real>30009</real>
+		<key>options</key>
+		<array/>
 	</dict>
 </array>
 </plist>

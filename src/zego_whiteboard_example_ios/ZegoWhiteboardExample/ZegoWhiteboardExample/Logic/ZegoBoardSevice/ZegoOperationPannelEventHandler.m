@@ -15,6 +15,9 @@
 @property (nonatomic, copy) NSString *currentFileID;
 @property (nonatomic, assign) CGPoint imagePoint;
 @property (nonatomic, strong) void(^documentSelectorBlock)(NSURL *fileUrl);
+@property (nonatomic, assign) CGSize customH5Size;//自定义H5课件宽高
+@property (nonatomic, assign) NSInteger customH5Page;//自定义H5课件页数
+@property (nonatomic, strong) NSArray *thumbnailList;//自定义课件缩略图
 @end
 
 @implementation ZegoOperationPannelEventHandler
@@ -61,8 +64,6 @@
         case ZegoOperationEventFlagTypeStepAutoPaging:
             [[ZegoBoardOperationManager shareManager] setupSetpAutoPaging:[model.value boolValue]];
             break;
-            
-            
         default:
             break;
     }
@@ -76,7 +77,9 @@
         case ZegoOperationEventFlagTypeToolType:
             [[ZegoBoardOperationManager shareManager] setupToolType:[optionModel.value integerValue]];
             break;
-            
+        case ZegoOperationEventFlagTypeDrawColor:
+            [[ZegoBoardOperationManager shareManager] setupColor:optionModel.value];
+            break;
         case ZegoOperationEventFlagTypeFontSize:
             [[ZegoBoardOperationManager shareManager] setupFontSize:[optionModel.value integerValue]];
             break;
@@ -96,7 +99,9 @@
         case ZegoOperationEventFlagTypePresetBackground:
             [self handlePresetBackgroundWithModel:model];
             break;
-            
+        case ZegoOperationEventFlagTypeSystemColor:
+            [[ZegoBoardOperationManager shareManager] setupColor:optionModel.value];
+            break;
             
         default:
             break;
@@ -107,10 +112,6 @@
     DLog(@"EventHandler>>> handleTextEventWithModel:%lu",(unsigned long)model.eventNumber);
     [[UIApplication sharedApplication].keyWindow endEditing:YES];
     switch (model.eventNumber) {
-        case ZegoOperationEventFlagTypeDrawColor:
-            [[ZegoBoardOperationManager shareManager] setupColor:model.value];
-            break;
-  
         case ZegoOperationEventFlagTypeSpecialTextGraphic:
             [self handleEventSpecialTextGraphic:model];
             break;
@@ -123,8 +124,8 @@
             [[ZegoBoardOperationManager shareManager] addNewWhiteboardWithName:model.value fileID:@""];
             break;
         
-        case ZegoOperationEventFlagTypeWhiteboardClearCache:
-            [[ZegoBoardOperationManager shareManager] clearWhiteboardCache];
+        case ZegoOperationEventFlagTypeWhiteboardFrameSetting:
+            [self handleWhiteboardFrameSettingWithModel:model];
             break;
             
         case ZegoOperationEventFlagTypeUploadGraphic:
@@ -144,22 +145,37 @@
         case ZegoOperationEventFlagTypeUploadPicByAlbum:
             [self handleUploadPictureByAlbum:model];
             break;;
-        case ZegoOperationEventFlagTypeUploadLog:
-            [ZegoProgessHUD showTipMessage:@"日志已上传"];
-            [ZegoRoomSeviceCenter uploadLog];
-            break;
-        case ZegoOperationEventFlagTypeLocalBackground:
-            [self handleLocalBackground];
-            break;
         case ZegoOperationEventFlagTypeOnlineBackground:
             [self handleOnlineBackgroundWithModel:model];
             break;
-        case ZegoOperationEventFlagTypeCleanBackground:
-            [[ZegoBoardOperationManager shareManager] cleanBackgroundImage];
+        case ZegoOperationEventFlagTypeOpenFile:
+            [[ZegoBoardOperationManager shareManager] addNewWhiteboardWithName:@"" fileID:model.value];
+            break;
+        case ZegoOperationEventFlagTypeCustomH5Size:
+            [self judgeCustomH5Size:model.value];
+            break;
+        case ZegoOperationEventFlagTypeCustomH5Thumbnails:
+            [self getCustomH5Thumnails:model.value];
             break;
         default:
             break;
     }
+}
+
+- (void)getCustomH5Thumnails:(NSString *)thumnails {
+    _thumbnailList = [thumnails componentsSeparatedByString:@";"];
+}
+
+- (void)judgeCustomH5Size:(NSString *)customH5SizeStr {
+    if (!customH5SizeStr) {
+        return;
+    }
+    NSArray *sizeArray = [customH5SizeStr componentsSeparatedByString:@"."];
+    if (sizeArray.count < 3) {
+        return;
+    }
+    _customH5Size = CGSizeMake([sizeArray.firstObject floatValue],[sizeArray[1]floatValue]);
+    _customH5Page = [sizeArray.lastObject integerValue];
 }
 
 - (void)handleFunctionPannelEventWithModel:(ZegoCommonCellModel *)model {
@@ -180,8 +196,25 @@
         case ZegoOperationEventFlagTypePreview:
             [self handleEventPreview:model];
             break;
+        
+        case ZegoOperationEventFlagTypeWhiteboardFrameChange:
+            [self handleWhiteboardFrameChangeModel:model];
+            break;
+
+        case ZegoOperationEventFlagTypeWhiteboardClearCache:
+            [[ZegoBoardOperationManager shareManager] clearWhiteboardCache];
+            break;
+        
+        case ZegoOperationEventFlagTypeUploadLog:
+            [ZegoProgessHUD showTipMessage:@"日志已上传"];
+            [ZegoRoomSeviceCenter uploadLog];
+            break;
+
+        case ZegoOperationEventFlagTypeBackground:
+          [self handleBackgroundWithModel:model];
+          break;
             
-            
+
         default:
             break;
     }
@@ -249,7 +282,9 @@
         case 3:
             [[ZegoBoardOperationManager shareManager] clearFileCache];
             break;
-            
+        case 4:
+            [self uploadFileWithRenderType:ZegoDocsViewRenderTypeCustomH5];
+            break;
         default:
             break;
     }
@@ -338,6 +373,89 @@
     
 }
 
+- (void)handleWhiteboardFrameSettingWithModel:(ZegoCommonCellModel *)model {
+    NSString *sizeInfo = model.value;
+    [[ZegoBoardOperationManager shareManager] setWhiteboardSizeWithString:sizeInfo];
+}
+
+- (void)handleBackgroundWithModel:(ZegoCommonCellModel *)model {
+  NSInteger index = [model.value integerValue];
+  switch (index) {
+    case 0:
+      [self handleLocalBackground];
+      break;
+    case 1:
+      [[ZegoBoardOperationManager shareManager] cleanBackgroundImage];
+      break;
+  }
+}
+
+- (void)handleWhiteboardFrameChangeModel:(ZegoCommonCellModel *)model {
+    NSInteger index = [model.value integerValue];
+    CGSize aspectSize = [ZegoBoardServiceManager shareManager].whiteboardAspectSize;
+    CGFloat width = aspectSize.width;
+    CGFloat height = aspectSize.height;
+    
+    CGFloat ratio = width / height;
+    if (width < height) {
+        width = (width >= 10) ?: 10;
+        height = width / ratio;
+    }else {
+        height = (height >= 10) ?: 10;
+        width = height * ratio;
+    }
+    
+    CGFloat dWidth = 0;
+    CGFloat dHeight = 0;
+    
+    switch (index) {
+        case 0:
+            // 等比增加
+            NSLog(@"+ ratio");
+            dWidth = width;
+            dHeight = height;
+            break;
+            
+        case 1:
+            NSLog(@"- ratio");
+            // 等比减少
+            dWidth = -width;
+            dHeight = -height;
+            break;
+            
+        case 2:
+            // +宽度
+            NSLog(@"+ width");
+            dWidth = width;
+            break;
+            
+        case 3:
+            // -宽度
+            NSLog(@"- width");
+            dWidth = -width;
+            break;
+            
+        case 4:
+            // +高度
+            NSLog(@"+ height");
+            dHeight = width;
+            break;
+            
+        case 5:
+            // -高度
+            NSLog(@"- height");
+            dHeight = -height;
+            break;
+            
+        default:
+            // 重置
+            NSLog(@"reset");
+            break;
+    }
+    CGSize size = CGSizeMake(dWidth, dHeight);
+    [[ZegoBoardOperationManager shareManager] setWhiteboardDeltaSize:size];
+}
+
 - (void)handleSelectGraphicWithModel:(ZegoCommonCellModel *)model {
     NSInteger index = ((NSNumber *)model.value).integerValue;
     NSString *urlString = model.options[index].value;
@@ -378,7 +496,7 @@
 
 - (void)uploadBackgroundPicture:(NSString *)filePath {
     if (!_backgroundMode) {
-        _backgroundMode = @(0);
+        _backgroundMode = @(4);
     }
     [[NSNotificationCenter defaultCenter] postNotificationName:@"setBackgroundImage" object:nil userInfo:@{@"file":filePath, @"mode":_backgroundMode}];
 }
@@ -426,7 +544,8 @@
                                @"com.microsoft.word.doc",
                                @"com.microsoft.excel.xls",
                                @"com.microsoft.powerpoint.ppt",
-                               @"public.image"];
+                               @"public.image",
+                               @"com.pkware.zip-archive"];
     UIDocumentPickerViewController *documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:documentTypes inMode:UIDocumentPickerModeOpen];
     documentPicker.delegate = self;
     if (@available(iOS 11.0, *)) {
@@ -445,26 +564,61 @@
         __strong typeof(weakSelf) strongSelf = weakSelf;
         [strongSelf cancelUploadFileSeq:strongSelf.currentUploadSeq ];
     }];
-    self.currentUploadSeq = [[ZegoBoardOperationManager shareManager] uploadFile:url.path renderType:type completionBlock:^(ZegoDocsViewUploadState state, ZegoDocsViewError errorCode, NSDictionary *infoDictionary) {
-        if (errorCode == ZegoDocsViewSuccess) {
-            if (state == ZegoDocsViewUploadStateUpload) {
-                NSNumber * upload_percent = infoDictionary[UPLOAD_PERCENT];
-                [hudView updateProgress:upload_percent.floatValue];
-                DLog(@"EventHandler>>> uploadFile uploading,upload_percent:%f",upload_percent.floatValue);
-                
-            } else if (state == ZegoDocsViewUploadStateConvert){
-                [ZegoProgessHUD showTipMessage:@"转码完成"];
-                NSString *fileID = infoDictionary[UPLOAD_FILEID];
-                [[ZegoBoardOperationManager shareManager] addNewWhiteboardWithName:@"" fileID:fileID];
-                self.currentFileID = fileID;
-                DLog(@"EventHandler>>> uploadFile finished,fileID:%@",fileID);
-            }
+    
+    if (type == ZegoDocsViewRenderTypeCustomH5) {
+        ZegoDocsViewCustomH5Config *config = [ZegoDocsViewCustomH5Config new];
+        config.thumbnailList = _thumbnailList;
+        if (_customH5Size.width > 0 && _customH5Size.height > 0 && _customH5Page > 0) {
+            config.width = _customH5Size.width;
+            config.height = _customH5Size.height;
+            config.pageCount = _customH5Page;
         } else {
-            [ZegoProgessHUD showTipMessage:[NSString stringWithFormat:@"上传失败: %zd", errorCode]];
-            DLog(@"EventHandler>>> uploadFile failed,error:%lu",(unsigned long)errorCode);
+            config.width = 960;
+            config.height = 540;
+            config.pageCount = 5;
         }
-    }];
-    DLog(@"EventHandler>>> uploadFileWithUrl, url: %@ ,seq:%u", [url path],self.currentUploadSeq);
+        self.currentUploadSeq = [[ZegoDocsViewManager sharedInstance] uploadH5File:url.path config:config completionBlock:^(ZegoDocsViewUploadState state, ZegoDocsViewError errorCode, NSDictionary * _Nonnull infoDictionary) {
+            if (errorCode == ZegoDocsViewSuccess) {
+                if (state == ZegoDocsViewUploadStateUpload) {
+                    NSNumber * upload_percent = infoDictionary[UPLOAD_PERCENT];
+                    [hudView updateProgress:upload_percent.floatValue];
+                    DLog(@"EventHandler>>> uploadFile uploading,upload_percent:%f",upload_percent.floatValue);
+                    
+                } else if (state == ZegoDocsViewUploadStateConvert){
+                    [ZegoProgessHUD showTipMessage:@"转码完成"];
+                    NSString *fileID = infoDictionary[UPLOAD_FILEID];
+                    [[ZegoBoardOperationManager shareManager] addNewWhiteboardWithName:@"" fileID:fileID];
+                    self.currentFileID = fileID;
+                    DLog(@"EventHandler>>> uploadFile finished,fileID:%@",fileID);
+                }
+            } else {
+                [ZegoProgessHUD showTipMessage:[NSString stringWithFormat:@"上传失败: %zd", errorCode]];
+                DLog(@"EventHandler>>> uploadFile failed,error:%lu",(unsigned long)errorCode);
+            }
+        }];
+        DLog(@"EventHandler>>> uploadH5FileWithUrl, url: %@ ,seq:%u", [url path],self.currentUploadSeq);
+    } else {
+        self.currentUploadSeq = [[ZegoBoardOperationManager shareManager] uploadFile:url.path renderType:type completionBlock:^(ZegoDocsViewUploadState state, ZegoDocsViewError errorCode, NSDictionary *infoDictionary) {
+            if (errorCode == ZegoDocsViewSuccess) {
+                if (state == ZegoDocsViewUploadStateUpload) {
+                    NSNumber * upload_percent = infoDictionary[UPLOAD_PERCENT];
+                    [hudView updateProgress:upload_percent.floatValue];
+                    DLog(@"EventHandler>>> uploadFile uploading,upload_percent:%f",upload_percent.floatValue);
+                    
+                } else if (state == ZegoDocsViewUploadStateConvert){
+                    [ZegoProgessHUD showTipMessage:@"转码完成"];
+                    NSString *fileID = infoDictionary[UPLOAD_FILEID];
+                    [[ZegoBoardOperationManager shareManager] addNewWhiteboardWithName:@"" fileID:fileID];
+                    self.currentFileID = fileID;
+                    DLog(@"EventHandler>>> uploadFile finished,fileID:%@",fileID);
+                }
+            } else {
+                [ZegoProgessHUD showTipMessage:[NSString stringWithFormat:@"上传失败: %zd", errorCode]];
+                DLog(@"EventHandler>>> uploadFile failed,error:%lu",(unsigned long)errorCode);
+            }
+        }];
+        DLog(@"EventHandler>>> uploadFileWithUrl, url: %@ ,seq:%u", [url path],self.currentUploadSeq);
+    }
     [url stopAccessingSecurityScopedResource];
 }
 
@@ -499,7 +653,6 @@
                     
                 } else if (state == ZegoDocsViewCacheStateCached){
                     [ZegoProgessHUD showTipMessage:@"下载完成"];
-                    [[ZegoBoardOperationManager shareManager] addNewWhiteboardWithName:@"" fileID:fileID];
                     DLog(@"EventHandler>>> cacheFile finished,fileID:%@",fileID);
                 }
             } else {

@@ -1,22 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Bucket
-   uuid = "694F99F5-EF28-457E-B3B8-04E843A6B5C2"
+   uuid = "AB7AD000-ECC4-4715-BE0A-AF7925D93C22"
    type = "0"
    version = "2.0">
    <Breakpoints>
       <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         BreakpointExtensionID = "Xcode.Breakpoint.ExceptionBreakpoint">
          <BreakpointContent
-            uuid = "0D3830C9-C1B8-4529-B59A-C3F8ACCD66EA"
+            uuid = "F2AD34B5-BABF-46CE-B7DF-D040D37212C9"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "ZegoWhiteboardExample/UI/View/ZegoTopBarView.m"
+            breakpointStackSelectionBehavior = "1"
+            scope = "1"
+            stopOnStyle = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "54E57FCF-B307-42E6-8DFF-9C107E532EED"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../docs_view_ios/projects/apple/ZegoDocsView/ZegoDocsView/Model/ZegoDocsViewConfig.m"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "196"
-            endingLineNumber = "196"
-            landmarkName = "-setupCurrentPage:totalCount:"
+            startingLineNumber = "56"
+            endingLineNumber = "56"
+            landmarkName = "-setCacheFolder:"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "ACFFCD16-75D0-4FE2-9BFE-A3F6C1C79E39"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../docs_view_ios/projects/apple/ZegoDocsView/ZegoDocsView/Model/ZegoDocsViewConfig.m"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "58"
+            endingLineNumber = "58"
+            landmarkName = "-setCacheFolder:"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

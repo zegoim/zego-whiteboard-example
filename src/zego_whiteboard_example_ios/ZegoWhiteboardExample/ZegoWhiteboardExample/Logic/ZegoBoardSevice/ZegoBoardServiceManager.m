@@ -12,6 +12,7 @@
 @interface ZegoBoardServiceManager()<ZegoWhiteboardManagerDelegate>
 @property (nonatomic, strong) ZegoWhiteboardManager *wbManager;
 @property (nonatomic, strong) ZegoDocsViewManager *docsManager;
+@property (nonatomic, strong) NSDictionary *systemColorDic;
 
 
 @end
@@ -22,6 +23,7 @@
     static ZegoBoardServiceManager *manager = nil;
     dispatch_once(&onceToken, ^{
         manager = [[ZegoBoardServiceManager alloc] init];
+        manager.whiteboardAspectSize = CGSizeMake(16, 9);
     });
     return manager;
 }
@@ -50,7 +52,7 @@
             
             strongSelf.docsManager = [ZegoDocsViewManager sharedInstance];
             
-            [[ZegoBoardOperationManager shareManager] setupSetpAutoPaging:NO];
+            [[ZegoBoardOperationManager shareManager] setupSetpAutoPaging:YES];
             
             [strongSelf.docsManager initWithConfig:docsConfig completionBlock:^(ZegoDocsViewError errorCode) {
                 DLog(@"localDocsViewManagerInitFinish,error:%lu",(unsigned long)errorCode);
@@ -96,11 +98,6 @@
             [strongSelf.delegate onLocalGetWhiteboardList:whiteBoardViewList errorCode:errorCode];
         }
     }];
-}
-
-- (void)setupWhiteboardViewList:(NSArray *)whiteboardViewList {
-    DLog(@"BoardSevice>>> setupWhiteboardViewList,count:%lu",(unsigned long)whiteboardViewList.count);
-    _whiteboardViewList = whiteboardViewList;
 }
 
 - (void)createWhiteboardWithModel:(ZegoWhiteboardViewModel *)model fileID:(nonnull NSString *)fileID {
@@ -182,7 +179,12 @@
 
 - (void)setupDrawColor:(NSString *)color {
     DLog(@"BoardSevice>>> setupDrawColor:%@",color);
-    self.wbManager.brushColor = [UIColor colorWithRGB:color];
+    if ([self.systemColorDic.allKeys containsObject:color]) {
+        UIColor *currentColor = self.systemColorDic[color];
+        self.wbManager.brushColor = currentColor;
+    } else {
+        self.wbManager.brushColor = [UIColor colorWithRGB:color];
+    }
 }
 - (void)setupFontSize:(NSInteger)fontSize {
     DLog(@"BoardSevice>>> setupFontSize:%ld",(long)fontSize);
@@ -210,13 +212,16 @@
                 ZegoWhiteboardViewModel *model = [[ZegoWhiteboardViewModel alloc] init];
                 model.aspectWidth = docsView.contentSize.width;
                 model.aspectHeight = docsView.contentSize.height;
-                NSDate *currentDate = [NSDate date];
+                model.pageCount = docsView.pageCount;
                 NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
                     [dateFormatter setDateFormat:@"HH-mm-ss"];
-                NSString *dateString = [dateFormatter stringFromDate:currentDate];
-                model.name = [NSString stringWithFormat:@"%@的白板%@",[ZegoLocalEnvManager shareManager].userName,dateString];
+                model.name = [NSString stringWithFormat:@"%@-%@",[ZegoLocalEnvManager shareManager].userName,docsView.fileName];
                 __strong typeof(weakSelf) strongSelf = weakSelf;
-                model.fileInfo.fileName = docsView.fileName;
+                if (docsView.fileType == ZegoDocsViewFileTypeELS) {
+                    model.fileInfo.fileName = docsView.sheetNameList[0];
+                }else {
+                    model.fileInfo.fileName = docsView.fileName;
+                }
                 model.fileInfo.fileID = docsView.fileID;
                 model.fileInfo.fileType = docsView.fileType;
                 [strongSelf requestCreateWhiteboardWithModel:model docsView:docsView];
@@ -226,9 +231,13 @@
         }];
     } else {
         ZegoWhiteboardViewModel *model = [[ZegoWhiteboardViewModel alloc] init];
-        model.aspectWidth = 16.0 * 5;
-        model.aspectHeight = 9.0;
-        model.pageCount = 5;
+        CGSize aspectSize = self.whiteboardAspectSize;
+        int pageCount = 5;
+        model.aspectWidth = aspectSize.width * pageCount;
+        model.aspectHeight = aspectSize.height;
+//        model.aspectWidth_viewPortStub = aspectSize.width;
+//        model.aspectHeight_viewPortStub = aspectSize.height;
+        model.pageCount = pageCount;
         
         if (wbName.length > 0) {
             model.name = wbName;
@@ -324,6 +333,21 @@
 - (void)queryFileCachedWithFileId:(NSString *)fileId completionBlock:(ZegoDocsViewQueryCachedCompletionBlock)completionBlock {
     DLog(@"BoardSevice>>> queryFileCachedWithFileId:%@",fileId);
     [self.docsManager queryFileCachedWithFileId:fileId completionBlock:completionBlock];
+}
+
+- (NSDictionary *)systemColorDic {
+    if (!_systemColorDic) {
+        _systemColorDic = @{@"black":[UIColor blackColor],
+                            @"red":[UIColor redColor],
+                            @"yellow":[UIColor yellowColor],
+                            @"blue":[UIColor blueColor],
+                            @"green":[UIColor greenColor],
+                            @"white":[UIColor whiteColor],
+                            @"gray":[UIColor grayColor],
+                            @"orange":[UIColor orangeColor]
+        };
+    }
+    return _systemColorDic;
 }
 
 @end

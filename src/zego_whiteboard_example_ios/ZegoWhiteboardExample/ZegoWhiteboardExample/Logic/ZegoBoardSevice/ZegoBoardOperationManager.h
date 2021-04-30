@@ -9,19 +9,20 @@
 #import <ZegoWhiteboardView/ZegoWhiteboardView.h>
 #import <ZegoWhiteboardView/ZegoWhiteboardManager.h>
 #import "ZegoTopBarView.h"
-#import "ZegoBoardContainerView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ZegoBoardOperationManager : NSObject
 @property (nonatomic, assign, readonly) ZegoWhiteboardTool toolType;
 @property (nonatomic, strong, readonly) NSArray *previewArray;
+@property (nonatomic, assign) CGRect whiteboardInitialFrame;
 
 
 + (instancetype)shareManager;
 
 - (void)setupCurrentWhiteboardView:(ZegoWhiteboardView *)whiteboardView docsView:(nullable ZegoDocsView *)docsView;
 - (void)leaveRoom;
+- (void)setWhiteboardInitialFrame:(CGRect)frame;
 
 //****** 白板功能设置 ******
 - (void)setupWhiteboardOperationMode:(ZegoWhiteboardOperationMode)operationMode;
@@ -44,6 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)clearWhiteboardCache;
 - (void)cleanBackgroundImage;
 - (void)setCurrentAuthInfo:(NSDictionary *)authInfo;
+- (void)setWhiteboardDeltaSize:(CGSize)size;
+- (void)setWhiteboardSizeWithString:(NSString *)sizeInfo;
 
 //****** 文件操作 ******
 - (void)playAnimationWithInfo:(NSString *)info;

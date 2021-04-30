@@ -24,8 +24,10 @@
 
 .main-container {
   height: 100vh;
-  margin-bottom: -20px;
   border-right: 1px solid #cccccc;
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px;
 }
 
 .panel-container {
@@ -36,14 +38,7 @@
 .panel {
   display: none;
 }
-.operation-container {
-  /* position: fixed; */
-  /* top: 0; */
-  /* right: 0; */
-  /* bottom: 0; */
-  /* overflow-x: hidden; */
-  /* overflow-y: scroll; */
-}
+
 #nav-tabContent .tab-pane form {
   position: absolute;
   left: 0;
@@ -54,25 +49,32 @@
   overflow-x: hidden;
   overflow-y: scroll;
 }
+.whiteboard-box {
+  flex: 1;
+  margin: 16px 0;
+}
+
 .whiteboard-area {
   position: relative;
   margin: 0 auto;
-  width: 1067px;
-  height: 600px;
+  width: 640px;
+  height: 360px;
   border: 1px dashed #ddd;
   background-color: aliceblue;
+  transition: width 0.1s, height 0.1s;
 }
 
 .thumbnail {
   display: none;
+  z-index: 10;
   width: 200px;
+  height: 100vh;
   position: absolute;
-  left: -201px;
   top: 0;
   bottom: 0;
+  right: 0;
   overflow: scroll;
-  height: 100vh;
-  padding: 10px;
+  padding: 36px 10px;
   background-color: #f8f9fa;
 }
 
@@ -91,29 +93,99 @@
 
 .drawBox {
   border: 1px dashed #ccc;
+  margin: 15px 0;
 }
 .row.drawBox {
   margin: 15px 0 !important;
 }
-#idNames {
-  text-align: center;
-  word-break: break-all;
-}
 #flipPage {
   max-width: 88px;
 }
-.error-toast{
+.error-toast {
   z-index: 5;
   left: 50%;
   top: 0;
   transform: translate(-50%, 0);
 }
-.toast{
+.toast {
   background-color: #444;
 }
-.toast-body{
+.toast-body {
   padding: 10px;
   border-radius: 4px;
   font-size: 12px;
   color: #fff;
+}
+.menu-btn {
+  display: none;
+}
+
+.operation-container {
+  display: block;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.tab-content-box {
+  height: 100%;
+  padding-bottom: 32px;
+  overflow-y: scroll;
+}
+
+@media screen and (orientation: landscape) {
+  body {
+    font-size: 12px;
+  }
+}
+
+@media screen and (orientation: portrait) and (max-width: 720px) {
+  body {
+    font-size: 12px;
+  }
+}
+@media screen and (orientation: portrait) and (min-width: 575px) {
+  .operation-container {
+    display: block;
+  }
+}
+@media screen and (orientation: portrait) and (max-width: 575px) {
+  .menu-btn {
+    display: block;
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 99999;
+  }
+  .operation-container {
+    display: none;
+    position: fixed;
+    top: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 75%;
+    z-index: 999;
+    background-color: #fff;
+    border: 1px solid #cccccc;
+  }
+  .operation-container-nav {
+    width: 80%;
+  }
+}
+
+.room-id {
+  border: none;
+}
+
+.whiteboard-page {
+  width: 60px;
+  text-align: center;
+  line-height: 1.25;
+  padding-left: 0;
+  padding-right: 0;
+}
+.nav-tabs .nav-link {
+  padding: 0.5rem;
+  border: none;
 }

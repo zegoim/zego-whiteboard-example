@@ -26,6 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 //移除白板
 - (void)removeWhiteboardWithID:(ZegoWhiteboardID)whiteboardID;
 
+- (void)manualSetFrame:(CGRect)frame;
+
 @end
 
 NS_ASSUME_NONNULL_END

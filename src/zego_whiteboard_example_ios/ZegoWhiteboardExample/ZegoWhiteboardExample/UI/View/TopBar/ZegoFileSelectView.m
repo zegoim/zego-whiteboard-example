@@ -52,7 +52,11 @@
     
     ZegoFileSelectTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell" forIndexPath:indexPath];
     ZegoWhiteboardView *view = self.fileList[indexPath.row];
-    cell.title = view.whiteboardModel.name;
+    if (view.whiteboardModel.fileInfo.fileName.length > 0) {
+        cell.title = view.whiteboardModel.fileInfo.fileName;
+    } else {
+        cell.title = view.whiteboardModel.name;
+    }
     __weak typeof(self) weakSelf = self;
     cell.didClickDeleteBlock = ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;

@@ -54,9 +54,10 @@ typedef void(^ZegoGetWhiteboardListBlock)(ZegoWhiteboardViewError errorCode,  NS
 @property (nonatomic, weak) id <ZegoBoardServiceDelegate> delegate;
 
 //当前房间下的 白板列表
-@property (nonatomic, strong, readonly) NSArray *whiteboardViewList;
+@property (nonatomic, strong) NSArray *whiteboardViewList;
 
 @property (nonatomic, weak) ZegoBoardContainerView *boardContainnerView;
+@property (nonatomic, assign) CGSize whiteboardAspectSize;
 
 // ******SDK设置******
 //SDK单例
@@ -119,10 +120,6 @@ typedef void(^ZegoGetWhiteboardListBlock)(ZegoWhiteboardViewError errorCode,  NS
 - (ZegoSeq)cacheFileWithFileId:(NSString *)fileId completionBlock:(ZegoDocsViewCacheBlock)completionBlock;
 - (void)cancelCacheFileSeq:(ZegoSeq)seq completionBlock:(ZegoDocsViewCancelCacheComplementBlock)completionBlock;
 - (void)queryFileCachedWithFileId:(NSString *)fileId completionBlock:(ZegoDocsViewQueryCachedCompletionBlock)completionBlock;
-
-
-
-- (void)setupWhiteboardViewList:(NSArray *)whiteboardList;
 
 @end
 

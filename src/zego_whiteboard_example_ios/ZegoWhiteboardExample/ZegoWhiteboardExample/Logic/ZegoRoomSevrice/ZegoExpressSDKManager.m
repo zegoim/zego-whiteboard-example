@@ -44,7 +44,12 @@
 
 
 - (void)loginRoom {
-    ZegoUser *user = [[ZegoUser alloc] initWithUserID:[ZegoLocalEnvManager shareManager].userName userName:[ZegoLocalEnvManager shareManager].userName];
+    NSString *userID = [ZegoLocalEnvManager shareManager].userID;
+    if (!userID) {
+        userID = @([NSDate date].timeIntervalSince1970).stringValue;
+        [[NSUserDefaults standardUserDefaults] setObject:userID forKey:kUserIDKey];
+    }
+    ZegoUser *user = [[ZegoUser alloc] initWithUserID:userID userName:[ZegoLocalEnvManager shareManager].userName];
     [self.api loginRoom:[ZegoLocalEnvManager shareManager].roomID user:user];
     
 }
