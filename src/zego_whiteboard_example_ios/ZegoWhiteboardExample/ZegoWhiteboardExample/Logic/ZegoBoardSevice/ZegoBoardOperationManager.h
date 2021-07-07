@@ -52,6 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)playAnimationWithInfo:(NSString *)info;
 - (void)getThumbnailUrlList;
 - (void)showPreview;
+- (void)setAlphaEnv;
 - (void)setupSetpAutoPaging:(BOOL)autoPaging;
 - (void)clearFileCache;
 - (void)nextPageComplement:(ZegoDocsViewScrollCompleteBlock)complementBlock;

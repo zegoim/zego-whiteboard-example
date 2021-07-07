@@ -2,6 +2,7 @@ package im.zego.whiteboardexample.activity
 
 import android.os.Build
 import android.os.Bundle
+import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
@@ -9,6 +10,8 @@ import im.zego.zegodocs.ZegoDocsViewManager
 import im.zego.zegowhiteboard.ZegoWhiteboardManager
 import im.zego.whiteboardexample.BuildConfig
 import im.zego.whiteboardexample.R
+import im.zego.whiteboardexample.sdk.docs.CustomizedConfigHelper
+import im.zego.whiteboardexample.sdk.docs.DocsViewSDKManager
 import im.zego.whiteboardexample.sdk.rtc.VideoSDKManager
 import im.zego.whiteboardexample.util.*
 import kotlinx.android.synthetic.main.activity_setting.*
@@ -82,11 +85,30 @@ class SettingActivity : BaseActivity() {
             // 下一步触发下一页
             findPreference<SwitchPreferenceCompat>("next_step_flip_page")?.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { preference, newValue ->
+                    CustomizedConfigHelper.updatePPTStepMode(newValue as Boolean)
                     true
                 }
+            CustomizedConfigHelper.updatePPTStepMode(SharedPreferencesUtil.isNextStepFlipPage())
+
             // 字体
             findPreference<SwitchPreferenceCompat>("text_style")?.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { preference, newValue ->
+                    true
+                }
+
+            val listPreference = findPreference<ListPreference>("key_thumbnail_clarity")
+            listPreference?.summary = listPreference?.entries?.get(
+                listPreference.findIndexOfValue(SharedPreferencesUtil.getThumbnailClarityType())
+            )
+            CustomizedConfigHelper.updateThumbnailClarity(SharedPreferencesUtil.getThumbnailClarityType())
+
+            listPreference?.onPreferenceChangeListener =
+                Preference.OnPreferenceChangeListener { preference, newValue ->
+                    CustomizedConfigHelper.updateThumbnailClarity(newValue.toString())
+                    if (preference is ListPreference) {
+                        preference.summary = preference.entries[preference.findIndexOfValue(newValue.toString())]
+                        preference.value = newValue.toString()
+                    }
                     true
                 }
         }

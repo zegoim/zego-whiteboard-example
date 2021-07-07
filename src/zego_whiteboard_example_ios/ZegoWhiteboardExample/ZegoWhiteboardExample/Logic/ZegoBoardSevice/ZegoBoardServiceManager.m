@@ -9,6 +9,7 @@
 #import <ZegoWhiteboardView/ZegoWhiteboardManager.h>
 #import "ZegoLocalEnvManager.h"
 #import "ZGAppSignHelper.h"
+#import "NSString+ContentOperation.h"
 @interface ZegoBoardServiceManager()<ZegoWhiteboardManagerDelegate>
 @property (nonatomic, strong) ZegoWhiteboardManager *wbManager;
 @property (nonatomic, strong) ZegoDocsViewManager *docsManager;
@@ -36,11 +37,11 @@
     __weak typeof(self) weakSelf = self;
     self.wbManager = [ZegoWhiteboardManager sharedInstance];
     self.wbManager.delegate = self;
+    [self.wbManager setConfig:wbConfig];
     [self.wbManager initWithCompleteBlock:^(ZegoWhiteboardViewError errorCode) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         DLog(@"localWhiteboarManagerInitFinish,error:%ld",(long)errorCode);
         if (errorCode == 0) {
-            [strongSelf.wbManager setConfig:wbConfig];
             [strongSelf.wbManager setDelegate:self];
             ZegoDocsViewConfig *docsConfig = [[ZegoDocsViewConfig alloc] init];
             docsConfig.dataFolder = kZegoDocsDataPath;
@@ -48,16 +49,23 @@
             docsConfig.cacheFolder = kZegoDocsDataPath;
             docsConfig.appID = [ZegoLocalEnvManager shareManager].appID;
             docsConfig.appSign = [ZGAppSignHelper convertAppSignStringFromString:[ZegoLocalEnvManager shareManager].appSign];
-            docsConfig.isTestEnv = [ZegoLocalEnvManager shareManager].docsSeviceTestEnv;
-            
             strongSelf.docsManager = [ZegoDocsViewManager sharedInstance];
+            
+            if ([ZegoLocalEnvManager shareManager].docsSeviceAlphaEnv) {
+                //如果设置了alpha环境 就不会去设置测试环境和正式环境
+                [[ZegoBoardOperationManager shareManager] setAlphaEnv];
+            } else {
+                docsConfig.isTestEnv = [ZegoLocalEnvManager shareManager].docsSeviceTestEnv;
+            }
             
             [[ZegoBoardOperationManager shareManager] setupSetpAutoPaging:YES];
             
+            [strongSelf setupThumbnailDefinition];
+            
             [strongSelf.docsManager initWithConfig:docsConfig completionBlock:^(ZegoDocsViewError errorCode) {
                 DLog(@"localDocsViewManagerInitFinish,error:%lu",(unsigned long)errorCode);
-                if ([strongSelf.delegate respondsToSelector:@selector(onLocalInintComplementErrorCode:)]) {
-                    [strongSelf.delegate onLocalInintComplementErrorCode:errorCode];
+                if ([strongSelf.delegate respondsToSelector:@selector(onLocalInintComplementErrorCode:type:)]) {
+                    [strongSelf.delegate onLocalInintComplementErrorCode:errorCode type:1];
                 }
             }];
             
@@ -67,11 +75,16 @@
                 [strongSelf.wbManager setCustomFontWithName:@"" boldFontName:@""];
             }
         } else {
-            if ([strongSelf.delegate respondsToSelector:@selector(onLocalInintComplementErrorCode:)]) {
-                [strongSelf.delegate onLocalInintComplementErrorCode:errorCode];
+            if ([strongSelf.delegate respondsToSelector:@selector(onLocalInintComplementErrorCode:type:)]) {
+                [strongSelf.delegate onLocalInintComplementErrorCode:errorCode type:0];
             }
         }
     }];
+}
+
+- (void)setupThumbnailDefinition {
+    
+    [self setupCustomConfig:[ZegoLocalEnvManager shareManager].pptThumbnailClarity key:@"thumbnailMode"];
 }
 
 - (BOOL)setupCustomConfig:(NSString *)value key:(NSString *)key {
@@ -124,7 +137,14 @@
 }
 
 - (void)requestCreateWhiteboardWithModel:(ZegoWhiteboardViewModel *)model docsView: (ZegoDocsView *)docsView {
+    
+    model.name = [model.name subStringByByteWithLength:128];
+    if (model.fileInfo.fileName.length > 0) {
+        model.fileInfo.fileName = [model.fileInfo.fileName subStringByByteWithLength:128];
+    }
+
     DLog(@"BoardSevice>>> requestCreateWhiteboardWithModel:%llu docsView:%@",model.whiteboardID,docsView.fileID);
+    
     [self.wbManager createWhiteboardView:model completeBlock:^(ZegoWhiteboardViewError errorCode, ZegoWhiteboardView *whiteboardView) {
         if ([self.delegate respondsToSelector:@selector(onLocalCreateWhiteboardView:docsView:errorCode:)]) {
             [self.delegate onLocalCreateWhiteboardView:whiteboardView docsView:docsView errorCode:errorCode];
@@ -201,8 +221,49 @@
     self.wbManager.customText = text;
 }
 
+- (void)setEnableSendToRoomScale:(BOOL)enableSendToRoomScale
+{
+    if (self.wbManager.enableSyncScale == enableSendToRoomScale) {
+        return;;
+    }
+    DLog(@"BoardSevice>>> setEnableSendToRoomScale:%d",enableSendToRoomScale);
+    self.wbManager.enableSyncScale = enableSendToRoomScale;
+}
+- (void)setEnableRecvFromRoomScale:(BOOL)enableRecvFromRoomScale
+{
+    if (self.wbManager.enableResponseScale == enableRecvFromRoomScale) {
+        return;
+    }
+    DLog(@"BoardSevice>>> setEnableRecvFromRoomScale:%d",enableRecvFromRoomScale);
+    self.wbManager.enableResponseScale = enableRecvFromRoomScale;
+}
+
+- (void)setEnableHandWriting:(BOOL)enableHandWriting {
+    if (self.wbManager.enableHandwriting == enableHandWriting) {
+        return;
+    }
+    DLog(@"BoardSevice>>> setEnableHandWriting:%d",enableHandWriting);
+    self.wbManager.enableHandwriting = enableHandWriting;
+}
+
+- (BOOL)judgeFileIsExists:(NSString *)fileID {
+    BOOL isExists = NO;
+    for (ZegoWhiteboardView *view in self.whiteboardViewList) {
+        if ([fileID isEqualToString:view.whiteboardModel.fileInfo.fileID]) {
+            isExists = YES;
+            break;
+        }
+    }
+    return isExists;
+}
+
 - (void)addNewWhiteboardWithName:(NSString *)wbName fileID:(nullable NSString *)fileID {
     DLog(@"BoardSevice>>> addNewWhiteboardWithName:%@ fileID:%@",wbName,fileID);
+    if ([self judgeFileIsExists:fileID]) {
+        DLog(@"BoardSevice>>> file is exists:%@ fileID:%@",wbName,fileID);
+        [ZegoProgessHUD showTipMessage:[NSString stringWithFormat:@"文件已经创建"]];
+        return;
+    }
     if (fileID.length > 0) {
         ZegoDocsView *docsView = [[ZegoDocsView alloc] initWithFrame:self.boardContainnerView.bounds];
         __weak typeof(self) weakSelf = self;

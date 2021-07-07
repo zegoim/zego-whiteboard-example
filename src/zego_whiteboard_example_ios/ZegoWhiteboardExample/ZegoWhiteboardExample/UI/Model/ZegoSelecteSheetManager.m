@@ -48,7 +48,8 @@
 }
 
 - (void)initAlertSheetWithTitle:(NSString *)title optionArray:(NSArray *)optionArray {
-    self.alertVC = [UIAlertController alertControllerWithTitle:@"" message:title preferredStyle:UIAlertControllerStyleActionSheet];
+    UIAlertControllerStyle style = IS_PAD ? UIAlertControllerStyleAlert:UIAlertControllerStyleActionSheet;
+    self.alertVC = [UIAlertController alertControllerWithTitle:@"" message:title preferredStyle:style];
     for (int i = 0; i < optionArray.count; i++) {
         ZegoCellOptionModel *option = optionArray[i];
         UIAlertAction *ation = [UIAlertAction actionWithTitle:option.title style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {

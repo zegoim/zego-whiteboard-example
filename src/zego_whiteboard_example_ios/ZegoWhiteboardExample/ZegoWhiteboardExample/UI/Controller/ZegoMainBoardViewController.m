@@ -198,13 +198,14 @@
     DLog(@"insertWhiteboardIntoList，whiteboardListCount：%lu",(unsigned long)temp.count);
 }
 
-- (void)onLocalInintComplementErrorCode:(NSInteger)errorCode {
+- (void)onLocalInintComplementErrorCode:(NSInteger)errorCode type:(NSInteger)type {
     if (errorCode == 0 ) {
         //初始化完成，登录房间
         [ZegoRoomSeviceCenter loginRoom];
     }else {
-        NSException *e = [NSException exceptionWithName:@"白板初始化异常" reason:[NSString stringWithFormat:@"错误码:%ld", (long)errorCode] userInfo:nil];
-        [ZegoProgessHUD showTipMessage:[NSString stringWithFormat:@"白板初始化失败 %ld, 程序中止", (long)errorCode]];
+        NSString *errorMsg = type == 0 ? @"白板初始化异常":@"文件初始化异常";
+        NSException *e = [NSException exceptionWithName:errorMsg reason:[NSString stringWithFormat:@"错误码:%ld", (long)errorCode] userInfo:nil];
+        [ZegoProgessHUD showTipMessage:[NSString stringWithFormat:@"%@ %ld, 程序中止", errorMsg,(long)errorCode]];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             [e raise];
         });

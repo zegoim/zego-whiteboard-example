@@ -32,8 +32,6 @@ fun getCircleDrawable(drawableColor: String, radius: Float): GradientDrawable {
     return drawable
 }
 
-var CONFERENCE_ID = ""
-
 val nameFilter: InputFilter = object : InputFilter.LengthFilter(50) {
     override fun filter(
             source: CharSequence,

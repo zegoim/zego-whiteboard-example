@@ -44,7 +44,6 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.core.content.ContextCompat;
 
-import im.zego.zegowhiteboard.ZegoWhiteboardView;
 import im.zego.whiteboardexample.R;
 
 /**
@@ -126,8 +125,6 @@ public class CircleImageView extends AppCompatImageView {
     private void init() {
         super.setScaleType(SCALE_TYPE);
         mReady = true;
-
-        ZegoWhiteboardView zegoWhiteboardView;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             setOutlineProvider(new OutlineProvider());

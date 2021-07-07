@@ -68,11 +68,25 @@
         for (ZegoCellOptionModel *option in model.options) {
             ZegoSettingSwitchView *view = [[ZegoSettingSwitchView alloc] init];
             [self addSubview:view];
+            //两个状态根据设置获取
+            if([option.title isEqualToString:@"接收缩放同步"]){
+                option.value = @([ZegoWhiteboardManager sharedInstance].enableResponseScale);
+            }
+            if([option.title isEqualToString:@"发送缩放同步"]){
+                option.value = @([ZegoWhiteboardManager sharedInstance].enableSyncScale);
+            }
+            if ([option.title isEqualToString:@"开启笔锋"]) {
+                option.value = @([ZegoWhiteboardManager sharedInstance].enableHandwriting);
+            }
+        
             view.titleLabel.text = option.title;
             view.stateSwitch.on = [option.value boolValue];
+          
+            
             [self.switchViewArray addObject:view];
             view.didClickSwitchBlock = ^(BOOL state) {
-                option.value = [NSNumber numberWithBool:state];
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                [strongSelf changeSwitchStatus:option state:state];
             };
         }
     } else {
@@ -90,6 +104,81 @@
                 [strongSelf.delegate onSettingCellValueChange:strongSelf.model];
             }
         };
+    }
+}
+
+- (void)changeSwitchStatus:(ZegoCellOptionModel *)option state:(BOOL)state {
+    option.value = [NSNumber numberWithBool:state];
+    if (state) {
+        if ([option.title isEqualToString:@"滚动模式"]) {
+            [self findOptionModel:option.title];
+        } else if ([option.title isEqualToString:@"绘制模式"]) {
+            [self findOptionModel:option.title];
+        } else if ([option.title isEqualToString:@"放缩模式"]) {
+            [self findOptionModel:option.title];
+        } else if ([option.title isEqualToString:@"不可操作模式"]) {
+            [self findOptionModel:option.title];
+        }
+    }
+}
+
+- (BOOL)findUnOperationValue {
+    BOOL operationValue = NO;
+    for (ZegoCellOptionModel *option in self.model.options) {
+        if ([option.title isEqualToString:@"不可操作模式"]) {
+            operationValue = [option.value boolValue];
+            break;
+        }
+    }
+    return operationValue;
+}
+
+- (void)findOptionModel:(NSString *)title {
+    for (ZegoCellOptionModel *optionModel in self.model.options) {
+        if ([title isEqualToString:@"滚动模式"] && ([optionModel.title isEqualToString:@"绘制模式"] || [optionModel.title isEqualToString:@"不可操作模式"]) && [optionModel.value boolValue]) {
+            //滚动模式不可与绘制模式共存
+            optionModel.value = [NSNumber numberWithBool:NO];
+            [self findSwitchView:title];
+        } else if ([title isEqualToString:@"绘制模式"] && ([optionModel.title isEqualToString:@"滚动模式"]||[optionModel.title isEqualToString:@"不可操作模式"]) && [optionModel.value boolValue]) {
+            //绘制模式和滚动模式不可共存
+            optionModel.value = [NSNumber numberWithBool:NO];
+            [self findSwitchView:title];
+        } else if ([title isEqualToString:@"不可操作模式"] && ![optionModel.title isEqualToString:@"不可操作模式"]) {
+            //不可操作模式和其他模式不共存
+            if ([optionModel.title isEqualToString:@"接收缩放同步"] || [optionModel.title isEqualToString:@"发送缩放同步"]) {
+                return;
+            }
+            optionModel.value = [NSNumber numberWithBool:NO];
+            [self findSwitchView:title];
+        } else if ([title isEqualToString:@"放缩模式"] && [optionModel.title isEqualToString:@"不可操作模式"]) {
+            optionModel.value = [NSNumber numberWithBool:NO];
+            [self findSwitchView:title];
+        }
+    }
+}
+
+- (void)findSwitchView:(NSString *)title {
+    for (ZegoSettingSwitchView *view in self.switchViewArray) {
+        if ([title isEqualToString:@"滚动模式"] && ([view.titleLabel.text isEqualToString:@"绘制模式"] || [view.titleLabel.text isEqualToString:@"不可操作模式"])) {
+            if ([view.titleLabel.text isEqualToString:@"不可操作模式"]) {
+                [ZegoProgessHUD showTipMessage:@"绘制和滚动模式无法同时开启，仅生效滚动模式"];
+            }
+            view.stateSwitch.on = NO;
+        } else if ([title isEqualToString:@"绘制模式"] && ([view.titleLabel.text isEqualToString:@"滚动模式"] || [view.titleLabel.text isEqualToString:@"不可操作模式"])) {
+            if ([view.titleLabel.text isEqualToString:@"不可操作模式"]) {
+                [ZegoProgessHUD showTipMessage:@"绘制和滚动模式无法同时开启，仅生效滚动模式"];
+            }
+            view.stateSwitch.on = NO;
+        } else if ([title isEqualToString:@"不可操作模式"] && ![view.titleLabel.text isEqualToString:@"不可操作模式"]) {
+            //不可操作模式和其他模式不共存
+            [ZegoProgessHUD showTipMessage:@"不可操作模式下，不支持其他操作模式"];
+            if ([view.titleLabel.text isEqualToString:@"接收缩放同步"] || [view.titleLabel.text isEqualToString:@"发送缩放同步"]) {
+                return;
+            }
+            view.stateSwitch.on = NO;
+        } else if ([title isEqualToString:@"放缩模式"] && [view.titleLabel.text isEqualToString:@"不可操作模式"]) {
+            view.stateSwitch.on = NO;
+        }
     }
 }
 

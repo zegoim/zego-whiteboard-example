@@ -9,7 +9,7 @@ import im.zego.whiteboardexample.BuildConfig;
  * 控制日志打印
  */
 
-public class Logger {
+public class AppLogger {
     private static final String TAG_PREFIX = "ZEGO_";
     private static final boolean DEBUG = BuildConfig.DEBUG;
 

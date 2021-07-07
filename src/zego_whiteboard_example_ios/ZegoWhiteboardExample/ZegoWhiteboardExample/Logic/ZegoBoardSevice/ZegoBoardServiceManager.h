@@ -23,8 +23,11 @@ typedef void(^ZegoGetWhiteboardListBlock)(ZegoWhiteboardViewError errorCode,  NS
 
 @protocol ZegoBoardServiceDelegate <NSObject>
 
-//本地SDK初始化完成回调
-- (void)onLocalInintComplementErrorCode:(NSInteger)errorCode;
+
+/// 本地SDK初始化回调
+/// @param errorCode 错误码
+/// @param type 类型 0代表白板 1代表文件
+- (void)onLocalInintComplementErrorCode:(NSInteger)errorCode type:(NSInteger)type;
 
 //本地获取白板列表回调
 - (void)onLocalGetWhiteboardList:(NSArray *)whiteboardList errorCode:(NSInteger)errorCode;
@@ -107,7 +110,12 @@ typedef void(^ZegoGetWhiteboardListBlock)(ZegoWhiteboardViewError errorCode,  NS
 - (void)removeBoardWithID:(ZegoWhiteboardID)whiteboardID;
 //清除白板缓存
 - (void)clearWhiteboardCache;
-
+//设置是否接收同步缩放
+- (void)setEnableSendToRoomScale:(BOOL)enableSendToRoomScale;
+//设置是否发送同步缩放
+- (void)setEnableRecvFromRoomScale:(BOOL)enableRecvFromRoomScale;
+//设置是否支持笔锋
+- (void)setEnableHandWriting:(BOOL)enableHandWriting;
 
 //****** 文件操作 ******
 - (void)nextPageComplement:(ZegoDocsViewScrollCompleteBlock)complementBlock;

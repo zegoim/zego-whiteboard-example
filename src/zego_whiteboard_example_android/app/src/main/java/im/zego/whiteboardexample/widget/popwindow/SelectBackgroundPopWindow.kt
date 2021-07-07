@@ -7,8 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import im.zego.whiteboardexample.R
 import im.zego.whiteboardexample.model.BackgroundData
-import im.zego.whiteboardexample.model.BackgroundFitModeData
-import im.zego.zegowhiteboard.ZegoWhiteboardViewImageFitMode
 import kotlinx.android.synthetic.main.popwindow_select.view.*
 
 /**

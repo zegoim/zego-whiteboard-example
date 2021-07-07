@@ -4,7 +4,7 @@ import android.app.Application
 import im.zego.whiteboardexample.sdk.docs.DocsViewSDKManager
 import im.zego.whiteboardexample.sdk.rtc.VideoSDKManager
 import im.zego.whiteboardexample.sdk.whiteboard.WhiteboardSDKManager
-import im.zego.whiteboardexample.util.Logger
+import im.zego.whiteboardexample.util.AppLogger
 import im.zego.whiteboardexample.util.SharedPreferencesUtil
 
 /**
@@ -13,9 +13,6 @@ import im.zego.whiteboardexample.util.SharedPreferencesUtil
 object ZegoSDKManager {
 
     private const val TAG = "ZegoSDKManager"
-
-    val MAX_PURE_WB_COUNT = 10
-    val MAX_FILE_WB_COUNT = 10
 
     var whiteboardNameIndex = 1
 
@@ -52,7 +49,7 @@ object ZegoSDKManager {
     }
 
     fun unInitSDKEnvironment() {
-        Logger.i(TAG, "unInitSDKEnvironment() called")
+        AppLogger.i(TAG, "unInitSDKEnvironment() called")
         VideoSDKManager.unInitSDK()
         WhiteboardSDKManager.unInitSDK()
         DocsViewSDKManager.unInitSDK()

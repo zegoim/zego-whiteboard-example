@@ -21,6 +21,7 @@
 
 - (void)setupUI {
     self.titleLabel = [[UILabel alloc] init];
+    self.titleLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
     [self.contentView addSubview:self.titleLabel];
     self.titleLabel.font = [UIFont systemFontOfSize:12];
     self.titleLabel.textColor = [UIColor blackColor];

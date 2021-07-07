@@ -3,6 +3,15 @@ module.exports = {
     trailingComma: 'all',
     singleQuote: true,
     printWidth: 120,
-    tabWidth: 2,
-    trailingComma: 'none'
+    tabWidth: 4,
+    trailingComma: 'none',
+    arrowParens: 'always',
+    overrides: [
+        {
+            files: ['*.html', '*.css', '*.json'],
+            options: {
+                tabWidth: 2
+            }
+        }
+    ]
 };

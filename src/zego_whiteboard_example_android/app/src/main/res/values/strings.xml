@@ -32,6 +32,8 @@
     <string name="preview">预览</string>
     <string name="network_temp_broken_reconnect">网络异常，请重新加入...</string>
     <string name="open_draw">请先开启绘制功能</string>
+    <string name="mode_none_conflicted_with_mode_other">不可操作模式下，不支持其他操作模式</string>
+    <string name="mode_scroll_conflicted_with_mode_draw">绘制和滚动模式无法同时开启，仅生效滚动模式</string>
 
     <string name="menu">菜单</string>
 
@@ -45,9 +47,9 @@
     <string name="create_tips">创建</string>
     <string name="setting_upload_log">上传日志</string>
     <string name="whiteboard_add">新增白板</string>
-    <string name="whiteboard_max_container">最大白板容器（%s*%s）</string>
-    <string name="whiteboard_current_container">当前白板容器（%s*%s）</string>
-    <string name="whiteboard_current_size">当前白板大小（%s*%s）</string>
+    <string name="whiteboard_max_container">最大白板容器（%1$s*%2$s）</string>
+    <string name="whiteboard_current_container">当前白板容器（%1$s*%2$s）</string>
+    <string name="whiteboard_current_size">当前白板大小（%1$s*%2$s）</string>
     <string name="resize_whiteboard_container">设置白板容器大小</string>
     <string name="whiteboard_width">容器宽度</string>
     <string name="whiteboard_height">容器高度</string>
@@ -72,7 +74,7 @@
     <string name="docs_cache_file_id_hint">文件 ID</string>
     <string name="docs_cache_file_id_null">请输入文件 ID</string>
     <string name="docs_cache_tip">缓存文件：</string>
-    <string name="docs_cache_fail">缓存文件 %s :失败: %s</string>
+    <string name="docs_cache_fail">缓存文件 %1$s :失败: %2$s</string>
     <string name="docs_cancel_cache_success">取消缓存文件成功</string>
     <string name="docs_cancel_cache_fail">取消缓存文件失败：%s</string>
     <string name="docs_query_cache_success">查询缓存文件完成 %s</string>
@@ -80,7 +82,7 @@
     <string name="docs_cache_exist">缓存文件存在</string>
     <string name="docs_cache_no_exist">缓存文件不存在</string>
     <string name="docs_query_cache_fail">查询缓存文件失败</string>
-    <string name="docs_cache_success">缓存文件 %s : %s</string>
+    <string name="docs_cache_success">缓存文件 %1$s : %2$s</string>
     <string name="docs_thumbnail">获取缩略图</string>
     <string name="docs_background">下一步触发下一页</string>
 
@@ -89,6 +91,7 @@
     <string name="draw_switch">禁用/开启绘制</string>
     <string name="draw_bold">粗体</string>
     <string name="draw_italic">斜体</string>
+    <string name="draw_handwriting">笔锋</string>
     <string name="draw_graffiti_tools">涂鸦工具</string>
     <string name="draw_graffiti_tools_pen">画笔</string>
     <string name="draw_graffiti_tools_selector">选择</string>
@@ -147,6 +150,8 @@
     <string name="mode_scroll">滚动模式</string>
     <string name="mode_draw">绘制模式</string>
     <string name="mode_scale">缩放模式</string>
+    <string name="mode_receive_sync_scale">接收缩放同步</string>
+    <string name="mode_send_sync_scale">发送缩放同步</string>
 
     <!-- PopWindow -->
 

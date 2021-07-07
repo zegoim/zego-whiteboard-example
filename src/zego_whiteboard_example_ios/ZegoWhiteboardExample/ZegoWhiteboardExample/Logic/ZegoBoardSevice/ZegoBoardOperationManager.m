@@ -48,7 +48,7 @@
     [self setupToolType:ZegoWhiteboardViewToolPen];
     [self setupDrawLineWidth:4];
     [self setupCustomText:@"文本"];
-    [self setCustomImageGraphicWithURLString:@"https://storage.zego.im/goclass/star.svg" complete:^(int error) {
+    [self setCustomImageGraphicWithURLString:@"https://storage.zego.im/goclass/wbpic/star.svg" complete:^(int error) {
         
     }];
     DLog(@"BoardOperation>>> localInitOperationManagerParameter---end");
@@ -325,6 +325,11 @@
     NSString *value = autoPaging ? @"1":@"2";
     [[ZegoBoardServiceManager shareManager] setupCustomConfig:value key:@"pptStepMode"];
     DLog(@"BoardOperation>>> setupSetpAutoPaging:%d",autoPaging);
+}
+
+- (void)setAlphaEnv {
+    [[ZegoBoardServiceManager shareManager] setupCustomConfig:@"true" key:@"set_alpha_env"];
+    DLog(@"setAlphaEnv >>>");
 }
 
 - (void)clearFileCache {

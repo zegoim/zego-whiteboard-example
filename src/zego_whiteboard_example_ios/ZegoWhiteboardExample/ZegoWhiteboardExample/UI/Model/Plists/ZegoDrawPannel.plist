@@ -41,6 +41,24 @@
 				<key>value</key>
 				<true/>
 			</dict>
+			<dict>
+				<key>title</key>
+				<string>接收缩放同步</string>
+				<key>value</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>发送缩放同步</string>
+				<key>value</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>开启笔锋</string>
+				<key>value</key>
+				<false/>
+			</dict>
 		</array>
 	</dict>
 	<dict>
@@ -366,6 +384,30 @@
 				<key>value</key>
 				<integer>10</integer>
 			</dict>
+			<dict>
+				<key>title</key>
+				<string>18</string>
+				<key>value</key>
+				<integer>18</integer>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>24</string>
+				<key>value</key>
+				<integer>24</integer>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>36</string>
+				<key>value</key>
+				<integer>36</integer>
+			</dict>
+			<dict>
+				<key>title</key>
+				<string>48</string>
+				<key>value</key>
+				<integer>48</integer>
+			</dict>
 		</array>
 	</dict>
 	<dict>
@@ -483,31 +525,31 @@
 				<key>title</key>
 				<string>jpg 图片</string>
 				<key>value</key>
-				<string>https://timgsa.baidu.com/timg?image&amp;quality=80&amp;size=b9999_10000&amp;sec=1608282741026&amp;di=2c5e58806e37aa46dc8e978b0e4aa93c&amp;imgtype=0&amp;src=http%3A%2F%2Fpic16.nipic.com%2F20110928%2F5200151_002314030000_2.jpg</string>
+				<string>https://storage.zego.im/goclass/wbbg/1.jpg</string>
 			</dict>
 			<dict>
 				<key>title</key>
 				<string>化学仪器</string>
 				<key>value</key>
-				<string>https://storage.zego.im/goclass/chemical_instrument.svg</string>
+				<string>https://storage.zego.im/goclass/wbpic/chemical_instrument.svg</string>
 			</dict>
 			<dict>
 				<key>title</key>
 				<string>坐标轴</string>
 				<key>value</key>
-				<string>https://storage.zego.im/goclass/axis.svg</string>
+				<string>https://storage.zego.im/goclass/wbpic/axis.svg</string>
 			</dict>
 			<dict>
 				<key>title</key>
 				<string>菱形</string>
 				<key>value</key>
-				<string>https://storage.zego.im/goclass/diamond.svg</string>
+				<string>https://storage.zego.im/goclass/wbpic/diamond.svg</string>
 			</dict>
 			<dict>
 				<key>title</key>
 				<string>五角星</string>
 				<key>value</key>
-				<string>https://storage.zego.im/goclass/star.svg</string>
+				<string>https://storage.zego.im/goclass/wbpic/star.svg</string>
 			</dict>
 		</array>
 	</dict>

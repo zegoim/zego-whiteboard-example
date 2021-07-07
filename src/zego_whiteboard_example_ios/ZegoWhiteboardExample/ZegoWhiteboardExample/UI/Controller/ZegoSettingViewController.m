@@ -46,9 +46,28 @@
     docsServiceModel.tag = ZegoDocsSeviceTestEnv;
     ZegoCommonCellModel *customFontModel = [[ZegoCommonCellModel alloc] initWithTitle:@"开启思源字体" type:ZegoSettingTableViewCellTypeSwitch options:nil value:[NSNumber numberWithBool:[ZegoLocalEnvManager shareManager].enableCutomFont]];
     customFontModel.tag = ZegoEnableCustomFont;
+    ZegoCommonCellModel *pptThumbnailClarityModel = [[ZegoCommonCellModel alloc] initWithTitle:@"缩略图清晰度" type:ZegoSettingTableViewCellTypePicker options:nil value:[NSNumber numberWithBool:[ZegoLocalEnvManager shareManager].enableCutomFont]];
+    ZegoCommonCellModel *docsAlphaServiceModel = [[ZegoCommonCellModel alloc] initWithTitle:@"开启文件服务alpha环境" type:ZegoSettingTableViewCellTypeSwitch options:nil value:[NSNumber numberWithBool:[ZegoLocalEnvManager shareManager].docsSeviceAlphaEnv]];
+    docsAlphaServiceModel.tag = ZegoDocsSeviceAlphaEnv;
+    
+    ZegoCellOptionModel *ordinaryModel = [[ZegoCellOptionModel alloc]init];
+    ordinaryModel.title = @"普通";
+    ordinaryModel.value = @"1";
+    
+    ZegoCellOptionModel *highModel = [[ZegoCellOptionModel alloc]init];
+    highModel.title = @"标清";
+    highModel.value = @"2";
+    
+    ZegoCellOptionModel *superModel = [[ZegoCellOptionModel alloc]init];
+    superModel.title = @"高清";
+    superModel.value = @"3";
+    NSArray *optionArr = @[ordinaryModel,highModel,superModel];
+    pptThumbnailClarityModel.tag = ZegoPPTThumbnailClarity;
+    pptThumbnailClarityModel.options = optionArr;
+    
     NSDictionary *envSettingDic = @{
         @"title":@"环境设置",
-        @"value":@[roomServiceModel,docsServiceModel,customFontModel]
+        @"value":@[roomServiceModel,docsServiceModel,customFontModel,docsAlphaServiceModel,pptThumbnailClarityModel]
     };
     [dataArray addObject:envSettingDic];
     self.dataArray = dataArray.copy;
@@ -111,6 +130,11 @@
         [[ZegoLocalEnvManager shareManager] setupDocsSeviceTestEnv:[valueChangeModel.value boolValue]];
     } else if ([valueChangeModel.tag isEqualToString:ZegoEnableCustomFont]) {
         [[ZegoLocalEnvManager shareManager] setupEnableCustomFont:[valueChangeModel.value boolValue]];
+    } else if ([valueChangeModel.tag isEqualToString:ZegoPPTThumbnailClarity]) {
+        NSInteger value = [valueChangeModel.value integerValue] + 1;
+        [[ZegoLocalEnvManager shareManager] setupThumbnailClarity:[NSString stringWithFormat:@"%ld",value]];
+    } else if ([valueChangeModel.tag isEqualToString:ZegoDocsSeviceAlphaEnv]) {
+        [[ZegoLocalEnvManager shareManager] setupDocsSeviceAlphaEnv:[valueChangeModel.value boolValue]];
     }
 }
 

@@ -245,7 +245,7 @@
 
 - (void)handleEventOperationMode:(ZegoCommonCellModel *)model {
     NSInteger currentMode = 0;
-    for (int i = 0; i < model.options.count; i++) {
+    for (int i = 0; i < 4; i++) {
         ZegoCellOptionModel *optionModel = model.options[i];
         BOOL result = [optionModel.value boolValue];
         if (result) {
@@ -261,6 +261,17 @@
     DLog(@"EventHandler>>> handleEventOperationMode:%ld",(long)currentMode);
 
     [[ZegoBoardOperationManager shareManager] setupWhiteboardOperationMode:currentMode];
+    
+    ZegoCellOptionModel *optionModel4 = model.options[4];
+    
+    [[ZegoBoardServiceManager shareManager] setEnableRecvFromRoomScale:[optionModel4.value boolValue]];
+    
+    ZegoCellOptionModel *optionModel5 = model.options[5];
+    [[ZegoBoardServiceManager shareManager] setEnableSendToRoomScale:[optionModel5.value boolValue]];
+    
+    ZegoCellOptionModel *optionModel6 = model.options[6];
+    [[ZegoBoardServiceManager shareManager] setEnableHandWriting:[optionModel6.value boolValue]];
+    
 }
 
 - (void)handleFileOperationWithModel:(ZegoCommonCellModel *)model {
@@ -558,6 +569,10 @@
 
 - (void)uploadFileWithUrl:(NSURL *)url renderType:(ZegoDocsViewRenderType)type
 {
+    if (_customH5Page == 0 && type == ZegoDocsViewRenderTypeCustomH5) {
+        [ZegoProgessHUD showTipMessage:@"未填写文件页数,无法上传"];
+        return;
+    }
     [url startAccessingSecurityScopedResource];
     __weak typeof(self) weakSelf = self;
     ZegoProgessHUD *hudView = [[ZegoProgessHUD alloc] initWithTitle:@"上传中..." cancelBlock:^{
@@ -575,7 +590,7 @@
         } else {
             config.width = 960;
             config.height = 540;
-            config.pageCount = 5;
+            config.pageCount = _customH5Page;
         }
         self.currentUploadSeq = [[ZegoDocsViewManager sharedInstance] uploadH5File:url.path config:config completionBlock:^(ZegoDocsViewUploadState state, ZegoDocsViewError errorCode, NSDictionary * _Nonnull infoDictionary) {
             if (errorCode == ZegoDocsViewSuccess) {
@@ -715,10 +730,19 @@
         __weak typeof(self) weakSelf = self;
         [fileCoordinator coordinateReadingItemAtURL:url options:0 error:&error byAccessor:^(NSURL *newURL) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (strongSelf.documentSelectorBlock) {
-                strongSelf.documentSelectorBlock(newURL);
-                strongSelf.documentSelectorBlock = nil;
+            if ([[newURL pathExtension] isEqual:@"HEIC"]) {
+                NSString *fileUrl = [strongSelf conversionFormat:newURL];
+                if (strongSelf.documentSelectorBlock) {
+                    strongSelf.documentSelectorBlock([NSURL URLWithString:fileUrl]);
+                    strongSelf.documentSelectorBlock = nil;
+                }
+            } else {
+                if (strongSelf.documentSelectorBlock) {
+                    strongSelf.documentSelectorBlock(newURL);
+                    strongSelf.documentSelectorBlock = nil;
+                }
             }
+            
         }];
         if (error) {
             [url stopAccessingSecurityScopedResource];
@@ -727,6 +751,43 @@
         NSLog(@"--- no permission ---");
     }
 }
+
+- (NSString *)conversionFormat:(NSURL *)fileUrl {
+    NSData *imageData = [NSData dataWithContentsOfURL:fileUrl];
+    CIImage *ciImage = [CIImage imageWithData:imageData];
+    CIContext *context = [CIContext context];
+    NSData *jpgData = [context JPEGRepresentationOfImage:ciImage colorSpace:ciImage.colorSpace options:@{}];
+    return [self writeToFile:jpgData];
+}
+
+- (NSString *)writeToFile:(NSData *)imageData {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *document = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *folder = [document stringByAppendingPathComponent:@"imageFolder"];
+
+    if (![fileManager fileExistsAtPath:folder]) {
+
+        BOOL createFolder= [fileManager createDirectoryAtPath:folder withIntermediateDirectories:NO attributes:nil error:NULL];
+        if (createFolder) {
+            NSLog(@"createFolder suc");
+        } else {
+            NSLog(@"createFolder fail");
+        }
+    
+    } else {
+
+    }
+    
+    NSString *filePath = [folder stringByAppendingString:@"/demoImage.jpg"];
+    
+    BOOL result = [imageData writeToFile:filePath atomically:YES];
+    if (result) {
+        return filePath;
+    }  else {
+        return nil;
+    }
+}
+
 
 - (void)documentPickerWasCancelled:(UIDocumentPickerViewController *)controller {
     NSLog(@"--- cancel ---");

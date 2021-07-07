@@ -24,7 +24,13 @@
         _roomID = [[NSUserDefaults standardUserDefaults] valueForKey:ZegoLoginRoomID];
         _roomSeviceTestEnv = [[NSUserDefaults standardUserDefaults] boolForKey:ZegoRoomSeviceTestEnv];
         _docsSeviceTestEnv = [[NSUserDefaults standardUserDefaults] boolForKey:ZegoDocsSeviceTestEnv];
+        _docsSeviceAlphaEnv = [[NSUserDefaults standardUserDefaults] boolForKey:ZegoDocsSeviceAlphaEnv];
         _enableCutomFont = [[NSUserDefaults standardUserDefaults] boolForKey:ZegoEnableCustomFont];
+        _pptThumbnailClarity = [[NSUserDefaults standardUserDefaults] objectForKey:ZegoEnableCustomFont];
+        if (_pptThumbnailClarity.integerValue < 1) {
+            _pptThumbnailClarity = @"1";
+            
+        }
         DLog(@"LocalEnvInit,userName:%@,roomID:%@,docsServiceTextEnv:%d,roomServiceTextEnv:%d,customFont:%d",_userName,_roomID,_docsSeviceTestEnv,_roomSeviceTestEnv,_enableCutomFont);
     }
     return self;
@@ -43,6 +49,12 @@
     DLog(@"settingDocsSeviceTestEnv,result:%d",env?1:0);
 }
 
+- (void)setupDocsSeviceAlphaEnv:(BOOL)env {
+    _docsSeviceAlphaEnv = env;
+    [[NSUserDefaults standardUserDefaults] setBool:env forKey:ZegoDocsSeviceAlphaEnv];
+    DLog(@"setupDocsSeviceAlphaEnv,result:%d",env?1:0);
+}
+
 - (void)setupCurrentUserName:(NSString *)userName roomID:(NSString *)roomID {
     _userName = userName;
     _roomID = roomID;
@@ -55,6 +67,12 @@
     _enableCutomFont = enable;
     [[NSUserDefaults standardUserDefaults] setBool:enable forKey:ZegoEnableCustomFont];
     DLog(@"settingCustomFont,result:%d",enable?1:0);
+}
+
+- (void)setupThumbnailClarity:(NSString *)clarityValue {
+    _pptThumbnailClarity = clarityValue;
+    [[NSUserDefaults standardUserDefaults] setObject:clarityValue forKey:ZegoPPTThumbnailClarity];
+    DLog(@"setupThumbnailClarity,result:%@",clarityValue);
 }
 
 - (unsigned int)appID {

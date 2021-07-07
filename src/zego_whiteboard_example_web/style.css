@@ -3,6 +3,27 @@
   src: url('./lib/SourceHanSansSC-Regular.otf');
   /*Firefox, Chrome, Safari, Opera*/
 }
+body {
+  font-size: 12px !important;
+}
+
+.login_container {
+  overflow: hidden;
+}
+.whiteboard_container,
+.ele_btn_file,
+.ele_btns_cache {
+  display: none;
+}
+.mobile_bottom_container {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 4px;
+}
 
 .bg-f2 {
   background-color: #f8f9fa;
@@ -20,6 +41,7 @@
 .top-bar {
   background-color: #fff;
   border-bottom: 1px solid #cccccc;
+  margin: 1rem 0;
 }
 
 .main-container {
@@ -28,6 +50,11 @@
   display: flex;
   flex-direction: column;
   padding: 0 16px;
+}
+.main-container_full {
+  flex: 1 !important;
+  max-width: 100% !important;
+  padding: 0 !important;
 }
 
 .panel-container {
@@ -49,19 +76,23 @@
   overflow-x: hidden;
   overflow-y: scroll;
 }
+
 .whiteboard-box {
   flex: 1;
-  margin: 16px 0;
 }
 
 .whiteboard-area {
   position: relative;
   margin: 0 auto;
-  width: 640px;
-  height: 360px;
+  width: 60vw;
+  height: 33.75vw;
   border: 1px dashed #ddd;
   background-color: aliceblue;
   transition: width 0.1s, height 0.1s;
+}
+.whiteboard-area_full {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .thumbnail {
@@ -95,28 +126,35 @@
   border: 1px dashed #ccc;
   margin: 15px 0;
 }
+
 .row.drawBox {
   margin: 15px 0 !important;
 }
+
 #flipPage {
-  max-width: 88px;
+  max-width: 46px;
 }
+
 .error-toast {
-  z-index: 5;
+  z-index: 100;
   left: 50%;
   top: 0;
   transform: translate(-50%, 0);
 }
+
 .toast {
   background-color: #444;
 }
+
 .toast-body {
   padding: 10px;
   border-radius: 4px;
   font-size: 12px;
   color: #fff;
 }
-.menu-btn {
+
+.menu-btn,
+.menu-mask {
   display: none;
 }
 
@@ -133,49 +171,42 @@
   overflow-y: scroll;
 }
 
-@media screen and (orientation: landscape) {
-  body {
-    font-size: 12px;
-  }
-}
-
-@media screen and (orientation: portrait) and (max-width: 720px) {
-  body {
-    font-size: 12px;
-  }
-}
-@media screen and (orientation: portrait) and (min-width: 575px) {
-  .operation-container {
-    display: block;
-  }
-}
 @media screen and (orientation: portrait) and (max-width: 575px) {
-  .menu-btn {
-    display: block;
+  .menu-mask {
     position: fixed;
     top: 0;
+    bottom: 0;
+    left: 0;
     right: 0;
-    z-index: 99999;
+    z-index: 10;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  .menu-btn {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 100;
   }
   .operation-container {
     display: none;
-    position: fixed;
+    position: absolute;
     top: 0;
-    top: 0;
-    right: 0;
     bottom: 0;
-    width: 75%;
-    z-index: 999;
-    background-color: #fff;
-    border: 1px solid #cccccc;
-  }
-  .operation-container-nav {
+    right: 0;
     width: 80%;
+    z-index: 99;
+    background-color: #fff;
+  }
+  .whiteboard-area {
+    width: 90vw;
+    height: 50.625vw;
   }
 }
 
-.room-id {
+#leaveRoom {
   border: none;
+  cursor: pointer;
 }
 
 .whiteboard-page {
@@ -185,7 +216,23 @@
   padding-left: 0;
   padding-right: 0;
 }
+.whiteboard-step {
+  width: 30px;
+  text-align: center;
+  line-height: 1.25;
+  padding-left: 0;
+  padding-right: 0;
+}
+
 .nav-tabs .nav-link {
-  padding: 0.5rem;
+  padding: 0.5rem 0.3rem;
   border: none;
+}
+
+.vc-switch {
+  bottom: 0 !important;
+}
+
+.btn {
+  font-size: 12px !important;
 }

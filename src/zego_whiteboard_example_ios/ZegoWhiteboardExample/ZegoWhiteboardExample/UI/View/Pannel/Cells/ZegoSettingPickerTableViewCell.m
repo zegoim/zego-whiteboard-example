@@ -94,7 +94,7 @@
     [self.titleLable mas_makeConstraints:^(MASConstraintMaker *make) {
         make.leading.equalTo(self.contentView).offset(margin);
         make.centerY.equalTo(self.contentView);
-        make.width.mas_equalTo(60);
+        make.width.mas_equalTo(100);
     }];
     
     [self.lineView mas_makeConstraints:^(MASConstraintMaker *make) {

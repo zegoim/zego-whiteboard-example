@@ -12,12 +12,11 @@ import android.widget.TextView
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import im.zego.zegowhiteboard.model.ZegoWhiteboardViewModel
 import im.zego.whiteboardexample.R
-import im.zego.whiteboardexample.util.Logger
 import im.zego.whiteboardexample.util.dp2px
 import im.zego.whiteboardexample.widget.OnRecyclerViewItemTouchListener
 import im.zego.whiteboardexample.widget.dialog.ZegoDialog
+import im.zego.zegowhiteboard.model.ZegoWhiteboardViewModel
 import kotlinx.android.synthetic.main.layout_drawer_right.view.*
 
 class WhiteboardListView : RelativeLayout {
@@ -99,7 +98,6 @@ class WhiteboardListView : RelativeLayout {
     }
 
     fun addWhiteboard(zegoWhiteboardViewModel: ZegoWhiteboardViewModel) {
-        Logger.i(TAG, "addWhiteboard,${zegoWhiteboardViewModel.whiteboardID}")
         if (whiteboardListAdapter.add(zegoWhiteboardViewModel)) {
             whiteboardListAdapter.sortList()
             whiteboardListAdapter.notifyDataSetChanged()
@@ -124,7 +122,6 @@ class WhiteboardListView : RelativeLayout {
     }
 
     fun removeWhiteboard(whiteboardID: Long) {
-        Logger.i(TAG, "removeWhiteboard,${whiteboardID}")
         val selected = whiteboardListAdapter.selectedWhiteboardID
         if (whiteboardListAdapter.remove(whiteboardID)) {
             setSelectedWhiteboard(selected)
@@ -151,7 +148,7 @@ class WhiteboardListView : RelativeLayout {
 
 class WhiteboardListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var list: MutableList<ZegoWhiteboardViewModel> = mutableListOf()
-    var selectedPosition = 0
+    var selectedWhiteboardID = -1L
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val view: View =
@@ -167,8 +164,10 @@ class WhiteboardListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val nameTextView = holder.itemView.findViewById<TextView>(R.id.item_name)
-        nameTextView.text = list[position].name
-        nameTextView.isSelected = selectedPosition == position
+        val model = list[position]
+        nameTextView.text = model.name
+
+        nameTextView.isSelected = (model.whiteboardID == selectedWhiteboardID)
     }
 
     fun add(zegoWhiteboardViewModel: ZegoWhiteboardViewModel): Boolean {
@@ -181,16 +180,6 @@ class WhiteboardListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             false
         }
     }
-
-    var selectedWhiteboardID: Long
-        set(value) {
-            val indexOfFirst = list.indexOfFirst { it.whiteboardID == value }
-            selectedPosition = indexOfFirst
-        }
-        get() {
-            val listData = getListData(selectedPosition)
-            return listData?.whiteboardID ?: -1
-        }
 
     fun remove(whiteboardID: Long): Boolean {
         var result = false

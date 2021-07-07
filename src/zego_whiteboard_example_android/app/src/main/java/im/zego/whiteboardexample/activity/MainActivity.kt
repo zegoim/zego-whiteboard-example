@@ -155,7 +155,7 @@ class MainActivity : BaseActivity() {
                 }
             }
         }
-        container.setWhiteboardReloadFinishListener {
+        container.setWhiteboardSizeChangedListener {
             refreshUI()
         }
         // 初始化右边绘制部分点击事件
@@ -190,29 +190,46 @@ class MainActivity : BaseActivity() {
 //            selectOpModePopWindow.show(draw_whiteboard_mode,Gravity.BOTTOM)
 //        }
         mode_none.setOnCheckedChangeListener { buttonView, isChecked ->
-            setHolderOperationMode()
+            checkOperationModeValid(mode_none)
         }
         mode_scale.setOnCheckedChangeListener { buttonView, isChecked ->
-            setHolderOperationMode()
+            checkOperationModeValid(mode_scale)
         }
         mode_scroll.setOnCheckedChangeListener { buttonView, isChecked ->
-            setHolderOperationMode()
+            checkOperationModeValid(mode_scroll)
         }
         mode_draw.setOnCheckedChangeListener { buttonView, isChecked ->
-            setHolderOperationMode()
+            checkOperationModeValid(mode_draw)
         }
+        mode_send_sync_scale.setOnCheckedChangeListener { buttonView, isChecked ->
+            ZegoWhiteboardManager.getInstance().enableSyncScale(isChecked)
+        }
+        mode_receive_sync_scale.setOnCheckedChangeListener { buttonView, isChecked ->
+            ZegoWhiteboardManager.getInstance().enableResponseScale(isChecked)
+        }
+
         mode_none.isChecked = false
         mode_scale.isChecked = true
         mode_scroll.isChecked = false
         mode_draw.isChecked = true
+        mode_send_sync_scale.isChecked = ZegoWhiteboardManager.getInstance().isEnableSyncScale
+        mode_receive_sync_scale.isChecked =
+            ZegoWhiteboardManager.getInstance().isEnableResponseScale
 
         // 关闭/开启粗体
-        text_style_bold.setOnCheckedChangeListener { _, b ->
-            ZegoWhiteboardManager.getInstance().isFontBold = b
+        text_style_bold.setOnCheckedChangeListener { _, isChecked ->
+            ZegoWhiteboardManager.getInstance().isFontBold = isChecked
         }
         // 关闭/开启斜体
-        text_style_italic.setOnCheckedChangeListener { _, b ->
-            ZegoWhiteboardManager.getInstance().isFontItalic = b
+        text_style_italic.setOnCheckedChangeListener { _, isChecked ->
+            ZegoWhiteboardManager.getInstance().isFontItalic = isChecked
+        }
+
+//        ZegoWhiteboardManager.getInstance().enableHandWriting(true)
+//        ZegoWhiteboardManager.getInstance().brushSize = 48
+        handwriting.isChecked = ZegoWhiteboardManager.getInstance().isHandwritingEnabled
+        handwriting.setOnCheckedChangeListener { _, isChecked ->
+            ZegoWhiteboardManager.getInstance().enableHandwriting(isChecked)
         }
         // 颜色
         draw_color_recyclerview.let {
@@ -239,7 +256,7 @@ class MainActivity : BaseActivity() {
                     SelectGraffitiToolsPopWindow(
                         this,
                         draw_graffiti_tools_tv.text.toString(),
-                        it.isDisplayedByWebView()
+                        it.isSupportClickTool()
                     )
                 selectGraffitiToolsPopWindow!!.setOnConfirmClickListener { str ->
                     draw_graffiti_tools_tv.text = str
@@ -496,25 +513,25 @@ class MainActivity : BaseActivity() {
 
         // 清空当前页
         draw_empty_current_page_btn.setOnClickListener {
-            currentHolder?.clearCurrentPage { p0 ->
-                if (p0 != 0) {
-                    ToastUtils.showCenterToast("errorCode:$p0")
+            currentHolder?.clearCurrentPage { errorCode ->
+                if (errorCode != 0) {
+                    ToastUtils.showCenterToast("errorCode:$errorCode")
                 }
             }
         }
         // 清空所有页
         draw_empty_all_page_btn.setOnClickListener {
-            currentHolder?.clear { p0 ->
-                if (p0 != 0) {
-                    ToastUtils.showCenterToast("errorCode:$p0")
+            currentHolder?.clearAllPage { errorCode ->
+                if (errorCode != 0) {
+                    ToastUtils.showCenterToast("errorCode:$errorCode")
                 }
             }
         }
         // 删除选中图元
         draw_delete_selected_graphics_btn.setOnClickListener {
-            currentHolder?.deleteSelectedGraphics { p0 ->
-                if (p0 != 0) {
-                    ToastUtils.showCenterToast("errorCode:$p0")
+            currentHolder?.clearSelected { errorCode ->
+                if (errorCode != 0) {
+                    ToastUtils.showCenterToast("errorCode:$errorCode")
                 }
             }
         }
@@ -543,8 +560,8 @@ class MainActivity : BaseActivity() {
                     draw_text_content_et.text.toString(),
                     x.toInt(),
                     y.toInt()
-                ) { p0 ->
-                    ToastUtils.showCenterToast("errorCode:$p0")
+                ) { errorCode ->
+                    ToastUtils.showCenterToast("errorCode:$errorCode")
                 }
                 draw_graffiti_tools_tv.text = getString(R.string.draw_graffiti_tools_selector)
                 unSelectOtherChild(getString(R.string.draw_graffiti_tools_selector))
@@ -562,15 +579,66 @@ class MainActivity : BaseActivity() {
         })
     }
 
-    private fun setHolderOperationMode() {
-        val noneMode =
+    private var checkModeToast: String = ""
+    private fun checkOperationModeValid(sender: View) {
+        var noneMode =
             if (mode_none.isChecked) ZegoWhiteboardConstants.ZegoWhiteboardOperationModeNone else 0
-        val scaleMode =
+        var scaleMode =
             if (mode_scale.isChecked) ZegoWhiteboardConstants.ZegoWhiteboardOperationModeZoom else 0
-        val scrollMode =
+        var scrollMode =
             if (mode_scroll.isChecked) ZegoWhiteboardConstants.ZegoWhiteboardOperationModeScroll else 0
-        val drawMode =
+        var drawMode =
             if (mode_draw.isChecked) ZegoWhiteboardConstants.ZegoWhiteboardOperationModeDraw else 0
+
+        if (noneMode > 0 && (scaleMode or scrollMode or drawMode) > 0) {
+            checkModeToast = getString(R.string.mode_none_conflicted_with_mode_other)
+            if (mode_scale.isChecked) {
+                mode_scale.isChecked = false
+                // 当sender不是当前控件时，setChecked操作会触发setOnCheckedChangeListener，引发当前函数重入
+                // 此时通过return避免后续代码被多次执行
+                if (sender != mode_scale) {
+                    return
+                }
+            }
+            if (mode_scroll.isChecked) {
+                mode_scroll.isChecked = false
+                if (sender != mode_scroll) {
+                    return
+                }
+            }
+            if (mode_draw.isChecked) {
+                mode_draw.isChecked = false
+                if (sender != mode_draw) {
+                    return
+                }
+            }
+        }
+
+        if (scrollMode > 0 && drawMode > 0) {
+            checkModeToast = getString(R.string.mode_scroll_conflicted_with_mode_draw)
+            if (mode_draw.isChecked) {
+                mode_draw.isChecked = false
+                if (sender != mode_draw) {
+                    return
+                }
+            }
+        }
+
+        if (checkModeToast.isNotBlank()) {
+            ToastUtils.showCenterToast(checkModeToast)
+            checkModeToast = ""
+        }
+
+        // 由于return并非覆盖所有路径，所以这里需要重新获取mode状态
+        noneMode =
+            if (mode_none.isChecked) ZegoWhiteboardConstants.ZegoWhiteboardOperationModeNone else 0
+        scaleMode =
+            if (mode_scale.isChecked) ZegoWhiteboardConstants.ZegoWhiteboardOperationModeZoom else 0
+        scrollMode =
+            if (mode_scroll.isChecked) ZegoWhiteboardConstants.ZegoWhiteboardOperationModeScroll else 0
+        drawMode =
+            if (mode_draw.isChecked) ZegoWhiteboardConstants.ZegoWhiteboardOperationModeDraw else 0
+
         val mode = noneMode or scaleMode or scrollMode or drawMode
         currentHolder?.setOperationMode(mode)
         currentOpMode = mode
@@ -631,9 +699,9 @@ class MainActivity : BaseActivity() {
         currentHolder?.setDocsScaleEnable(it != getString(R.string.draw_graffiti_tools_click))
         when (it) {
             getString(R.string.draw_graffiti_tools_text) -> {
-                currentHolder?.addTextEdit { p0 ->
-                    if (p0 != 0) {
-                        ToastUtils.showCenterToast("errorCode:$p0")
+                currentHolder?.inputText { errorCode ->
+                    if (errorCode != 0) {
+                        ToastUtils.showCenterToast("errorCode:$errorCode")
                     } else {
                         draw_graffiti_tools_tv.text =
                             getString(R.string.draw_graffiti_tools_selector)
@@ -675,7 +743,7 @@ class MainActivity : BaseActivity() {
                 return@setOnClickListener
             }
 
-            currentHolder?.resizeLayout(Size(width, height))
+            resizeCurrentHolderLayout(width, height)
         }
 
         setting_upload_log.setOnClickListener {
@@ -693,7 +761,7 @@ class MainActivity : BaseActivity() {
             )
 
             currentHolder?.let {
-                if (it.currentWhiteboardSize == Size(0, 0)) {
+                if (it.getVisibleSize() == Size(0, 0)) {
                     current_whiteboard_container_tv.text = String.format(
                         resources.getString(R.string.whiteboard_current_container),
                         container.width,
@@ -712,8 +780,8 @@ class MainActivity : BaseActivity() {
                     )
                     current_whiteboard_size_tv.text = String.format(
                         resources.getString(R.string.whiteboard_current_size),
-                        it.currentWhiteboardSize.width,
-                        it.currentWhiteboardSize.height
+                        it.getVisibleSize().width,
+                        it.getVisibleSize().height
                     )
                 }
             }
@@ -866,7 +934,7 @@ class MainActivity : BaseActivity() {
                 this,
                 fileId
             ) { errorCode: Int, state: Int, uploadPercent: Float ->
-                Logger.i(
+                AppLogger.i(
                     TAG,
                     "MainActivity cacheFile(fileID):${fileId}, state: $state, errorCode: $errorCode"
                 )
@@ -927,7 +995,7 @@ class MainActivity : BaseActivity() {
 
         load_file_id.setOnClickListener {
             val fileId = cache_url_et.text.toString()
-            if (fileId.isNullOrBlank()) {
+            if (fileId.isBlank()) {
                 ToastUtils.showCenterToast(getString(R.string.docs_cache_file_id_null))
                 return@setOnClickListener
             }
@@ -1104,7 +1172,7 @@ class MainActivity : BaseActivity() {
     private fun loadDocsFile(fileID: String) {
         // 创建文件白板
         container.createFileWhiteBoardView(fileID) { errorCode, holder ->
-            Logger.i(TAG, "createFileWhiteBoardView errorCode:$errorCode")
+            AppLogger.i(TAG, "createFileWhiteBoardView errorCode:$errorCode")
             if (errorCode == 0) {
                 // 创建成功，添加白板
                 drawer_whiteboard_list.addWhiteboard(holder.getCurrentWhiteboardModel())
@@ -1118,7 +1186,8 @@ class MainActivity : BaseActivity() {
      */
     private fun initTopLayout() {
         // 设置 Title
-        main_top_room_name.text = getString(R.string.class_title, CONFERENCE_ID)
+        main_top_room_name.text =
+            getString(R.string.class_title, SharedPreferencesUtil.getLastJoinID())
         // 退出课堂
         main_top_exit_btn.setOnClickListener { showExitClassDialog() }
         // 白板名称
@@ -1127,9 +1196,9 @@ class MainActivity : BaseActivity() {
         }
         // Excel 表格页名称
         main_top_sheet_name.setOnClickListener {
-            showRightDrawer(drawer_excel_list)
+            showRightDrawer(drawer_excelsheet_list)
             currentHolder?.let { holder ->
-                drawer_excel_list.updateList(holder.getExcelSheetNameList())
+                drawer_excelsheet_list.updateList(holder.getExcelSheetNameList())
             }
         }
         // 上一页
@@ -1189,11 +1258,9 @@ class MainActivity : BaseActivity() {
             }
             lastClickStepChangeTime = System.currentTimeMillis()
             currentHolder?.let {
-                if (isScrollAuthorized) {
-                    currentHolder?.previousStep {
-                        if (it != 0) {
-                            ToastUtils.showCenterToast("errorCode:$it")
-                        }
+                currentHolder?.previousStep {
+                    if (it != 0) {
+                        ToastUtils.showCenterToast("errorCode:$it")
                     }
                 }
             }
@@ -1205,11 +1272,9 @@ class MainActivity : BaseActivity() {
             }
             lastClickStepChangeTime = System.currentTimeMillis()
             currentHolder?.let {
-                if (isScrollAuthorized) {
-                    currentHolder?.nextStep {
-                        if (it != 0) {
-                            ToastUtils.showCenterToast("errorCode:$it")
-                        }
+                currentHolder?.nextStep {
+                    if (it != 0) {
+                        ToastUtils.showCenterToast("errorCode:$it")
                     }
                 }
             }
@@ -1275,10 +1340,17 @@ class MainActivity : BaseActivity() {
         }
 
         // 已打开的 Excel 文件 Sheet 列表
-        drawer_excel_list.setExcelClickedListener {
+        drawer_excelsheet_list.setExcelClickedListener {
             currentHolder?.let { holder ->
                 layout_main_drawer.closeDrawer(GravityCompat.END)
-                holder.selectExcelSheet(it) { name, whiteboardID ->
+                holder.switchExcelSheet(it) { name, whiteboardID ->
+                    mode_none.isChecked = false
+                    mode_scroll.isChecked = false
+                    mode_draw.isChecked = true
+                    mode_scale.isChecked = true
+
+                    holder.setOperationMode(ZegoWhiteboardConstants.ZegoWhiteboardOperationModeDraw xor ZegoWhiteboardConstants.ZegoWhiteboardOperationModeZoom)
+
                     main_top_sheet_name.text = name
                     container.selectWhiteboardViewHolder(whiteboardID)
                 }
@@ -1343,7 +1415,7 @@ class MainActivity : BaseActivity() {
             object : IZegoWhiteboardManagerListener {
                 override fun onWhiteboardAdded(zegoWhiteboardView: ZegoWhiteboardView) {
                     val model = zegoWhiteboardView.whiteboardViewModel
-                    Logger.i(TAG, "onWhiteboardAdded:${model.name}")
+                    AppLogger.i(TAG, "onWhiteboardAdded:${model.name}")
                     if (getListFinished) {
                         container.onReceiveWhiteboardView(zegoWhiteboardView) { errorCode, newHolder, holder ->
                             // 不管创建和加载是否成功，都要显示出来
@@ -1405,24 +1477,24 @@ class MainActivity : BaseActivity() {
             }
 
             setWhiteboardSelectListener {
-                Logger.i(TAG, "container onWhiteboardSelectListener,${it}")
+                AppLogger.i(TAG, "container onWhiteboardSelectListener,${it}")
                 val holder = container.getWhiteboardViewHolder(it)!!
                 onWhiteboardHolderSelected(holder)
                 updatePreviewRelations()
             }
 
-            setWhiteboardScrollListener { currentPage: Int, pageCount: Int ->
-                Logger.i(
+            setWhiteboardScrollListener { whiteboardID: Long, currentPage: Int, pageCount: Int ->
+                AppLogger.i(
                     TAG,
                     "setWhiteboardScrollListener(),currentPage:${currentPage},pageCount:${pageCount}, ${currentHolder?.getCurrentPage()}"
                 )
-                currentHolder?.let { _ ->
-                    main_page_index.text =
-                        "%s/%s".format(currentPage.toString(), pageCount.toString())
-                    docs_preview_list.setSelectedPage(currentPage - 1)
+                currentHolder?.let {
+                    if (whiteboardID == it.currentWhiteboardID) {
+                        main_page_index.text =
+                            "%s/%s".format(currentPage.toString(), pageCount.toString())
+                        docs_preview_list.setSelectedPage(currentPage - 1)
+                    }
                 }
-
-
             }
 
         }
@@ -1442,7 +1514,7 @@ class MainActivity : BaseActivity() {
     private fun onWhiteboardHolderSelected(holder: ZegoWhiteboardViewHolder) {
         Log.d(
             TAG,
-            "onWhiteboardHolderSelected() called with: holder = $holder,currentHolder:$currentHolder"
+            "onWhiteboardHolderSelected() called with: holder = ${holder.getCurrentWhiteboardName()},currentHolder:$currentHolder"
         )
         val holderChanged = currentHolder != holder
         // onResume 触发的重复设置不再更新，主要是控件的状态不要重置为默认状态。
@@ -1460,17 +1532,16 @@ class MainActivity : BaseActivity() {
             main_page_index.text = ""
         }
 
-        Logger.i(TAG, "holder.isExcel():${holder.isExcel()}")
         if (holder.isExcel()) {
-            main_top_sheet_name.text = holder.getCurrentWhiteboardModel().fileInfo.fileName
+            AppLogger.i(TAG, "holder.isExcel():${holder.isExcel()}")
+            main_top_sheet_name.text = holder.getCurrentSheetName()
         }
 
         main_top_sheet_name.visibility = if (holder.isExcel()) View.VISIBLE else View.GONE
-        main_top_jump_page_layout.visibility =
-            if (holder.isExcel()) View.GONE else View.VISIBLE
+        main_top_jump_page_layout.visibility = if (holder.isExcel()) View.GONE else View.VISIBLE
         main_top_page_layout.visibility = if (holder.isExcel()) View.GONE else View.VISIBLE
         main_top_step_layout.visibility =
-            if (holder.isDisplayedByWebView()) View.VISIBLE else View.GONE
+            if (holder.isSupportStepControl()) View.VISIBLE else View.GONE
 
         if (holderChanged) {
             mode_none.isChecked = false
@@ -1569,7 +1640,7 @@ class MainActivity : BaseActivity() {
      */
     private fun requestWhiteboardList() {
         WhiteboardSDKManager.getWhiteboardViewList { errorCode, whiteboardViewList ->
-            Logger.i(
+            AppLogger.i(
                 TAG,
                 "requestWhiteboardList:errorCode;$errorCode,whiteboardViewList:${whiteboardViewList.size}"
             )
@@ -1587,7 +1658,7 @@ class MainActivity : BaseActivity() {
                 } else {
                     val list = mutableListOf<ZegoWhiteboardView>()
                     list.addAll(whiteboardViewList)
-                    Logger.d(TAG, "tempWbList.size:${tempWbList.size}")
+                    AppLogger.d(TAG, "tempWbList.size:${tempWbList.size}")
                     tempWbList.forEach {
                         val tempWhiteboardID = it.whiteboardViewModel.whiteboardID
                         val firstOrNull = list.firstOrNull { item ->
@@ -1596,7 +1667,7 @@ class MainActivity : BaseActivity() {
                         if (firstOrNull == null) {
                             list.add(it)
                         } else {
-                            Logger.i(TAG, "already added :${it.whiteboardViewModel.name}")
+                            AppLogger.i(TAG, "already added :${it.whiteboardViewModel.name}")
                         }
                     }
                     tempWbList.clear()
@@ -1622,12 +1693,12 @@ class MainActivity : BaseActivity() {
                             currentHolder?.let {
                                 onWhiteboardHolderSelected(it)
                             }
-                            Logger.i(
+                            AppLogger.i(
                                 TAG,
                                 "process Enter List finished,resultCode = $resultCode,holderList:${holderList.size}"
                             )
                         } else {
-                            Logger.i(TAG, "process Enter List finished,resultCode = $resultCode")
+                            AppLogger.i(TAG, "process Enter List finished,resultCode = $resultCode")
                         }
                     }
 
@@ -1697,11 +1768,9 @@ class MainActivity : BaseActivity() {
         mainTopLayoutParams.leftToLeft = 0
         main_top_layout.layoutParams = mainTopLayoutParams
 
-        currentHolder?.resizeLayout(
-            Size(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
+        resizeCurrentHolderLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
         )
     }
 
@@ -1738,13 +1807,20 @@ class MainActivity : BaseActivity() {
         mainTopLayoutParams.leftToLeft = 0
         main_top_layout.layoutParams = mainTopLayoutParams
 
-        currentHolder?.resizeLayout(
-            Size(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
+        resizeCurrentHolderLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
         )
-
     }
 
+    private fun resizeCurrentHolderLayout(width: Int, height: Int) {
+        if (currentHolder == null) {
+            return
+        }
+
+        val layoutParam = currentHolder!!.layoutParams
+        layoutParam.width = width
+        layoutParam.height = height
+        currentHolder!!.layoutParams = layoutParam
+    }
 }

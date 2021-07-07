@@ -22,11 +22,12 @@ class ExampleApplication : Application() {
         CrashHandler.setAppContext(this)
         ZegoSDKManager.initSDKEnvironment(this, object : SDKInitCallback {
             override fun onInit(success: Boolean) {
-                Logger.i(TAG, "onInit() result: $success")
+                AppLogger.i(TAG, "onInit() result: $success")
             }
         })
-
-        if (ZegoUtil.isAppTooOld(ZegoDocsViewManager.getInstance().version, VersionConstants.DOCS_SDK) || ZegoUtil.isAppTooOld(ZegoWhiteboardManager.getInstance().version, VersionConstants.WHITEBOARD_SDK)) {
+        val isAppTooOldForDocs = ZegoUtil.isAppTooOld(ZegoDocsViewManager.getInstance().version, VersionConstants.DOCS_SDK)
+        val isAppTooOldForWhiteboard = ZegoUtil.isAppTooOld(ZegoWhiteboardManager.getInstance().version, VersionConstants.WHITEBOARD_SDK)
+        if (isAppTooOldForDocs || isAppTooOldForWhiteboard) {
             ToastUtils.showCenterToast(R.string.app_version_warning, Toast.LENGTH_LONG)
         }
     }
