@@ -28,7 +28,7 @@
                 android:layout_height="match_parent" />
 
             <im.zego.whiteboardexample.widget.drawerlayout.FileExcelView
-                android:id="@+id/drawer_excel_list"
+                android:id="@+id/drawer_excelsheet_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 

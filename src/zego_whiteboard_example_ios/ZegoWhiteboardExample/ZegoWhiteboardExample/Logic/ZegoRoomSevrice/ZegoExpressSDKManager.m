@@ -35,8 +35,12 @@
 - (void)initSDKWithDelegate:(nullable id<ZegoRoomSeviceClientDelegate>)delegate complementBlock:(void(^_Nullable)(NSInteger error))complementBlock{
     
     _delegate = delegate;
-    BOOL result = [ZegoLocalEnvManager shareManager].roomSeviceTestEnv;
-    self.api = [ZegoExpressEngine createEngineWithAppID:[ZegoLocalEnvManager shareManager].appID appSign:[ZegoLocalEnvManager shareManager].appSign isTestEnv:[ZegoLocalEnvManager shareManager].roomSeviceTestEnv scenario:2 eventHandler:self];
+    
+    ZegoEngineProfile *profile = [[ZegoEngineProfile alloc] init];
+    profile.appID = [ZegoLocalEnvManager shareManager].appID;
+    profile.appSign = [ZegoLocalEnvManager shareManager].appSign;
+    profile.scenario = 2;
+    self.api = [ZegoExpressEngine createEngineWithProfile:profile eventHandler:self];
     if (complementBlock) {
         complementBlock(0);
     }

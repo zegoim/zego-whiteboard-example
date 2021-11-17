@@ -309,7 +309,9 @@
     [docsView layoutIfNeeded];  //更新 visibleSize
     CGSize visibleSize = docsView.visibleSize;
     whiteboardView.frame = [self frameWithSize:visibleSize docsViewFrame:docsViewFrame];
-    whiteboardView.contentSize = docsView.contentSize;
+//    if (docsView.contentSize.width != 0 && docsView.contentSize.height != 0) {
+        whiteboardView.contentSize = docsView.contentSize;
+//    }
 }
 // 根据 docsView 的 frame 计算白板的 frame
 - (CGRect)frameWithSize:(CGSize)visibleSize docsViewFrame:(CGRect)frame {

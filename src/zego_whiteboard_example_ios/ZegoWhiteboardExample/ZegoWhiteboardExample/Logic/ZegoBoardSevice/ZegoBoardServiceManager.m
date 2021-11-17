@@ -50,17 +50,13 @@
             docsConfig.appID = [ZegoLocalEnvManager shareManager].appID;
             docsConfig.appSign = [ZGAppSignHelper convertAppSignStringFromString:[ZegoLocalEnvManager shareManager].appSign];
             strongSelf.docsManager = [ZegoDocsViewManager sharedInstance];
-            
-            if ([ZegoLocalEnvManager shareManager].docsSeviceAlphaEnv) {
-                //如果设置了alpha环境 就不会去设置测试环境和正式环境
-                [[ZegoBoardOperationManager shareManager] setAlphaEnv];
-            } else {
-                docsConfig.isTestEnv = [ZegoLocalEnvManager shareManager].docsSeviceTestEnv;
-            }
+
             
             [[ZegoBoardOperationManager shareManager] setupSetpAutoPaging:YES];
             
             [strongSelf setupThumbnailDefinition];
+            
+            [strongSelf setupUnloadVideo];
             
             [strongSelf.docsManager initWithConfig:docsConfig completionBlock:^(ZegoDocsViewError errorCode) {
                 DLog(@"localDocsViewManagerInitFinish,error:%lu",(unsigned long)errorCode);
@@ -83,8 +79,14 @@
 }
 
 - (void)setupThumbnailDefinition {
-    
     [self setupCustomConfig:[ZegoLocalEnvManager shareManager].pptThumbnailClarity key:@"thumbnailMode"];
+}
+
+- (void)setupUnloadVideo
+{
+    // ture 不加载  false 加载
+    NSString * str = [ZegoLocalEnvManager shareManager].isUnloadVideo ? @"true":@"false";
+    [self setupCustomConfig:str key:@"unloadVideoSrc"];
 }
 
 - (BOOL)setupCustomConfig:(NSString *)value key:(NSString *)key {

@@ -3,28 +3,33 @@
     <PreferenceCategory app:title="设置环境">
 
         <SwitchPreferenceCompat
-            app:key="video_env"
-            app:summaryOff="正式环境"
-            app:summaryOn="测试环境"
-            app:title="@string/live_room_title" />
-
-        <SwitchPreferenceCompat
-            app:key="docs_view_env"
-            app:summaryOff="正式环境"
-            app:summaryOn="测试环境"
-            app:title="@string/docs_view_title" />
-
-        <SwitchPreferenceCompat
+            app:defaultValue="true"
             app:key="next_step_flip_page"
             app:summaryOff="关闭"
             app:summaryOn="开启"
-            app:title="点击触发翻页" />
+            app:title="最后一步时点击触发翻页" />
 
         <SwitchPreferenceCompat
             app:key="text_style"
             app:summaryOff="思源黑体"
             app:summaryOn="系统字体"
-            app:title="字体类型"/>
+            app:title="字体类型" />
+
+        <SwitchPreferenceCompat
+            app:defaultValue="true"
+            app:key="load_video"
+            app:summaryOff="否"
+            app:summaryOn="是"
+            app:title="是否加载PPT视频资源" />
+
+        <ListPreference
+            app:defaultValue="1"
+            app:dialogTitle="缩略图清晰度"
+            app:entries="@array/thumbnail_clarity"
+            app:entryValues="@array/thumbnail_clarity_values"
+            app:key="key_thumbnail_clarity"
+            app:summary="普通"
+            app:title="缩略图清晰度" />
 
     </PreferenceCategory>
 

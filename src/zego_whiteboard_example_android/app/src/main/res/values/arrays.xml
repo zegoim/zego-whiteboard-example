@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--缩略图清晰度-->
+    <string-array name="thumbnail_clarity">
+        <item>普通</item>
+        <item>标清</item>
+        <item>高清</item>
+    </string-array>
+
+    <string-array name="thumbnail_clarity_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string-array name="docs_view_env">
+        <item>测试环境</item>
+        <item>正式环境</item>
+        <item>Alpha环境</item>
+    </string-array>
+
+    <string-array name="docs_view_env_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+</resources>

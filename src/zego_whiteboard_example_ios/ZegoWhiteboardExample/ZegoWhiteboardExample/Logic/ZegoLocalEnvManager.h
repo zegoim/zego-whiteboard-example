@@ -6,13 +6,12 @@
 //
 
 #import <Foundation/Foundation.h>
-#define ZegoRoomSeviceTestEnv @"ZegoRoomSeviceTestEnv"
-#define ZegoDocsSeviceTestEnv @"ZegoDocsSeviceTestEnv"
-#define ZegoDocsSeviceAlphaEnv @"ZegoDocsSeviceAlphaEnv"
 #define ZegoEnableCustomFont @"ZegoEnableCustomFont"
 #define ZegoPPTThumbnailClarity @"ZegoPPTThumbnailClarity"
 #define ZegoLoginUserName @"ZegoLoginUserName"
 #define ZegoLoginRoomID @"ZegoLoginRoomID"
+#define ZegoIsUnloadVideo @"ZegoIsUnloadVideo"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ZegoLocalEnvManager : NSObject
@@ -22,13 +21,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readonly) NSString *userName;
 @property (nonatomic, copy, readonly) NSString *userID;
 @property (nonatomic, copy, readonly) NSString *roomID;
-@property (nonatomic, assign, readonly) BOOL roomSeviceTestEnv;
-@property (nonatomic, assign, readonly) BOOL docsSeviceTestEnv;
-@property (nonatomic, assign, readonly) BOOL docsSeviceAlphaEnv;
 //是否使用自定义字体，即思源字体
 @property (nonatomic, assign, readonly) BOOL enableCutomFont;
 
 @property (nonatomic, copy, readonly) NSString *pptThumbnailClarity;
+
+//设置是否能够自动加载视频
+@property (nonatomic, assign, readonly) BOOL isUnloadVideo;
 
 + (instancetype)shareManager;
 
@@ -44,6 +43,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setupEnableCustomFont:(BOOL)enable;
 //设置上传文件缩略图的清晰度
 - (void)setupThumbnailClarity:(NSString *)clarityValue;
+//设置是否能够自动加载视频
+- (void)setupSetpUnLoadVideo:(BOOL )isUnloadVideo;
+
 @end
 
 NS_ASSUME_NONNULL_END

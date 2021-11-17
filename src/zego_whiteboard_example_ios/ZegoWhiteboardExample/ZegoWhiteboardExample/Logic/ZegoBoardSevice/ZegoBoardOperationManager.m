@@ -327,6 +327,7 @@
     DLog(@"BoardOperation>>> setupSetpAutoPaging:%d",autoPaging);
 }
 
+
 - (void)setAlphaEnv {
     [[ZegoBoardServiceManager shareManager] setupCustomConfig:@"true" key:@"set_alpha_env"];
     DLog(@"setAlphaEnv >>>");

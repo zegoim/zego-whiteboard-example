@@ -15,7 +15,6 @@ interface IZegoVideoSDKProxy {
         application: Application,
         appID: Long,
         appSign: String,
-        testEnv: Boolean,
         sdkInitCallback: SDKInitCallback
     )
 

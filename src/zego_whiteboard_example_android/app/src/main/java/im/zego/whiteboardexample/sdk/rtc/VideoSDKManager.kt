@@ -1,10 +1,11 @@
 package im.zego.whiteboardexample.sdk.rtc
 
 import android.app.Application
+import im.zego.whiteboardexample.AuthConstants
 import im.zego.zegowhiteboard.ZegoWhiteboardManager
 import im.zego.whiteboardexample.R
 import im.zego.whiteboardexample.sdk.SDKInitCallback
-import im.zego.whiteboardexample.util.Logger
+import im.zego.whiteboardexample.util.AppLogger
 import im.zego.whiteboardexample.util.SharedPreferencesUtil
 import im.zego.whiteboardexample.util.ToastUtils
 
@@ -39,19 +40,13 @@ object VideoSDKManager {
     var initRoomResult: Boolean? = null
 
     fun init(application: Application, sdkInitCallback: SDKInitCallback) {
-        val isVideoSDKTest: Boolean = SharedPreferencesUtil.isVideoSDKTestEnv()
-        Logger.i(
-            TAG,
-            "init initRoomSDK isVideoSDKTest " + isVideoSDKTest + ", version:" + zegoVideoSDKProxy.getVersion()
+        AppLogger.i(
+            TAG, "init initRoomSDK isVideoSDKTest, version:" + zegoVideoSDKProxy.getVersion()
         )
-        zegoVideoSDKProxy.initSDK(
-            application,
-            SharedPreferencesUtil.getAppID(),
-            SharedPreferencesUtil.getAppSign(),
-            isVideoSDKTest,
+        zegoVideoSDKProxy.initSDK(application, AuthConstants.APP_ID, AuthConstants.APP_SIGN,
             object : SDKInitCallback {
                 override fun onInit(success: Boolean) {
-                    Logger.i(TAG, "init zegoLiveRoomSDK result:$success")
+                    AppLogger.i(TAG, "init zegoLiveRoomSDK result:$success")
                     initRoomResult = success
                     sdkInitCallback.onInit(success)
                 }
@@ -61,17 +56,17 @@ object VideoSDKManager {
     private fun registerCallback() {
         zegoVideoSDKProxy.setZegoRoomCallback(object : IZegoRoomStateListener {
             override fun onConnected(errorCode: Int, roomID: String) {
-                Logger.d(TAG, "onReconnect:errorCode:${errorCode}")
+                AppLogger.d(TAG, "onReconnect:errorCode:${errorCode}")
                 zegoRoomStateListener?.onConnected(errorCode, roomID)
             }
 
             override fun onDisconnect(errorCode: Int, roomID: String) {
-                Logger.d(TAG, "onDisconnect:errorCode:${errorCode}")
+                AppLogger.d(TAG, "onDisconnect:errorCode:${errorCode}")
                 zegoRoomStateListener?.onDisconnect(errorCode, roomID)
             }
 
             override fun connecting(errorCode: Int, roomID: String) {
-                Logger.d(TAG, "onTempBroken:errorCode:${errorCode}")
+                AppLogger.d(TAG, "onTempBroken:errorCode:${errorCode}")
                 zegoRoomStateListener?.connecting(errorCode, roomID)
             }
         })
@@ -88,7 +83,7 @@ object VideoSDKManager {
     ) {
         val userID = generateUserId()
         mUserID = userID
-        Logger.i(
+        AppLogger.i(
             TAG,
             "enterRoom() called with: userID = [$userID], userName = [$userName], roomID = [$roomID] state = $state"
         )
@@ -105,7 +100,7 @@ object VideoSDKManager {
         // 开始进入房间
         zegoVideoSDKProxy.loginRoom(userID.toString(), userName, roomID)
         { errorCode: Int ->
-            Logger.i(TAG, "loginRoom:$errorCode")
+            AppLogger.i(TAG, "loginRoom:$errorCode")
             when (errorCode) {
                 0 -> {
                     // 已进入房间
@@ -128,7 +123,7 @@ object VideoSDKManager {
      */
     private fun generateUserId(): Long {
         val userId = System.currentTimeMillis()
-        Logger.i(TAG, "generateUserId() myUserId: $userId")
+        AppLogger.i(TAG, "generateUserId() myUserId: $userId")
         return userId
     }
 

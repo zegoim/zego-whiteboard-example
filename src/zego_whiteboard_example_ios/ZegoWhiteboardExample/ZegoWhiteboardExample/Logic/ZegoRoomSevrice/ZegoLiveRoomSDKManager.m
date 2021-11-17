@@ -37,8 +37,6 @@
 - (void)initSDKWithDelegate:(nullable id<ZegoRoomSeviceClientDelegate>)delegate complementBlock:(void (^ _Nullable)(NSInteger))complementBlock{
     
     _delegate = delegate;
-    BOOL result = [ZegoLocalEnvManager shareManager].roomSeviceTestEnv;
-    [ZegoLiveRoomApi setUseTestEnv:result];
     [ZegoLiveRoomApi setConfig:@"room_retry_time=300"];
     [ZegoLiveRoomApi setConfig:@"preview_clear_last_frame=true"];
     [ZegoLiveRoomApi setConfig:@"play_clear_last_frame=true"];

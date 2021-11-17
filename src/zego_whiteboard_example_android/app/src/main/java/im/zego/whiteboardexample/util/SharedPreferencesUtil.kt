@@ -18,36 +18,6 @@ class SharedPreferencesUtil {
         }
 
         @JvmStatic
-        fun setAppID(appID: Long) {
-            val sharedPreferences = getSharedPreferences(env)
-            sharedPreferences.edit().putLong("appID", appID).apply()
-        }
-
-        @JvmStatic
-        fun getAppID(): Long {
-            val sharedPreferences = getSharedPreferences(env)
-            return sharedPreferences.getLong("appID", AuthConstants.APP_ID)
-        }
-
-        @JvmStatic
-        fun setAppSign(appSign: String) {
-            val sharedPreferences = getSharedPreferences(env)
-            sharedPreferences.edit().putString("appSign", appSign).apply()
-        }
-
-        @JvmStatic
-        fun removeAppSign() {
-            val sharedPreferences = getSharedPreferences(env)
-            sharedPreferences.edit().remove("appSign").apply()
-        }
-
-        @JvmStatic
-        fun getAppSign(): String {
-            val sharedPreferences = getSharedPreferences(env)
-            return sharedPreferences.getString("appSign", AuthConstants.APP_SIGN)!!
-        }
-
-        @JvmStatic
         fun setLastJoinName(name: String) {
             val sharedPreferences = getSharedPreferences(env)
             sharedPreferences.edit().putString("lastJoinName", name).apply()
@@ -60,9 +30,9 @@ class SharedPreferencesUtil {
         }
 
         @JvmStatic
-        fun setLastJoinID(name: String) {
+        fun setLastJoinID(roomID: String) {
             val sharedPreferences = getSharedPreferences(env)
-            sharedPreferences.edit().putString("lastJoinID", name).apply()
+            sharedPreferences.edit().putString("lastJoinID", roomID).apply()
         }
 
         @JvmStatic
@@ -84,39 +54,9 @@ class SharedPreferencesUtil {
         }
 
         @JvmStatic
-        fun containsVideoSDKTestEnvSp(): Boolean {
+        fun getDocsViewEnv(): String {
             val sharedPreferences = getSharedPreferences(env)
-            return sharedPreferences.contains("video_env")
-        }
-
-        @JvmStatic
-        fun setVideoSDKTestEnv(isTestEnv: Boolean) {
-            val sharedPreferences = getSharedPreferences(env)
-            sharedPreferences.edit().putBoolean("video_env", isTestEnv).apply()
-        }
-
-        @JvmStatic
-        fun isVideoSDKTestEnv(): Boolean {
-            val sharedPreferences = getSharedPreferences(env)
-            return sharedPreferences.getBoolean("video_env", false)
-        }
-
-        @JvmStatic
-        fun containsDocsViewTestEnvSp(): Boolean {
-            val sharedPreferences = getSharedPreferences(env)
-            return sharedPreferences.contains("docs_view_env")
-        }
-
-        @JvmStatic
-        fun setDocsViewTestEnv(isTestEnv: Boolean) {
-            val sharedPreferences = getSharedPreferences(env)
-            sharedPreferences.edit().putBoolean("docs_view_env", isTestEnv).apply()
-        }
-
-        @JvmStatic
-        fun isDocsViewTestEnv(): Boolean {
-            val sharedPreferences = getSharedPreferences(env)
-            return sharedPreferences.getBoolean("docs_view_env", false)
+            return sharedPreferences.getString("docs_view_env", "1")!!
         }
 
         @JvmStatic
@@ -138,16 +78,42 @@ class SharedPreferencesUtil {
         }
 
         @JvmStatic
-        fun setTextStyle(isSystem: Boolean) {
-            val sharedPreferences = getSharedPreferences(env)
-            sharedPreferences.edit().putBoolean("text_style", isSystem).apply()
-        }
-
-        @JvmStatic
         fun isSystemTextStyle():Boolean{
             val sharedPreferences = getSharedPreferences(env)
             return sharedPreferences.getBoolean("text_style", true)
         }
 
+        /**
+         * k-v:获取本地缓存的缩略图清晰度类型
+         *
+         * 没有对应的setter方法是因为：
+         * 我们在[im.zego.whiteboardexample.activity.SettingActivity.SettingsFragment]中
+         * 使用了[androidx.preference.ListPreference]控件。
+         *
+         * 该控件内部封装了SharedPreferences，当用户每次改变清晰度类型时，会自动设置到指定的k-v中去
+         */
+        @JvmStatic
+        fun getThumbnailClarityType(): String {
+            val sharedPreferences = getSharedPreferences(env)
+            return sharedPreferences.getString("key_thumbnail_clarity", "1")!!
+        }
+
+        @JvmStatic
+        fun setLoadVideoInPPT(loadVideo: Boolean) {
+            val sharedPreferences = getSharedPreferences(env)
+            sharedPreferences.edit().putBoolean("load_video", loadVideo).apply()
+        }
+
+        @JvmStatic
+        fun containsLoadVideoInPPT():Boolean{
+            val sharedPreferences = getSharedPreferences(env)
+            return sharedPreferences.contains("load_video")
+        }
+
+        @JvmStatic
+        fun isVideoLoadedInPPT():Boolean{
+            val sharedPreferences = getSharedPreferences(env)
+            return sharedPreferences.getBoolean("load_video", true)
+        }
     }
 }

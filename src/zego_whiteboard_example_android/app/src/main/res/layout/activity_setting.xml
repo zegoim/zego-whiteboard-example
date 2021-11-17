@@ -38,18 +38,6 @@
                     android:textColor="@color/text_black"
                     android:textSize="16dp" />
 
-                <TextView
-                    android:id="@+id/setting_save"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_alignParentEnd="true"
-                    android:gravity="center"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:text="@string/save"
-                    android:textColor="@color/text_blue"
-                    android:textSize="14dp" />
-
             </RelativeLayout>
 
             <FrameLayout

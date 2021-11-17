@@ -1,6 +1,7 @@
 package im.zego.whiteboardexample
 
 import android.app.Application
+import android.util.Log
 import android.widget.Toast
 import com.ytee.logutil.LogcatFileManager
 import im.zego.whiteboardexample.sdk.SDKInitCallback
@@ -22,13 +23,9 @@ class ExampleApplication : Application() {
         CrashHandler.setAppContext(this)
         ZegoSDKManager.initSDKEnvironment(this, object : SDKInitCallback {
             override fun onInit(success: Boolean) {
-                Logger.i(TAG, "onInit() result: $success")
+                AppLogger.i(TAG, "onInit() result: $success")
             }
         })
-
-        if (ZegoUtil.isAppTooOld(ZegoDocsViewManager.getInstance().version, VersionConstants.DOCS_SDK) || ZegoUtil.isAppTooOld(ZegoWhiteboardManager.getInstance().version, VersionConstants.WHITEBOARD_SDK)) {
-            ToastUtils.showCenterToast(R.string.app_version_warning, Toast.LENGTH_LONG)
-        }
     }
 
 }

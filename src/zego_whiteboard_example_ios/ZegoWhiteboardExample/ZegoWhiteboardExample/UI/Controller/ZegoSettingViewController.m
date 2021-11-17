@@ -40,15 +40,11 @@
 
 - (void)setupDefaultData {
     NSMutableArray *dataArray = [NSMutableArray array];
-    ZegoCommonCellModel *roomServiceModel = [[ZegoCommonCellModel alloc] initWithTitle:@"开启房间服务测试环境" type:ZegoSettingTableViewCellTypeSwitch options:nil value:[NSNumber numberWithBool:[ZegoLocalEnvManager shareManager].roomSeviceTestEnv]];
-    roomServiceModel.tag = ZegoRoomSeviceTestEnv;
-    ZegoCommonCellModel *docsServiceModel = [[ZegoCommonCellModel alloc] initWithTitle:@"开启文件服务测试环境" type:ZegoSettingTableViewCellTypeSwitch options:nil value:[NSNumber numberWithBool:[ZegoLocalEnvManager shareManager].docsSeviceTestEnv]];
-    docsServiceModel.tag = ZegoDocsSeviceTestEnv;
     ZegoCommonCellModel *customFontModel = [[ZegoCommonCellModel alloc] initWithTitle:@"开启思源字体" type:ZegoSettingTableViewCellTypeSwitch options:nil value:[NSNumber numberWithBool:[ZegoLocalEnvManager shareManager].enableCutomFont]];
     customFontModel.tag = ZegoEnableCustomFont;
     ZegoCommonCellModel *pptThumbnailClarityModel = [[ZegoCommonCellModel alloc] initWithTitle:@"缩略图清晰度" type:ZegoSettingTableViewCellTypePicker options:nil value:[NSNumber numberWithBool:[ZegoLocalEnvManager shareManager].enableCutomFont]];
-    ZegoCommonCellModel *docsAlphaServiceModel = [[ZegoCommonCellModel alloc] initWithTitle:@"开启文件服务alpha环境" type:ZegoSettingTableViewCellTypeSwitch options:nil value:[NSNumber numberWithBool:[ZegoLocalEnvManager shareManager].docsSeviceAlphaEnv]];
-    docsAlphaServiceModel.tag = ZegoDocsSeviceAlphaEnv;
+    ZegoCommonCellModel *docsUnloadVideoModel = [[ZegoCommonCellModel alloc] initWithTitle:@"是否不加载视频资源" type:ZegoSettingTableViewCellTypeSwitch options:nil value:[NSNumber numberWithBool:[ZegoLocalEnvManager shareManager].isUnloadVideo]];
+    docsUnloadVideoModel.tag = ZegoIsUnloadVideo;
     
     ZegoCellOptionModel *ordinaryModel = [[ZegoCellOptionModel alloc]init];
     ordinaryModel.title = @"普通";
@@ -67,7 +63,7 @@
     
     NSDictionary *envSettingDic = @{
         @"title":@"环境设置",
-        @"value":@[roomServiceModel,docsServiceModel,customFontModel,docsAlphaServiceModel,pptThumbnailClarityModel]
+        @"value":@[customFontModel,docsUnloadVideoModel,pptThumbnailClarityModel]
     };
     [dataArray addObject:envSettingDic];
     self.dataArray = dataArray.copy;
@@ -124,17 +120,13 @@
 }
 
 - (void)onSettingCellValueChange:(ZegoCommonCellModel *)valueChangeModel {
-    if ([valueChangeModel.tag isEqualToString:ZegoRoomSeviceTestEnv]) {
-        [[ZegoLocalEnvManager shareManager] setupRoomSeviceTestEnv:[valueChangeModel.value boolValue]];
-    } else if ([valueChangeModel.tag isEqualToString:ZegoDocsSeviceTestEnv]) {
-        [[ZegoLocalEnvManager shareManager] setupDocsSeviceTestEnv:[valueChangeModel.value boolValue]];
-    } else if ([valueChangeModel.tag isEqualToString:ZegoEnableCustomFont]) {
+    if ([valueChangeModel.tag isEqualToString:ZegoEnableCustomFont]) {
         [[ZegoLocalEnvManager shareManager] setupEnableCustomFont:[valueChangeModel.value boolValue]];
     } else if ([valueChangeModel.tag isEqualToString:ZegoPPTThumbnailClarity]) {
         NSInteger value = [valueChangeModel.value integerValue] + 1;
         [[ZegoLocalEnvManager shareManager] setupThumbnailClarity:[NSString stringWithFormat:@"%ld",value]];
-    } else if ([valueChangeModel.tag isEqualToString:ZegoDocsSeviceAlphaEnv]) {
-        [[ZegoLocalEnvManager shareManager] setupDocsSeviceAlphaEnv:[valueChangeModel.value boolValue]];
+    } else if ([valueChangeModel.tag isEqualToString:ZegoIsUnloadVideo]) {
+        [[ZegoLocalEnvManager shareManager] setupSetpUnLoadVideo:[valueChangeModel.value boolValue]];
     }
 }
 

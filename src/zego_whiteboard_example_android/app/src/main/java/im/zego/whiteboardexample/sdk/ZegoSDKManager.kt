@@ -4,7 +4,7 @@ import android.app.Application
 import im.zego.whiteboardexample.sdk.docs.DocsViewSDKManager
 import im.zego.whiteboardexample.sdk.rtc.VideoSDKManager
 import im.zego.whiteboardexample.sdk.whiteboard.WhiteboardSDKManager
-import im.zego.whiteboardexample.util.Logger
+import im.zego.whiteboardexample.util.AppLogger
 import im.zego.whiteboardexample.util.SharedPreferencesUtil
 
 /**
@@ -14,13 +14,10 @@ object ZegoSDKManager {
 
     private const val TAG = "ZegoSDKManager"
 
-    val MAX_PURE_WB_COUNT = 10
-    val MAX_FILE_WB_COUNT = 10
-
     var whiteboardNameIndex = 1
 
     fun initSDKEnvironment(application: Application, sdkInitCallback: SDKInitCallback) {
-        initTestEnv()
+        initSettings()
         // 该处需要先初始化 VideoSDKManager 再初始化 WhiteboardSDKManager，顺序不能乱
         VideoSDKManager.init(application, object : SDKInitCallback {
             override fun onInit(success: Boolean) {
@@ -52,22 +49,18 @@ object ZegoSDKManager {
     }
 
     fun unInitSDKEnvironment() {
-        Logger.i(TAG, "unInitSDKEnvironment() called")
+        AppLogger.i(TAG, "unInitSDKEnvironment() called")
         VideoSDKManager.unInitSDK()
         WhiteboardSDKManager.unInitSDK()
         DocsViewSDKManager.unInitSDK()
     }
 
-    private fun initTestEnv() {
-        // 测试版本，首次安装应用。设置各环境的初始值
-        if (!SharedPreferencesUtil.containsVideoSDKTestEnvSp()) {
-            SharedPreferencesUtil.setVideoSDKTestEnv(true)
-        }
-        if (!SharedPreferencesUtil.containsDocsViewTestEnvSp()) {
-            SharedPreferencesUtil.setDocsViewTestEnv(true)
-        }
+    private fun initSettings() {
         if (!SharedPreferencesUtil.containsNextStepFlipPageSp()) {
             SharedPreferencesUtil.setNextStepFlipPage(true)
+        }
+        if (!SharedPreferencesUtil.containsLoadVideoInPPT()) {
+            SharedPreferencesUtil.setLoadVideoInPPT(true)
         }
     }
 

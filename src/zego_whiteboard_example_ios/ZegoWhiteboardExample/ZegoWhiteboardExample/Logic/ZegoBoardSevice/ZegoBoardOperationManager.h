@@ -54,6 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)showPreview;
 - (void)setAlphaEnv;
 - (void)setupSetpAutoPaging:(BOOL)autoPaging;
+
 - (void)clearFileCache;
 - (void)nextPageComplement:(ZegoDocsViewScrollCompleteBlock)complementBlock;
 - (void)previousPageComplement:(ZegoDocsViewScrollCompleteBlock)complementBlock;
