@@ -4,7 +4,7 @@ import android.app.Activity
 import im.zego.zegodocs.ZegoDocsViewConstants
 import im.zego.zegodocs.ZegoDocsViewManager
 import im.zego.whiteboardexample.tool.PermissionHelper
-import im.zego.whiteboardexample.util.AppLogger
+import im.zego.whiteboardexample.util.Logger
 
 /**
  * 缓存、取消缓存
@@ -23,23 +23,23 @@ class CacheHelper {
         }
 
         private fun cacheFileInner(fileID: String, cacheResult: (errorCode: Int, state: Int, uploadPercent: Float) -> Unit) {
-            AppLogger.i(TAG, "cacheFileInner() fileID:${fileID}")
+            Logger.i(TAG, "cacheFileInner() fileID:${fileID}")
 
             ZegoDocsViewManager.getInstance().cacheFile(fileID)
             { state, errorCode, infoMap ->
                 seq = infoMap[ZegoDocsViewConstants.REQUEST_SEQ] as Int
                 when {
                     errorCode != ZegoDocsViewConstants.ZegoDocsViewSuccess -> {
-                        AppLogger.i(TAG, "cacheFile(fileID):${fileID},ZegoDocsViewSuccess state: $state, errorCode: $errorCode, seq: $seq, cachePercent: 0")
+                        Logger.i(TAG, "cacheFile(fileID):${fileID},ZegoDocsViewSuccess state: $state, errorCode: $errorCode, seq: $seq, cachePercent: 0")
                         cacheResult(errorCode, state, 0f)
                     }
                     state == ZegoDocsViewConstants.ZegoDocsViewCacheStateCaching -> {
                         val cachePercent = infoMap[ZegoDocsViewConstants.CACHE_PERCENT] as Float * 100
                         cacheResult(errorCode, state, cachePercent)
-                        AppLogger.i(TAG, "cacheFile(fileID):${fileID},ZegoDocsViewCacheStateCaching state: $state, errorCode: $errorCode, seq: $seq, cachePercent: $cachePercent")
+                        Logger.i(TAG, "cacheFile(fileID):${fileID},ZegoDocsViewCacheStateCaching state: $state, errorCode: $errorCode, seq: $seq, cachePercent: $cachePercent")
                     }
                     state == ZegoDocsViewConstants.ZegoDocsViewCacheStateCached -> {
-                        AppLogger.i(TAG, "cacheFile(fileID):${fileID},ZegoDocsViewCacheStateCached state: $state, errorCode: $errorCode, seq: $seq, cachePercent: 100")
+                        Logger.i(TAG, "cacheFile(fileID):${fileID},ZegoDocsViewCacheStateCached state: $state, errorCode: $errorCode, seq: $seq, cachePercent: 100")
                         cacheResult(errorCode, state, 100f)
                     }
                 }
@@ -56,10 +56,10 @@ class CacheHelper {
 
 
         private fun cancelCacheInner(seq: Int, cancelCacheResult: (Int) -> Unit) {
-            AppLogger.i(TAG, "cancelCacheInner() seq:${seq}")
+            Logger.i(TAG, "cancelCacheInner() seq:${seq}")
             ZegoDocsViewManager.getInstance().cancelCacheFile(seq) { errorCode ->
 
-                AppLogger.i(TAG, "cancelCacheInner(seq):${seq},  errorCode: $errorCode")
+                Logger.i(TAG, "cancelCacheInner(seq):${seq},  errorCode: $errorCode")
                 cancelCacheResult(errorCode)
 
 
@@ -76,9 +76,9 @@ class CacheHelper {
         }
 
         private fun queryFileCacheInner(fileID: String, queryFileResult: (errorCode: Int, exist: Boolean) -> Unit) {
-            AppLogger.i(TAG, "queryFileCacheInner() fileID:${fileID}")
+            Logger.i(TAG, "queryFileCacheInner() fileID:${fileID}")
             ZegoDocsViewManager.getInstance().queryFileCached(fileID) { errorCode, exist ->
-                AppLogger.i(TAG, "queryFileCacheInner(fileID):${fileID}, exist: $exist, errorCode: $errorCode")
+                Logger.i(TAG, "queryFileCacheInner(fileID):${fileID}, exist: $exist, errorCode: $errorCode")
                 queryFileResult(errorCode, exist)
             }
         }

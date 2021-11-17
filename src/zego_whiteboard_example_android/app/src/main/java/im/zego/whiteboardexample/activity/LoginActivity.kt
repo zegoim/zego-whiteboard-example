@@ -11,8 +11,6 @@ import im.zego.whiteboardexample.util.*
 import im.zego.whiteboardexample.widget.dialog.LoadingDialog
 import im.zego.whiteboardexample.widget.dialog.dismissLoadingDialog
 import im.zego.whiteboardexample.widget.dialog.showLoadingDialog
-import im.zego.zegowhiteboard.ZegoWhiteboardManager
-import im.zego.zegowhiteboard.model.ZegoWhiteboardViewModel
 import kotlinx.android.synthetic.main.activity_login.*
 
 
@@ -20,7 +18,6 @@ class LoginActivity : BaseActivity() {
 
     private val TAG = "LoginActivity"
     private lateinit var loadingDialog: LoadingDialog
-    private var lastClickLoginTime: Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,11 +30,11 @@ class LoginActivity : BaseActivity() {
 
     private fun initView() {
         val radius = dp2px(this, 27.5f)
-        val roomID = SharedPreferencesUtil.getLastJoinID()
+        CONFERENCE_ID = SharedPreferencesUtil.getLastJoinID()
 
         // 房间ID RoomId
-        join_room_id.setText(roomID)
-        join_room_id.setSelection(roomID.length)
+        join_room_id.setText(CONFERENCE_ID)
+        join_room_id.setSelection(CONFERENCE_ID.length)
         join_room_id.background = getRoundRectDrawable("#f4f5f8", radius)
         // 房间名称 RoomName
         join_room_name.setText(SharedPreferencesUtil.getLastJoinName())
@@ -50,11 +47,6 @@ class LoginActivity : BaseActivity() {
     private fun initListener() {
         // 登陆按钮
         join_entrance_main.setOnClickListener {
-            if (System.currentTimeMillis() - lastClickLoginTime < 500) {
-                return@setOnClickListener
-            }
-            lastClickLoginTime = System.currentTimeMillis()
-
             if (join_room_id.text.isEmpty() || join_room_name.text.isEmpty()) {
                 ToastUtils.showCenterToast(R.string.join_input_null)
                 return@setOnClickListener
@@ -87,11 +79,11 @@ class LoginActivity : BaseActivity() {
      */
     private fun login() {
         showLoadingDialog(loadingDialog, "")
-        VideoSDKManager.loginRoom(join_room_id.text.toString(), join_room_name.text.toString()) { errorCode ->
-            AppLogger.i(TAG, "login, stateCode:$errorCode")
-            if (errorCode == 0) {
-                val joinRoomID = join_room_id.text.toString()
-                SharedPreferencesUtil.setLastJoinID(joinRoomID)
+        VideoSDKManager.loginRoom(join_room_id.text.toString(), join_room_name.text.toString()) {
+            Logger.i(TAG, "login, stateCode:$it")
+            if (it == 0) {
+                CONFERENCE_ID = join_room_id.text.toString()
+                SharedPreferencesUtil.setLastJoinID(join_room_id.text.toString())
                 SharedPreferencesUtil.setLastJoinName(join_room_name.text.toString())
                 startActivity(Intent(this, MainActivity::class.java))
             }

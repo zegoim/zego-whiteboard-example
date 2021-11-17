@@ -10,17 +10,15 @@ import android.view.*
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.core.view.children
-import im.zego.whiteboardexample.AppConstants.MAX_FILE_WHITEBOARD_COUNT
-import im.zego.whiteboardexample.AppConstants.MAX_PURE_WHITEBOARD_COUNT
 import im.zego.zegodocs.ZegoDocsViewConstants
 import im.zego.zegowhiteboard.ZegoWhiteboardView
 import im.zego.zegowhiteboard.callback.IZegoWhiteboardViewScrollListener
 import im.zego.whiteboardexample.R
+import im.zego.whiteboardexample.callback.IZegoWhiteboardReloadFinishListener
 import im.zego.whiteboardexample.sdk.ZegoSDKManager
-import im.zego.whiteboardexample.util.AppLogger
+import im.zego.whiteboardexample.util.Logger
 import im.zego.whiteboardexample.util.SharedPreferencesUtil
 import im.zego.whiteboardexample.util.dp2px
-import im.zego.whiteboardexample.widget.whiteboard.callback.IWhiteboardSizeChangedListener
 
 /**
  * 一个白板布局
@@ -37,10 +35,10 @@ class WhiteboardContainer : FrameLayout {
     private var wbAspectWidth = 16
     private var wbAspectHeight = 9
     private var countChangeListener: (count: Int) -> Unit = {}
-    private var scrollChangeListener: (Long,Int, Int) -> Unit = {_,_, _ -> }
+    private var scrollChangeListener: (Int, Int) -> Unit = { _, _ -> }
     private var whiteboardSelectListener: (Long) -> Unit = {}
     private var whiteboardClickListener: () -> Unit = {}
-    private var whiteboardSizeChangedListener: () -> Unit = {}
+    private var whiteboardReloadFinishListener: () -> Unit = {}
 
     private var abortGestureEvent: Boolean = false
 
@@ -50,13 +48,13 @@ class WhiteboardContainer : FrameLayout {
 
     override fun onViewAdded(child: View) {
         super.onViewAdded(child)
-        AppLogger.i(TAG, "onViewAdded")
+        Logger.i(TAG, "onViewAdded")
         countChangeListener.invoke(childCount)
     }
 
     override fun onViewRemoved(child: View?) {
         super.onViewRemoved(child)
-        AppLogger.i(TAG, "onViewRemoved,childCount:$childCount")
+        Logger.i(TAG, "onViewRemoved,childCount:$childCount")
         countChangeListener.invoke(childCount)
     }
 
@@ -64,7 +62,7 @@ class WhiteboardContainer : FrameLayout {
         this.countChangeListener = listener
     }
 
-    fun setWhiteboardScrollListener(listener: (Long,Int, Int) -> Unit) {
+    fun setWhiteboardScrollListener(listener: (Int, Int) -> Unit) {
         this.scrollChangeListener = listener
     }
 
@@ -117,8 +115,8 @@ class WhiteboardContainer : FrameLayout {
     }
 
     fun selectWhiteboardViewHolder(whiteboardID: Long): ZegoWhiteboardViewHolder? {
-        AppLogger.i(TAG, "start selectWhiteboardViewHolder:${whiteboardID},childCount:${childCount}")
-        var selectViewHolder: ZegoWhiteboardViewHolder? = null
+        Logger.i(TAG, "start selectWhiteboardViewHolder:${whiteboardID},childCount:${childCount}")
+        var result: ZegoWhiteboardViewHolder? = null
         
         if (whiteboardID == 0L) {
             // 如果传的是0，表示刚刚进房间后获取当前白板没有设置过
@@ -126,7 +124,7 @@ class WhiteboardContainer : FrameLayout {
                 if (index == childCount - 1) {
                     val holder = view as ZegoWhiteboardViewHolder
                     view.visibility = View.VISIBLE
-                    selectViewHolder = holder
+                    result = holder
                 } else {
                     view.visibility = View.GONE
                 }
@@ -147,18 +145,18 @@ class WhiteboardContainer : FrameLayout {
                     if (it.currentWhiteboardID != whiteboardID) {
                         it.currentWhiteboardID = whiteboardID
                     }
-                    selectViewHolder = it
+                    result = it
                 }
             }
             
-            if (selectViewHolder == null) {
+            if (result == null) {
                 // 如果设置了这个白板 ID 但是房间里没有找到，设置第一个子 view
-                AppLogger.i(TAG, "selectWhiteboardViewHolder:${whiteboardID},result = null ")
+                Logger.i(TAG, "selectWhiteboardViewHolder:${whiteboardID},result = null ")
                 children.forEachIndexed { index, view ->
                     if (index == childCount - 1) {
                         val holder = view as ZegoWhiteboardViewHolder
                         view.visibility = View.VISIBLE
-                        selectViewHolder = holder
+                        result = holder
                     } else {
                         view.visibility = View.GONE
                     }
@@ -166,23 +164,25 @@ class WhiteboardContainer : FrameLayout {
             }
         }
         
-        if (selectViewHolder == null) {
+        if (result == null) {
             // 仍然没有找到，就什么也不做
-            AppLogger.i(TAG, "selectWhiteboardViewHolder，no selected ")
+            Logger.i(TAG, "selectWhiteboardViewHolder，no selected ")
         }
         
-        selectViewHolder?.let {
-            it.setWhiteboardScrollChangeListener(IZegoWhiteboardViewScrollListener { _, _ ->
-                val currentPage = it.getCurrentPage()
-                val pageCount = it.getPageCount()
-                scrollChangeListener(it.currentWhiteboardID, currentPage, pageCount)
-            })
-
-            it.setSizeChangedListener(object :
-                IWhiteboardSizeChangedListener {
-                override fun onSizeChanged(xBoardView: ZegoWhiteboardViewHolder) {
-                    whiteboardSizeChangedListener.invoke()
+        result?.let {
+            it.setWhiteboardScrollChangeListener(IZegoWhiteboardViewScrollListener { _, vertical ->
+                val currentPage = if (it.isDisplayedByWebView()) {
+                    it.calcWebViewPage(vertical)
+                } else {
+                    it.getCurrentPage()
                 }
+                scrollChangeListener(currentPage, it.getPageCount())
+            })
+            it.setReloadFinishListener(object :IZegoWhiteboardReloadFinishListener{
+                override fun onReloadFinish(viewHolder: ZegoWhiteboardViewHolder) {
+                    whiteboardReloadFinishListener.invoke()
+                }
+
             })
 
             whiteboardSelectListener.invoke(it.currentWhiteboardID)
@@ -195,7 +195,7 @@ class WhiteboardContainer : FrameLayout {
             }
         }
 
-        return selectViewHolder
+        return result
     }
 
     /**
@@ -207,7 +207,7 @@ class WhiteboardContainer : FrameLayout {
         val deviceSize = Point()
         activity.windowManager.defaultDisplay.getSize(deviceSize)
         val rotation = activity.windowManager.defaultDisplay.rotation
-        AppLogger.i(TAG, "resize:deviceSize:${deviceSize},rotation:${rotation}")
+        Logger.i(TAG, "resize:deviceSize:${deviceSize},rotation:${rotation}")
         val orientation = if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) {
             Configuration.ORIENTATION_PORTRAIT
         } else if (rotation == Surface.ROTATION_270 || rotation == Surface.ROTATION_90) {
@@ -220,16 +220,16 @@ class WhiteboardContainer : FrameLayout {
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        AppLogger.d(TAG, "onMeasure:${measuredWidth},${measuredHeight}")
+        Logger.d(TAG, "onMeasure:${measuredWidth},${measuredHeight}")
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
-        AppLogger.d(TAG, "onLayout:${width},${height}")
+        Logger.d(TAG, "onLayout:${width},${height}")
     }
 
     private fun calcSize(orientation: Int, deviceWidth: Float, deviceHeight: Float) {
-        AppLogger.i(
+        Logger.i(
             TAG,
             "calcSize,orientation:${orientation},deviceWidth:${deviceWidth},deviceHeight:${deviceHeight}," +
                     "container current,width:${this.width},height:${this.height}"
@@ -272,7 +272,7 @@ class WhiteboardContainer : FrameLayout {
         params.height = selfHeight.toInt()
         layoutParams = params
 
-        AppLogger.i(
+        Logger.i(
             TAG,
             "resize,calculated:width:${selfWidth},height:${selfHeight},parent:${parentParams.width},${parentParams.height}"
         )
@@ -281,7 +281,7 @@ class WhiteboardContainer : FrameLayout {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
 
-        AppLogger.i(TAG, "newConfig:$newConfig")
+        Logger.i(TAG, "newConfig:$newConfig")
 
         val deviceWidth = dp2px(context, newConfig.screenWidthDp.toFloat())
         val deviceHeight = dp2px(context, newConfig.screenHeightDp.toFloat())
@@ -291,7 +291,7 @@ class WhiteboardContainer : FrameLayout {
 
     fun createPureWhiteboard(requestResult: (Int, ZegoWhiteboardViewHolder) -> Unit) {
         val count = getPureWhiteboardHolderCount()
-        if (count < MAX_PURE_WHITEBOARD_COUNT) {
+        if (count < ZegoSDKManager.MAX_PURE_WB_COUNT) {
             val whiteboardViewHolder = ZegoWhiteboardViewHolder(context)
             val userName = SharedPreferencesUtil.getLastJoinName()
             val whiteboardName = "${userName}创建的白板${ZegoSDKManager.whiteboardNameIndex}"
@@ -316,7 +316,7 @@ class WhiteboardContainer : FrameLayout {
         fileID: String,
         requestResult: (Int, ZegoWhiteboardViewHolder) -> Unit
     ) {
-        AppLogger.i(TAG, "container createFileWhiteBoardView,fileID:${fileID}")
+        Logger.i(TAG, "container createFileWhiteBoardView,fileID:${fileID}")
         val count = getFileWhiteboardHolderCount()
         var holder = getWhiteboardViewHolder(fileID)
         if (holder != null) {
@@ -328,14 +328,14 @@ class WhiteboardContainer : FrameLayout {
                 // 什么也不做
             }
         } else {
-            if (count < MAX_FILE_WHITEBOARD_COUNT) {
+            if (count < ZegoSDKManager.MAX_FILE_WB_COUNT) {
                 val viewHolder = ZegoWhiteboardViewHolder(context)
                 addView(viewHolder, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).also {
                     it.gravity = Gravity.CENTER
                 })
-                viewHolder.createDocsAndWhiteBoardView(fileID, Size(width, height)){ errorCode ->
+                viewHolder.createDocsAndWhiteBoardView(fileID, Size(width, height)) { errorCode ->
                     if (errorCode == 0) {
-                        AppLogger.i(TAG, "viewHolder.currentWhiteboardID: " + viewHolder.currentWhiteboardID)
+                        Logger.i(TAG, "viewHolder.currentWhiteboardID: " + viewHolder.currentWhiteboardID)
                         selectWhiteboardViewHolder(viewHolder.currentWhiteboardID)
                     } else {
                         removeView(holder)
@@ -366,7 +366,7 @@ class WhiteboardContainer : FrameLayout {
         processResult: (Int, Boolean, ZegoWhiteboardViewHolder) -> Unit
     ) {
         val model = zegoWhiteboardView.getWhiteboardViewModel()
-        AppLogger.i(
+        Logger.i(
             TAG, "onReceiveWhiteboardView:${model.whiteboardID}," +
                     "${model.name},${model.fileInfo.fileName}"
         )
@@ -427,7 +427,7 @@ class WhiteboardContainer : FrameLayout {
     ) {
         var processedCount = 0
         var errorCodeResult = 0
-        AppLogger.i(
+        Logger.i(
             TAG,
             "onEnterRoomReceiveWhiteboardList.size:${whiteboardViewList.size}"
         )
@@ -446,9 +446,9 @@ class WhiteboardContainer : FrameLayout {
 
     fun updateCurrentHolderToRoom(holder: ZegoWhiteboardViewHolder) {
         if (holder.visibility != View.VISIBLE) {
-            AppLogger.i(TAG, "find holder,is not show,sending select, ${holder.getCurrentWhiteboardMsg()}")
+            Logger.i(TAG, "find holder,is not show,sending select, ${holder.getCurrentWhiteboardMsg()}")
         } else {
-            AppLogger.i(TAG, "find holder,is showing,just select")
+            Logger.i(TAG, "find holder,is showing,just select")
         }
         selectWhiteboardViewHolder(holder.currentWhiteboardID)
     }
@@ -457,8 +457,8 @@ class WhiteboardContainer : FrameLayout {
         this.whiteboardClickListener = listener
     }
 
-    fun setWhiteboardSizeChangedListener(listener: () -> Unit){
-        this.whiteboardSizeChangedListener = listener
+    fun setWhiteboardReloadFinishListener(listener: () -> Unit){
+        this.whiteboardReloadFinishListener = listener
     }
 
 

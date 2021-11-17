@@ -1,24 +1,31 @@
 var parentId = 'mywhiteboard';
 
-var zegoWhiteboardView, // 当前激活白板实例对象
-    zegoDocsView,
-    zegoWhiteboardViewList = [], // 白板/文件 展示下拉框
-    WBNameIndex = 1, // 白板索引
-    seqMap = {
-        upload: 0,
-        cache: 0,
-        saveImg: 1
-    },
-    isRemote;
+var zegoWhiteboardView; // 当前激活白板实例对象
+var zegoDocsView;
+var zegoWhiteboardViewList = []; // 白板/文件 展示下拉框
+var WBNameIndex = 1; // 白板索引
+var seqMap = {
+    upload: 0,
+    cache: 0,
+    saveImg: 1
+};
 
 var resizeTicking = false;
-
 var imageErrorTipsMap = {
     3000002: '参数错误',
     3000005: '下载失败',
     3030008: '图片大小超过限制，请重新选择',
     3030009: '图片格式暂不支持',
     3030010: 'url地址错误或无效'
+};
+var uploadFileTipsMap = {
+    1: '上传中',
+    2: '已上传',
+    4: '排队中',
+    8: '转换中',
+    16: '转换成功',
+    32: '转换失败',
+    64: '取消上传'
 };
 
 getRemoteConfig();
@@ -41,13 +48,13 @@ function initSDKConfig() {
 
 // 监听sdk回调
 function onWhiteboardEventHandle() {
-    zegoWhiteboard.on('whiteboardAuthChange', function (data) {
+    zegoWhiteboard.on('whiteboardAuthChange', function(data) {
         $('#userViewAuth').html(
             `白板权限：<span class="badge badge-primary mr-2">${data.scale ? '缩放' : ''}</span>
             <span class="badge badge-info mr-2">${data.scroll ? '翻页' : ''}</span>`
         );
     });
-    zegoWhiteboard.on('whiteboardGraphicAuthChange', function (data) {
+    zegoWhiteboard.on('whiteboardGraphicAuthChange', function(data) {
         $('#userGraphicAuth').html(
             `图元权限：<span class="badge badge-success mr-2">${data.create ? '创建' : ''}</span>
             <span class="badge badge-danger mr-2">${data.clear ? '清空' : ''}</span>
@@ -57,10 +64,10 @@ function onWhiteboardEventHandle() {
         );
     });
     zegoWhiteboard.on('error', toast);
-    zegoWhiteboard.on('viewAdd', function (wbView) {
+    zegoWhiteboard.on('viewAdd', function(wbView) {
         var id = wbView.getID();
         if (
-            !zegoWhiteboardViewList.some(function (view) {
+            !zegoWhiteboardViewList.some(function(view) {
                 return view.getID() == id;
             })
         ) {
@@ -69,42 +76,17 @@ function onWhiteboardEventHandle() {
         }
     });
     zegoWhiteboard.on('viewRemoved', onWhiteboardRemovedHandle);
-    zegoWhiteboard.on('viewScroll', function (res) {
+    zegoWhiteboard.on('viewScroll', function(res) {
         if (zegoWhiteboardView && zegoWhiteboardView.getID() == res.id) {
             $('#curPage').html(res.page);
             $('#curStep').html(res.step);
         }
     });
-    zegoDocs.on('onUpload', function (res) {
-        var ZegoDocsViewUploadState = {
-            1: '上传中',
-            2: '已上传',
-            4: '排队中',
-            8: '转换中',
-            16: '转换成功',
-            32: '转换失败',
-            64: '取消上传'
-        };
-        console.log('onUpload', res);
-        toast(ZegoDocsViewUploadState[res.status]);
-        seqMap.upload = res.fileHash || res.seq;
-    });
-    zegoDocs.on('onLoadFile', function (res) {
-        console.log('onLoadFile', res);
-        /**
-         * 创建文件白板流程：
-         *  1，上传文件
-         *  2，加载文件
-         *  3，文件加载成功的回调（onLoadFile）中根据回调返回的值创建对应的普通白板
-         */
-        createFileWBView(res);
-        $('#totalPage').html(res.pageCount);
-    });
 }
 
 function onWhiteboardRemovedHandle(id) {
     console.log('on viewRemoved', id);
-    var index = zegoWhiteboardViewList.findIndex(function (view) {
+    var index = zegoWhiteboardViewList.findIndex(function(view) {
         return view.getID() == id;
     });
     if (index !== -1) {
@@ -127,20 +109,20 @@ function removeExcelOption(whiteboardView) {
 function getRemoteConfig() {
     $.get(
         'https://storage.zego.im/goclass/config_images.json',
-        function (data) {
+        function(data) {
             $('#whiteboardImgUrlSelect').html(
                 data.whiteboard_custom_images
-                .map(function (v) {
-                    return `<option value="${v.id}">${v.name}</option>`;
-                })
-                .join('')
+                    .map(function(v) {
+                        return `<option value="${v.id}">${v.name}</option>`;
+                    })
+                    .join('')
             );
             $('#whiteboardBgImgUrlSelect').html(
                 data.whiteboard_bg_images
-                .map(function (v) {
-                    return `<option value="${v.id}">${v.name}</option>`;
-                })
-                .join('')
+                    .map(function(v) {
+                        return `<option value="${v.id}">${v.name}</option>`;
+                    })
+                    .join('')
             );
         },
         'json'
@@ -148,7 +130,7 @@ function getRemoteConfig() {
 }
 
 // 切换面板
-$('#panel-change').on('click', 'button', function () {
+$('#panel-change').on('click', 'button', function() {
     var index = $(this).index();
     $('#panel')
         .find('.panel')
@@ -158,7 +140,7 @@ $('#panel-change').on('click', 'button', function () {
         .show();
 });
 // 右侧菜单
-$('.menu-btn,.menu-mask').click(function () {
+$('.menu-btn,.menu-mask').click(function() {
     $('.operation-container').toggle();
     $('.menu-mask').toggle();
 });
@@ -168,15 +150,13 @@ $('.menu-btn,.menu-mask').click(function () {
  * 如果是对文件白板进行翻页操作，仅需对白板实例进行scroll滚动即可，无需另外对文件实例进行翻页操作。
  */
 // 上一页
-$('#previousPage').click(function () {
+$('#previousPage').click(function() {
     if (!zegoWhiteboardView) return;
     var currentPage = zegoWhiteboardView.getCurrentPage();
     var totalPage = zegoWhiteboardView.getPageCount();
     if (currentPage <= 1 || totalPage <= 1) return;
     var percent = (currentPage - 2) / totalPage;
-    var {
-        direction
-    } = zegoWhiteboardView.getCurrentScrollPercent();
+    var { direction } = zegoWhiteboardView.getCurrentScrollPercent();
     if (direction === 1) {
         zegoWhiteboardView.scroll(percent, 0);
     } else {
@@ -184,15 +164,13 @@ $('#previousPage').click(function () {
     }
 });
 // 下一页
-$('#nextPage').click(function () {
+$('#nextPage').click(function() {
     if (!zegoWhiteboardView) return;
     var currentPage = zegoWhiteboardView.getCurrentPage();
     var totalPage = zegoWhiteboardView.getPageCount();
     if (currentPage >= totalPage || totalPage <= 1) return;
     var percent = currentPage / totalPage;
-    var {
-        direction
-    } = zegoWhiteboardView.getCurrentScrollPercent();
+    var { direction } = zegoWhiteboardView.getCurrentScrollPercent();
     if (direction === 1) {
         zegoWhiteboardView.scroll(percent, 0);
     } else {
@@ -200,15 +178,15 @@ $('#nextPage').click(function () {
     }
 });
 // 上一步
-$('#previousStep').click(function () {
+$('#previousStep').click(function() {
     zegoDocsView && zegoDocsView.previousStep();
 });
 // 下一步
-$('#nextStep').click(function () {
+$('#nextStep').click(function() {
     zegoDocsView && zegoDocsView.nextStep();
 });
 // 跳转指定页
-$('#flipPage').keypress(function (e) {
+$('#flipPage').keypress(function(e) {
     if (e.which == 13) {
         flipPage();
     }
@@ -216,13 +194,13 @@ $('#flipPage').keypress(function (e) {
 $('#flipPageNum').click(flipPage);
 
 // 离开房间
-$('#leaveRoom').click(function () {
+$('#leaveRoom').click(function() {
     logoutRoom();
     location.reload();
 });
 
 // 创建普通白板
-$('#createView').click(function () {
+$('#createView').click(function() {
     /**
      *tips：多端同步时，aspectWidth、aspectHeight请与白板容器尺寸比例保持一致
      *若父容器 宽:高=w:h
@@ -231,58 +209,56 @@ $('#createView').click(function () {
      *创建m页纵向白板 aspectWidth=w，aspectHeight=h*m
      *创建文件白板，不区分方向，固定 aspectWidth=w，aspectHeight=h*m
      */
+    var pageCount = 5;
     var options = {
         roomID: zegoConfig.roomid,
         name: handleWBname(`${zegoConfig.username}创建的白板${WBNameIndex++}`),
-        aspectWidth: 5 * 16,
+        aspectWidth: 16 * pageCount,
         aspectHeight: 9,
-        pageCount: 5
+        pageCount: pageCount
     };
     zegoWhiteboard
         .createView(options)
-        .then(function (view) {
-            return zegoWhiteboard.attachView(view, parentId).then(function () {
+        .then(function(view) {
+            return zegoWhiteboard.attachView(view, parentId).then(function() {
                 zegoWhiteboardView = view;
+                zegoDocsView = null;
                 setOperationModeState();
                 zegoWhiteboardViewList.unshift(view);
                 updateRemoteView();
-                zegoDocsView = null;
-                $('#filename').html(view.getName());
-                $('#curStep').html(1);
-                $('#curPage').html(view.getCurrentPage());
-                $('#totalPage').html(view.getPageCount());
+                updatePageAndStep();
             });
         })
         .catch(toast);
 });
 
-$('#undo').click(function () {
+$('#undo').click(function() {
     zegoWhiteboardView && zegoWhiteboardView.undo();
 });
 
-$('#redo').click(function () {
+$('#redo').click(function() {
     zegoWhiteboardView && zegoWhiteboardView.redo();
 });
 
-$('#clear').click(function () {
+$('#clear').click(function() {
     zegoWhiteboardView && zegoWhiteboardView.clear();
 });
 
-$('#clearCurrentPage').click(function () {
+$('#clearCurrentPage').click(function() {
     zegoWhiteboardView && zegoWhiteboardView.clearCurrentPage();
 });
 
-$('#setBrushColor').click(function () {
+$('#setBrushColor').click(function() {
     var color = $('#brushColor').val();
     zegoWhiteboardView && zegoWhiteboardView.setBrushColor(color);
 });
 
-$('#setBackgroundColor').click(function () {
+$('#setBackgroundColor').click(function() {
     var color = $('#backgroundColor').val();
     zegoWhiteboardView && zegoWhiteboardView.setBackgroundColor(color);
 });
 
-$('#addtext').click(function () {
+$('#addtext').click(function() {
     if (!zegoWhiteboardView) return;
     if (zegoWhiteboardView.getToolType() !== 2) return toast('该功能仅在工具类型为文本时才生效');
     var text = $('#addtext_val').val();
@@ -292,7 +268,7 @@ $('#addtext').click(function () {
 });
 
 // 设置工具类型
-$('#tooltype').change(function () {
+$('#tooltype').change(function() {
     if (!zegoWhiteboardView) return;
     var type = $('#tooltype').val();
     if (type == 'drag') {
@@ -305,29 +281,29 @@ $('#tooltype').change(function () {
     }
 });
 
-$('#whiteboardImgUrlSelect').change(function () {
+$('#whiteboardImgUrlSelect').change(function() {
     if (!zegoWhiteboardView) return;
     zegoWhiteboardView.setToolType(512);
     zegoWhiteboardView.addImage(1, 0, 0, $('#whiteboardImgUrlSelect').val());
     $('#tooltype').val() != '512' && $('#tooltype').val('512');
 });
 // 笔锋设置
-$('#enablePenStroke').change(function () {
+$('#enablePenStroke').change(function() {
     if (!zegoWhiteboard) return;
     zegoWhiteboard.enableHandwriting($('#enablePenStroke').prop('checked'));
 });
 // 设置字体大小
-$('#textsize').change(function () {
+$('#textsize').change(function() {
     var val = $('#textsize').val();
     zegoWhiteboardView && zegoWhiteboardView.setTextSize(Number(val));
 });
 
 // 设置画笔粗细
-$('#brushsize').change(function () {
+$('#brushsize').change(function() {
     var val = $('#brushsize').val();
     zegoWhiteboardView && zegoWhiteboardView.setBrushSize(Number(val));
 });
-$('#disableOperatio').on('change', function () {
+$('#disableOperatio').on('change', function() {
     if (!zegoWhiteboardView) return;
     var none = Boolean($('#disableOperatio').prop('checked')) ? 1 : 0;
     var val = none || 14;
@@ -338,7 +314,7 @@ $('#disableOperatio').on('change', function () {
     $('#enableOperatioZoom').prop('checked', !none);
 });
 // 设置白板是否允许滚动、绘制、缩放
-$('#enableOperatioScroll,#enableOperatioDraw,#enableOperatioZoom').on('change', function () {
+$('#enableOperatioScroll,#enableOperatioDraw,#enableOperatioZoom').on('change', function() {
     if (!zegoWhiteboardView) return;
     var scroll = Boolean($('#enableOperatioScroll').prop('checked')) ? 2 : 0;
     var draw = Boolean($('#enableOperatioDraw').prop('checked')) ? 4 : 0;
@@ -348,10 +324,10 @@ $('#enableOperatioScroll,#enableOperatioDraw,#enableOperatioZoom').on('change', 
     zegoWhiteboardView.setWhiteboardOperationMode(val);
 });
 // 设置白板是否同步缩放
-$('#enableSyncScale').on('change', function () {
+$('#enableSyncScale').on('change', function() {
     zegoWhiteboard && zegoWhiteboard.enableSyncScale(Boolean($(this).prop('checked')));
 });
-$('#enableResponseScale').on('change', function () {
+$('#enableResponseScale').on('change', function() {
     zegoWhiteboard && zegoWhiteboard.enableResponseScale(Boolean($(this).prop('checked')));
 });
 
@@ -363,7 +339,7 @@ function deleteSelectedGraphics() {
 function getViewList() {
     zegoWhiteboard
         .getViewList()
-        .then(function (list) {
+        .then(function(list) {
             zegoWhiteboardViewList = list;
             zegoWhiteboardViewList.reverse();
             updateRemoteView();
@@ -371,61 +347,12 @@ function getViewList() {
         .catch(toast);
 }
 
-// sheet列表
-function getAllSheet(res) {
-    var {
-        sheets,
-        fileID
-    } = res;
-    var excelSheetHtml = sheets.map(function (sheet) {
-        return '<option value=' + fileID + ',' + sheet + '>' + sheet + '</option>';
-    });
-    $('#excelView').html(
-        '<option value="" disabled selected style="display: none">sheet列表</option>' + excelSheetHtml.join('')
-    );
-    $('#excelView').val(fileID + ',' + res.fileName);
-}
-
-// 创建其余的白板sheet
-function createRestSheetWb(res) {
-    var tasks = [];
-    var {
-        sheets,
-        fileID
-    } = res;
-    for (var sheetName of sheets) {
-        var ind = sheets.indexOf(sheetName);
-        if (ind > 0) {
-            tasks.push(
-                zegoWhiteboard.createView({
-                    roomID: zegoConfig.roomid,
-                    name: handleWBname(res.name),
-                    aspectWidth: res.width,
-                    aspectHeight: res.height,
-                    pageCount: res.pageCount,
-                    fileInfo: {
-                        fileID: fileID,
-                        fileName: sheetName,
-                        fileType: res.fileType,
-                        authKey: res.authKey
-                    }
-                })
-            );
-        }
-    }
-    return Promise.all(tasks).then(function (list) {
-        zegoWhiteboardViewList = list.reverse().concat(zegoWhiteboardViewList);
-        //  更新白板列表
-        updateRemoteView();
-    });
-}
-
 function updateRemoteView() {
     console.log('updateRemoteView');
     if (zegoWhiteboardViewList.length) {
         var optionsList = [];
         var noReatIds = {}; // 不重复的fileId列表
-        zegoWhiteboardViewList.forEach(function (view) {
+        zegoWhiteboardViewList.forEach(function(view) {
             var id = view.getID();
             var fileInfo = view.getFileInfo();
             // 纯白板
@@ -451,22 +378,27 @@ function updateRemoteView() {
     }
 }
 
+function updatePageAndStep() {
+    $('#filename').html(zegoWhiteboardView.getName());
+    $('#curStep').html(1);
+    $('#curPage').html(zegoWhiteboardView.getCurrentPage());
+    $('#totalPage').html(zegoWhiteboardView.getPageCount());
+}
+
 /**
  * @desc: 加载远程白板
  */
-
 var lastwhiteboardIDIsFile = false;
-
 function selectRemoteView(whiteboardID) {
     console.log('change file or wb', lastwhiteboardIDIsFile);
 
     // 切换白板时，判断即将被切换的白板是否是文件白板，如果是，则暂停该文件白板的音视频播放
     lastwhiteboardIDIsFile && zegoDocsView && zegoDocsView.stopPlay();
 
-    var id = whiteboardID ? whiteboardID : $('#remoteView').val();
     initSheetList();
+    var id = whiteboardID ? whiteboardID : $('#remoteView').val();
     if (id) {
-        zegoWhiteboardView = zegoWhiteboardViewList.find(function (view) {
+        zegoWhiteboardView = zegoWhiteboardViewList.find(function(view) {
             return id === view.getID();
         });
         if (!zegoWhiteboardView) {
@@ -478,23 +410,21 @@ function selectRemoteView(whiteboardID) {
 
         if (fileInfo) {
             lastwhiteboardIDIsFile = true;
-            console.warn('fileInfo', fileInfo);
-            fileID = fileInfo.fileID;
-            isRemote = true;
+
             zegoDocsView = zegoDocs.createView(parentId, id, fileInfo.fileName);
-            zegoDocsView.loadFile(fileInfo.fileID, fileInfo.authKey).catch(toast);
-            console.log('docsview selectRemoteView', fileInfo.fileName, id);
+            zegoDocsView
+                .loadFile(fileInfo.fileID, fileInfo.authKey, function(res) {
+                    zegoWhiteboard.attachView(zegoWhiteboardView, res.viewID).then(setOperationModeState);
+                    updatePageAndStep();
+                    getAllSheet(res);
+                })
+                .catch(toast);
         } else {
             lastwhiteboardIDIsFile = false;
             zegoDocsView = null;
-            zegoWhiteboard.attachView(zegoWhiteboardView, parentId).then(function () {
-                setOperationModeState();
-            });
+            zegoWhiteboard.attachView(zegoWhiteboardView, parentId).then(setOperationModeState);
+            updatePageAndStep();
         }
-        $('#filename').html(zegoWhiteboardView.getName());
-        $('#curStep').html(1);
-        $('#curPage').html(zegoWhiteboardView.getCurrentPage());
-        $('#totalPage').html(zegoWhiteboardView.getPageCount());
     }
 }
 
@@ -528,7 +458,7 @@ function destroyView() {
     onWhiteboardRemovedHandle(zegoWhiteboardView.getID());
     zegoWhiteboard
         .destroyView(zegoWhiteboardView)
-        .then(function () {
+        .then(function() {
             zegoWhiteboardView = null;
             zegoDocsView = null;
         })
@@ -537,7 +467,7 @@ function destroyView() {
 
 // 销毁全部白板
 function destroyAllView() {
-    zegoWhiteboardViewList.forEach(function (item) {
+    zegoWhiteboardViewList.forEach(function(item) {
         zegoWhiteboard.destroyView(item);
     });
     zegoWhiteboardViewList = [];
@@ -562,14 +492,18 @@ function execUploadFile(file, type) {
     var id = type == 3 ? '#staticFile' : '#dynamicFile';
     $(id).val('');
     zegoDocs
-        .uploadFile(file, type)
+        .uploadFile(file, type, {}, function(res) {
+            console.log('onUpload', res);
+            seqMap.upload = res.fileHash || res.seq;
+            toast(uploadFileTipsMap[res.status] + res.uploadPercent || '');
+        })
         .then(createFileView)
         .catch(toast);
 }
 
 function uploadFileHandle(event, type) {
     if (zegoConfig.appSign) {
-        showOpenDialog().then(function (path) {
+        showOpenDialog().then(function(path) {
             execUploadFile(path, type);
         });
     } else {
@@ -583,14 +517,19 @@ function selectExcel(event) {
     var sheetName = value.split(',')[1];
     createFileView(fileID, sheetName);
 }
-// 创建文件
+/**
+ * 创建文件白板流程：
+ *  1，创建 docsView
+ *  2，加载文件
+ *  3，文件加载成功的回调中创建白板
+ */
 function createFileView(fileID, sheetName) {
     fileID = fileID || $('#fileID').val();
     if (!fileID) return;
-    var matchedView = zegoWhiteboardViewList.find(function (item) {
+    var matchedView = zegoWhiteboardViewList.find(function(item) {
         var fileInfo = item.getFileInfo() || {};
         // 寻找excel中匹配的sheet文件。
-        if (sheetName) return fileInfo && fileInfo.fileID === fileID && fileInfo.fileName === sheetName;
+        if (sheetName) return fileInfo.fileID === fileID && fileInfo.fileName === sheetName;
         return fileID === fileInfo.fileID;
     });
     // 如果是已经存在的文件白板
@@ -600,67 +539,99 @@ function createFileView(fileID, sheetName) {
 
     // createView 入参一个sheetName，表示想要loadFile该sheet。
     zegoDocsView = zegoDocs.createView(parentId, undefined, sheetName);
-    zegoDocsView.loadFile(fileID, '').catch(toast);
+    zegoDocsView
+        .loadFile(fileID, '', function(res) {
+            if (res.fileType === 4) {
+                // excel 创建所有sheet的白板
+                createSheetWbView(res.fileID, res.sheets, res.sheets.length - 1);
+            } else {
+                createFileWBView(res);
+            }
+        })
+        .catch(toast);
 }
 
 // 创建文件白板
 function createFileWBView(res) {
-    if (isRemote) {
-        zegoWhiteboard.attachView(zegoWhiteboardView, res.viewID).then(function () {
-            setOperationModeState();
-            isRemote = false;
-        });
-    } else {
-        try {
-            var promise = Promise.resolve();
-            // 提前创建其余的所有sheet 的白板view
-            if (res.fileType === 4) {
-                promise = createRestSheetWb(res);
+    console.log('=== create file wb ===', res);
+    zegoWhiteboard
+        .createView({
+            roomID: zegoConfig.roomid,
+            name: handleWBname(res.fileType === 4 ? res.name : res.fileName),
+            aspectWidth: res.width,
+            aspectHeight: res.height,
+            pageCount: res.pageCount,
+            fileInfo: {
+                fileID: res.fileID,
+                fileName: res.fileName,
+                fileType: res.fileType,
+                authKey: res.authKey
             }
-            promise.then(function () {
-                zegoWhiteboard
-                    .createView({
-                        roomID: zegoConfig.roomid,
-                        name: handleWBname(res.fileType === 4 ? res.name : res.fileName),
-                        aspectWidth: res.width,
-                        aspectHeight: res.height,
-                        pageCount: res.pageCount,
-                        fileInfo: {
-                            fileID: res.fileID,
-                            fileName: res.fileName,
-                            fileType: res.fileType,
-                            authKey: res.authKey
-                        }
-                    })
-                    .then(function (view) {
-                        zegoWhiteboardViewList.unshift(view);
-                        zegoWhiteboardView = view;
-                        // 更新白板列表
-                        updateRemoteView();
-                        zegoWhiteboard.attachView(view, res.viewID).then(function () {
-                            setOperationModeState();
-                        });
-                    });
-            });
-        } catch (error) {
-            console.error('createFileWBView error', error);
-        }
-    }
+        })
+        .then(function(view) {
+            zegoWhiteboardViewList.unshift(view);
+            zegoWhiteboardView = view;
+            // 更新白板列表
+            updateRemoteView();
+            zegoWhiteboard.attachView(view, res.viewID).then(setOperationModeState);
+            updatePageAndStep();
+            getAllSheet(res);
+        });
+}
+// 递归 串行创建白板sheet
+function createSheetWbView(fileID, sheets, sheetIndex) {
+    if (sheetIndex < 0) return;
 
-    initSheetList();
-    if (res.fileType === 4) {
-        getAllSheet(res);
-    }
+    zegoDocs.createView(parentId, undefined, sheets[sheetIndex]).loadFile(fileID, '', function(res) {
+        if (sheetIndex == 0) {
+            createFileWBView(res);
+            createSheetWbView(fileID, sheets, sheetIndex - 1);
+            return;
+        }
+
+        console.log('=== create sheet wb ===', sheetIndex, sheets[sheetIndex], res);
+        zegoWhiteboard
+            .createView({
+                roomID: zegoConfig.roomid,
+                name: handleWBname(res.name),
+                aspectWidth: res.width,
+                aspectHeight: res.height,
+                pageCount: res.pageCount,
+                fileInfo: {
+                    fileID: fileID,
+                    fileName: sheets[sheetIndex],
+                    fileType: res.fileType,
+                    authKey: res.authKey
+                }
+            })
+            .then(function(view) {
+                zegoWhiteboardViewList.unshift(view);
+                createSheetWbView(fileID, sheets, sheetIndex - 1);
+            });
+    });
 }
 
 function initSheetList() {
     // 初始化sheet列表
     $('#excelView').html('<option value="" disabled selected style="display: none">sheet列表</option>');
 }
+// sheet列表
+function getAllSheet(res) {
+    var { sheets, fileID, fileType } = res;
+    if (fileType === 4) {
+        var excelSheetHtml = sheets.map(function(sheet) {
+            return '<option value=' + fileID + ',' + sheet + '>' + sheet + '</option>';
+        });
+        $('#excelView').html(
+            '<option value="" disabled selected style="display: none">sheet列表</option>' + excelSheetHtml.join('')
+        );
+        $('#excelView').val(fileID + ',' + res.fileName);
+    }
+}
 
 //取消上传
 function cancelUpload() {
-    zegoDocs.cancelUploadFile(seqMap.upload).then(function (res) {
+    zegoDocs.cancelUploadFile(seqMap.upload).then(function(res) {
         if (res === true) toast('取消上传操作成功');
         $('#staticFile').val('');
         $('#dynamicFile').val('');
@@ -676,7 +647,7 @@ function getThumbnailUrlList() {
     if (supportType.includes(type)) {
         var thumbnailUrlList = zegoDocsView.getThumbnailUrlList();
         if (thumbnailUrlList.length > 0) {
-            var imgs = thumbnailUrlList.map(function (v, i) {
+            var imgs = thumbnailUrlList.map(function(v, i) {
                 return '<span>' + (i + 1) + '</span><img src="' + v + '"/>';
             });
             $('#thumbnail-list').html(imgs.join(''));
@@ -696,7 +667,7 @@ var myLocalIMG;
 
 function uploadLocalIMG(event) {
     if (zegoConfig.appSign) {
-        showOpenDialog().then(function (path) {
+        showOpenDialog().then(function(path) {
             myLocalIMG = {
                 path
             };
@@ -706,7 +677,7 @@ function uploadLocalIMG(event) {
     }
 }
 
-$('#localImg').blur(function () {
+$('#localImg').blur(function() {
     var str = $('#localImg')
         .val()
         .trim();
@@ -739,7 +710,7 @@ function addImage(type) {
     console.warn(type, positionX, positionY, address);
     zegoWhiteboardView
         .addImage(type, positionX, positionY, address, toast)
-        .then(function (res) {
+        .then(function(res) {
             if (type == 1) {
                 var name = decodeURIComponent(res).replace(/(.*\/)*([^.]+).*/gi, '$2');
                 var html = `<option value="${res}">${name}</option>${$('#whiteboardImgUrlSelect').html()}`;
@@ -747,7 +718,7 @@ function addImage(type) {
                 $('#whiteboardImgUrlSelect').val('');
             }
         })
-        .catch(function (e) {
+        .catch(function(e) {
             if (e && e.code) {
                 toast(e.code + '：' + (imageErrorTipsMap[e.code] || e.msg));
             }
@@ -794,7 +765,7 @@ function handleWBname(name) {
 }
 
 function onDocumentEventHandle() {
-    window.addEventListener('keydown', function (event) {
+    window.addEventListener('keydown', function(event) {
         var e = event || window.event || arguments.callee.caller.arguments[0];
         if (!e) return;
         switch (e.keyCode) {
@@ -817,12 +788,9 @@ function onDocumentEventHandle() {
 function onResizeHandle(e) {
     if (!resizeTicking) {
         resizeTicking = true;
-        setTimeout(function () {
+        setTimeout(function() {
             var dom = document.getElementById(parentId);
-            var {
-                clientWidth,
-                clientHeight
-            } = dom.parentNode;
+            var { clientWidth, clientHeight } = dom.parentNode;
             var width = clientWidth;
             var height = ((9 * width) / 16) | 0;
             if (height > clientHeight) {
@@ -872,7 +840,7 @@ function saveImage() {
     if (zegoConfig.appSign) {
         showSaveDialog();
     } else {
-        zegoWhiteboardView.snapshot().then(function (data) {
+        zegoWhiteboardView.snapshot().then(function(data) {
             var link = document.createElement('a');
             link.href = data.image;
             link.download = zegoWhiteboardView.getName() + seqMap.saveImg++ + '.png';
@@ -886,7 +854,7 @@ var myLocalBGIMG;
 
 function uploadLocalBGIMG(event) {
     if (zegoConfig.appSign) {
-        showOpenDialog().then(function (path) {
+        showOpenDialog().then(function(path) {
             myLocalBGIMG = {
                 path
             };
@@ -903,7 +871,7 @@ function setWhiteboardBg(type) {
         return;
     }
     var url = $('#whiteboardBgImg').val() || $('#whiteboardBgImgUrlSelect').val();
-    zegoWhiteboardView.setBackgroundImage(type === 1 ? url : myLocalBGIMG, +model, toast).catch(function (e) {
+    zegoWhiteboardView.setBackgroundImage(type === 1 ? url : myLocalBGIMG, +model, toast).catch(function(e) {
         if (e && e.code) {
             toast(e.code + '：' + (imageErrorTipsMap[e.code] || e.msg));
         }
@@ -925,7 +893,7 @@ function reloadView(width, height, dom) {
 
     if (zegoWhiteboardView) {
         // 动画100ms
-        setTimeout(function () {
+        setTimeout(function() {
             zegoWhiteboardView.reloadView();
             $('#parentWidth').val('');
             $('#parentHeight').val('');
@@ -938,7 +906,57 @@ function cacheFile() {
     fileID && zegoDocs.cacheFile(fileID);
 }
 
+/**
+ * Mobile：不兼容 Element.requestFullscreen ，用样式和 DOM 来模拟全屏效果
+ * Desktop：用 Element.requestFullscreen 实现，但是由于部分浏览器实现可能有问题，代码仅供参考
+ *
+ * @param exit 是否退出全屏
+ *
+ * @note 详见文档：https://developer.mozilla.org/zh-CN/docs/Web/API/Element/requestFullScreen
+ */
 function triggerFullscreen(exit) {
+    new Promise(function(resolve, reject) {
+        if (!zegoConfig.isTouch) {
+            if (!exit) {
+                supportRequestFullscreen(document.getElementById(parentId))
+                    .then(function() {
+                        toast('按 Esc 键退出全屏');
+                        resolve();
+                    })
+                    .catch(reject);
+            } else {
+                resolve();
+            }
+        } else {
+            reject();
+        }
+    })
+        .catch(function() {
+            // 浏览器不支持 requestFullscreen，用样式和 DOM 来模拟全屏效果
+            triggerFullscreenForMobile(exit);
+        })
+        .then(function() {
+            // 改变容器大小后，需要调用白板接口 reloadView
+            if (zegoWhiteboardView) {
+                // 动画100ms
+                setTimeout(function() {
+                    zegoWhiteboardView.reloadView();
+                }, 120);
+            }
+        });
+}
+function supportRequestFullscreen(dom) {
+    if (dom.requestFullscreen) {
+        return dom.requestFullscreen();
+    } else if (dom.webkitRequestFullScreen) {
+        return dom.webkitRequestFullScreen();
+    } else if (dom.mozRequestFullScreen) {
+        return dom.mozRequestFullScreen();
+    } else {
+        return dom.msRequestFullscreen();
+    }
+}
+function triggerFullscreenForMobile(exit) {
     if (!exit) {
         // 白板全屏
         $('.top-bar').hide();
@@ -965,13 +983,6 @@ function triggerFullscreen(exit) {
         $('.main-container').removeClass('main-container_full');
         $('.whiteboard-area').removeClass('whiteboard-area_full');
     }
-
-    if (zegoWhiteboardView) {
-        // 动画100ms
-        setTimeout(function () {
-            zegoWhiteboardView.reloadView();
-        }, 120);
-    }
 }
 
 function flipPage() {
@@ -980,9 +991,7 @@ function flipPage() {
     var totalPage = zegoWhiteboardView.getPageCount();
     if (page >= 1 && page <= totalPage) {
         var percent = (page - 1) / totalPage;
-        var {
-            direction
-        } = zegoWhiteboardView.getCurrentScrollPercent();
+        var { direction } = zegoWhiteboardView.getCurrentScrollPercent();
         if (direction === 1) {
             zegoWhiteboardView.scroll(percent, 0);
         } else {
@@ -1014,7 +1023,7 @@ function uploadH5Handle(event) {
         thumbnailList: h5ThumbnailList ? h5ThumbnailList.split(',') : null
     };
     if (zegoConfig.appSign) {
-        showOpenDialog().then(function (path) {
+        showOpenDialog().then(function(path) {
             execUploadH5File(path, config);
         });
     } else {
@@ -1030,11 +1039,11 @@ function execUploadH5File(file, config) {
     console.warn('上传H5课件', config);
     zegoDocs
         .uploadH5File(file, config, toast)
-        .then(function (res) {
+        .then(function(res) {
             $('#h5file').val('');
             $('#fileID').val(res);
         })
-        .catch(function (e) {
+        .catch(function(e) {
             $('#h5file').val('');
             $('#fileID').val('');
             toast(e);

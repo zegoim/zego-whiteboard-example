@@ -1,14 +1,17 @@
 package im.zego.whiteboardexample.widget.popwindow
 
 import android.content.Context
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.zyyoona7.wheel.WheelView
+import im.zego.zegowhiteboard.ZegoWhiteboardManager
 import im.zego.whiteboardexample.R
 import im.zego.zegowhiteboard.ZegoWhiteboardConstants
+import kotlinx.android.synthetic.main.layout_main_content.*
 import kotlinx.android.synthetic.main.popwindow_select.view.*
 
 /**

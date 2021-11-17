@@ -1,5 +1,7 @@
 package im.zego.whiteboardexample.model
 
+import im.zego.zegowhiteboard.ZegoWhiteboardViewImageFitMode
+
 /**
  * 设置背景图片的信息
  *

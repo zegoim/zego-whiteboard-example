@@ -14,7 +14,7 @@ import kotlinx.android.synthetic.main.popwindow_select.view.*
 /**
  * 涂鸦工具选择 PopWindow
  */
-class SelectGraffitiToolsPopWindow(context: Context, selectToolName: String, isSupportClickTool: Boolean) : BasePopWindow(
+class SelectGraffitiToolsPopWindow(context: Context, selectToolName: String, isDynamicPPT: Boolean) : BasePopWindow(
     context,
     contentView = LayoutInflater.from(context).inflate(R.layout.popwindow_select, null, false)
 ) {
@@ -29,7 +29,7 @@ class SelectGraffitiToolsPopWindow(context: Context, selectToolName: String, isS
         width = ViewGroup.LayoutParams.MATCH_PARENT
 
         contentView.type_list.let {
-            val list: List<ToolsData> = if(isSupportClickTool) {
+            val list: List<ToolsData> = if(isDynamicPPT) {
                 listOf(
                     ToolsData(ZegoWhiteboardConstants.ZegoWhiteboardViewToolPen, context.getString(R.string.draw_graffiti_tools_pen)),
                     ToolsData(ZegoWhiteboardConstants.ZegoWhiteboardViewToolSelector, context.getString(R.string.draw_graffiti_tools_selector)),

@@ -19,11 +19,22 @@ token 生成方法请参考 [ZEGO 开发者中心](https://doc-zh.zego.im/zh/764
 
 ## 注意事项
 
-为了让开发者前期能快速体验功能效果，platform/web/init.js 文件中相关配置中的获取 token 的链接仅在测试环境生效。
+为了让开发者前期能快速体验功能效果，sdk/init.js 文件中相关配置中的获取 token 的链接仅在测试环境生效。
 
 # 启动
 
-为了让开发者前期能快速体验功能效果，填写 platform/web/init.js 文件中相关配置中的 AppID，打开 index.html 页面输入用户名和房间号，进入房间后即可体验。
+为了让开发者前期能快速体验功能效果，填写 sdk/init.js 文件中相关配置中的 appID，打开 index.html 页面输入用户名和房间号，进入房间后即可体验。
+
+```javaScript
+// APP 账号
+var _openConfig = {
+    appID: 0, // 请填写自己申请的 APPID
+    tokenUrl: 'https://wsliveroom-alpha.zego.im:8282/token',
+    fileListUrl: '',
+    // 引入SDK的相对路径（相对index.html的路径）
+    SDKPathList: ['./sdk/ZegoExpressWhiteboardWeb.js', './sdk/ZegoExpressDocsWeb.js']
+};
+```
 
 # 更多
 

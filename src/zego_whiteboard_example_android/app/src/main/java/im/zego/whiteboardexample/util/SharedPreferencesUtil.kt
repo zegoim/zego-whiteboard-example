@@ -60,9 +60,9 @@ class SharedPreferencesUtil {
         }
 
         @JvmStatic
-        fun setLastJoinID(roomID: String) {
+        fun setLastJoinID(name: String) {
             val sharedPreferences = getSharedPreferences(env)
-            sharedPreferences.edit().putString("lastJoinID", roomID).apply()
+            sharedPreferences.edit().putString("lastJoinID", name).apply()
         }
 
         @JvmStatic
@@ -147,21 +147,6 @@ class SharedPreferencesUtil {
         fun isSystemTextStyle():Boolean{
             val sharedPreferences = getSharedPreferences(env)
             return sharedPreferences.getBoolean("text_style", true)
-        }
-
-        /**
-         * k-v:获取本地缓存的缩略图清晰度类型
-         *
-         * 没有对应的setter方法是因为：
-         * 我们在[im.zego.whiteboardexample.activity.SettingActivity.SettingsFragment]中
-         * 使用了[androidx.preference.ListPreference]控件。
-         *
-         * 该控件内部封装了SharedPreferences，当用户每次改变清晰度类型时，会自动设置到指定的k-v中去
-         */
-        @JvmStatic
-        fun getThumbnailClarityType(): String {
-            val sharedPreferences = getSharedPreferences(env)
-            return sharedPreferences.getString("key_thumbnail_clarity", "1")!!
         }
 
     }

@@ -29,10 +29,6 @@
         <item name="android:backgroundDimEnabled">true</item>
     </style>
 
-    <style name="SettingTheme" parent="AppTheme">
-        <item name="alertDialogTheme">@style/AppDialogTheme</item>
-    </style>
-
     <style name="SwitchCompat.Control" parent="Theme.AppCompat.Light">
         <!-- active thumb & track color (30% transparency) -->
         <item name="colorControlActivated">@color/colorPrimary</item>

@@ -3,8 +3,6 @@ package im.zego.whiteboardexample.sdk.rtc
   //replace_with_content_begin
 import android.app.Application
 import android.util.Log
-import im.zego.whiteboardexample.AppConstants.RTC_LOG_SIZE
-import im.zego.whiteboardexample.AppConstants.RTC_LOG_SUBFOLDER
 import im.zego.zegoexpress.ZegoExpressEngine
 import im.zego.zegoexpress.callback.IZegoEventHandler
 import im.zego.zegoexpress.constants.ZegoRoomState
@@ -13,7 +11,9 @@ import im.zego.zegoexpress.entity.ZegoEngineConfig
 import im.zego.zegoexpress.entity.ZegoLogConfig
 import im.zego.zegoexpress.entity.ZegoRoomConfig
 import im.zego.zegoexpress.entity.ZegoUser
+import im.zego.whiteboardexample.constants.AppConstants
 import im.zego.whiteboardexample.sdk.SDKInitCallback
+import im.zego.whiteboardexample.util.Logger
 import org.json.JSONObject
 import java.io.File
 
@@ -38,8 +38,8 @@ internal class ZegoExpressWrapper : IZegoVideoSDKProxy {
         Log.d(TAG, "init ZegoExpressEngine, version:${ZegoExpressEngine.getVersion()}")
         val config = ZegoEngineConfig()
         val zegoLogConfig = ZegoLogConfig()
-        zegoLogConfig.logPath = application.getExternalFilesDir(null)!!.absolutePath + File.separator + RTC_LOG_SUBFOLDER
-        zegoLogConfig.logSize = RTC_LOG_SIZE
+        zegoLogConfig.logPath = application.getExternalFilesDir(null)!!.absolutePath + File.separator + AppConstants.LOG_SUBFOLDER
+        zegoLogConfig.logSize = 5*1024*1024
         config.logConfig = zegoLogConfig
         ZegoExpressEngine.setEngineConfig(config)
         val engine = ZegoExpressEngine.createEngine(
@@ -119,6 +119,7 @@ internal class ZegoExpressWrapper : IZegoVideoSDKProxy {
     }
 
     override fun uploadLog() {
+        Logger.d(TAG, "uploadLog() called")
         expressEngine.uploadLog()
     }
 }

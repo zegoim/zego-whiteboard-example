@@ -18,22 +18,13 @@
             app:key="next_step_flip_page"
             app:summaryOff="关闭"
             app:summaryOn="开启"
-            app:title="最后一步时点击触发翻页" />
+            app:title="点击触发翻页" />
 
         <SwitchPreferenceCompat
             app:key="text_style"
             app:summaryOff="思源黑体"
             app:summaryOn="系统字体"
             app:title="字体类型"/>
-
-        <ListPreference
-            app:key="key_thumbnail_clarity"
-            app:defaultValue="1"
-            app:dialogTitle="缩略图清晰度"
-            app:entries="@array/thumbnail_clarity"
-            app:entryValues="@array/thumbnail_clarity_values"
-            app:summary="普通"
-            app:title="缩略图清晰度" />
 
     </PreferenceCategory>
 

@@ -56,10 +56,6 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-
-    lintOptions {
-        checkReleaseBuilds false
-    }
 }
 
 
@@ -67,7 +63,7 @@ dependencies {
 
     implementation fileTree(dir: 'libs', includes: ['*.jar', '*.aar'])
 
-    implementation "androidx.appcompat:appcompat:1.3.0"
+    implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.preference:preference-ktx:1.1.1'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
@@ -85,3 +81,40 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
 
 }
+
+task updateVersion() {
+    def versionFile = projectDir.getAbsolutePath() + File.separatorChar + 'src/main/java/im/zego/whiteboardexample/VersionConstants.kt'
+    def oldDocsVersionNameStr = ""
+    def oldWBVersionNameStr = ""
+    def newDocsVersionNameStr = "    const val DOCS_SDK = \"" + docsSdkVersion + "\""
+    def newWBVersionNameStr = "    const val WHITEBOARD_SDK = \"" + wbSdkVersion + "\""
+
+    def text = new File(versionFile).getText('UTF-8')
+    def lines = text.readLines()
+    lines.forEach({
+        if (it.contains("val DOCS_SDK")) {
+            oldDocsVersionNameStr = it
+        }
+        if (it.contains("val WHITEBOARD_SDK")) {
+            oldWBVersionNameStr = it
+        }
+    })
+    def content = text.replaceAll(oldDocsVersionNameStr, newDocsVersionNameStr)
+            .replaceAll(oldWBVersionNameStr, newWBVersionNameStr)
+    new File(versionFile).text = content
+}
+
+preBuild.dependsOn updateVersion
+
+task aaaUpdateLibrary(type: Exec) { // hide_tag
+    workingDir './../builds/' // hide_tag
+    commandLine "python3","update_libs.py" // hide_tag
+} // hide_tag
+
+task aaaBuildWhiteboard(type: Exec) { // hide_tag
+    commandLine "sh","./generate_android.sh" // hide_tag
+} // hide_tag
+
+task aaaBuildDocsView(type: Exec) { // hide_tag
+    commandLine "sh","./generate_android.sh" // hide_tag
+} // hide_tag

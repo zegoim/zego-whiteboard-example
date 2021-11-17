@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import im.zego.whiteboardexample.R
-import im.zego.whiteboardexample.util.AppLogger
+import im.zego.whiteboardexample.util.Logger
 import kotlinx.android.synthetic.main.item_preview_list.view.*
 
 class ZegoDocsPreview : LinearLayout {
@@ -69,14 +69,14 @@ class ZegoDocsPreview : LinearLayout {
      */
     fun setSelectedPage(page: Int) {
         if (page < 0) {
-            AppLogger.e(TAG, "setSelectedPage() page $page")
+            Logger.e(TAG, "setSelectedPage() page $page")
             return
         }
 //        if (page == previewListAdapter.selectedPage) {
             //ignore same page msg
 //            return
 //        }
-        AppLogger.i(TAG, "setSelectedPage() page = $page previewListAdapter.selectedPage ${previewListAdapter.selectedPage}")
+        Logger.i(TAG, "setSelectedPage() page = $page previewListAdapter.selectedPage ${previewListAdapter.selectedPage}")
         // 1、先处理窗口是否要滑动
         jump(page)
         // 2、变更选中item
@@ -87,10 +87,10 @@ class ZegoDocsPreview : LinearLayout {
      * @param page 当前选中页，在能上下滑动的前提下，要显示在第二个位置。
      */
     fun jump(page: Int) {
-        AppLogger.i(TAG, "jump() page = $page")
+        Logger.i(TAG, "jump() page = $page")
         var prePage = page
         if (prePage < 0) {
-            AppLogger.w(TAG, "jump() error page = $page")
+            Logger.w(TAG, "jump() error page = $page")
             return
         } else if (prePage > 0) {
             prePage--

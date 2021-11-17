@@ -39,7 +39,6 @@
              />
         <activity
             android:name="im.zego.whiteboardexample.activity.SettingActivity"
-            android:theme="@style/SettingTheme"
            />
 
     </application>
