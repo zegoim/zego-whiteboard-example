@@ -3,9 +3,6 @@
 {
     roomid: "",
     username: "",
-
-    whiteboard_env: "-test",
-    docs_env: "test",
     fontFamily: "ZgFont",
     thumbnailMode: "1",
     pptStepMode: "1",
@@ -28,7 +25,7 @@ $('#env-btn').click(function () {
 // 登录
 $('#login').click(function () {
     var username = $('#username').val();
-    var roomid = $('#roxiugaomid').val();
+    var roomid = $('#roomid').val();
 
     if (!username || !roomid) {
         alert('请输入用户名和roomID');
@@ -119,8 +116,7 @@ function loginRoom() {
             zegoDocs = new ZegoExpressDocs({
                 appID: zegoConfig.appID,
                 userID,
-                token,
-                isTestEnv: !!zegoConfig.docs_env
+                token
             });
 
             zegoWhiteboard
